@@ -1,9 +1,24 @@
 import { Mail, Phone, MapPin, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const { theme, toggleTheme } = useTheme();
+
+  const companyLinks = [
+    { label: "About", to: "/about" },
+    { label: "Blog", to: "#" },
+    { label: "Careers", to: "#" },
+    { label: "Contact", to: "/contact" },
+  ];
+
+  const legalLinks = [
+    { label: "Privacy Policy", to: "/privacy" },
+    { label: "Terms of Service", to: "/terms" },
+    { label: "Security", to: "/security" },
+    { label: "Compliance", to: "/compliance" },
+  ];
 
   return (
     <footer className="py-12 border-t border-border/50 bg-secondary/10">
@@ -11,12 +26,12 @@ const Footer = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <div className="flex items-center gap-2 mb-3">
+            <Link to="/" className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-base">N</span>
               </div>
               <span className="font-display text-lg font-bold text-foreground">Numor</span>
-            </div>
+            </Link>
             <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
               AI-powered finance management for small and medium businesses.
             </p>
@@ -48,11 +63,11 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold text-foreground text-sm mb-3">Company</h4>
             <ul className="space-y-2">
-              {["About", "Blog", "Careers", "Contact"].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {item}
-                  </a>
+              {companyLinks.map((item) => (
+                <li key={item.label}>
+                  <Link to={item.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -62,11 +77,11 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold text-foreground text-sm mb-3">Legal</h4>
             <ul className="space-y-2">
-              {["Privacy Policy", "Terms of Service", "Security", "Compliance"].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {item}
-                  </a>
+              {legalLinks.map((item) => (
+                <li key={item.label}>
+                  <Link to={item.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
