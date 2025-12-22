@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,30 +11,30 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-base">N</span>
             </div>
             <span className="font-display text-lg font-bold text-foreground">Numor</span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a href="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Features
             </a>
-            <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               How it Works
             </a>
-            <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </a>
           </div>
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-sm h-8">
-              Log in
+            <Button variant="ghost" size="sm" className="text-sm h-8" asChild>
+              <Link to="/login">Log in</Link>
             </Button>
             <Button variant="hero" size="sm" className="text-sm h-8">
               Get Started
@@ -53,18 +54,18 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden py-3 border-t border-border/50 animate-fade-in">
             <div className="flex flex-col gap-3">
-              <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
+              <a href="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 Features
               </a>
-              <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
+              <a href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 How it Works
               </a>
-              <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
+              <a href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 Pricing
               </a>
               <div className="flex flex-col gap-2 pt-3">
-                <Button variant="outline" size="sm" className="w-full">
-                  Log in
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Link to="/login">Log in</Link>
                 </Button>
                 <Button variant="hero" size="sm" className="w-full">
                   Get Started
