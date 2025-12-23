@@ -25,25 +25,8 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left side - Decorative */}
-      <div className="hidden lg:flex flex-1 bg-gradient-primary items-center justify-center p-12">
-        <div className="max-w-md text-center">
-          <div className="w-20 h-20 rounded-2xl bg-background/10 flex items-center justify-center mx-auto mb-6">
-            <span className="text-4xl font-bold text-primary-foreground">N</span>
-          </div>
-          <h2 className="text-2xl font-display font-bold text-primary-foreground mb-4">
-            Start your journey with Numor
-          </h2>
-          <p className="text-primary-foreground/80">
-            Join thousands of SMBs using Numor to streamline invoicing, get AI-powered insights, and connect with CAs.
-          </p>
-        </div>
-      </div>
-
-      {/* Right side - Form */}
-      <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-24">
-        <div className="max-w-md w-full mx-auto">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
+        <div className="max-w-md w-full">
           {/* Back button */}
           <Link
             to="/"
@@ -198,7 +181,6 @@ const Signup = () => {
           </p>
         </div>
       </div>
-    </div>
   );
 };
 
