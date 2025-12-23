@@ -36,8 +36,8 @@ const Navbar = () => {
             <Button variant="ghost" size="sm" className="text-sm h-8" asChild>
               <Link to="/login">Log in</Link>
             </Button>
-            <Button variant="hero" size="sm" className="text-sm h-8">
-              Get Started
+            <Button variant="hero" size="sm" className="text-sm h-8" asChild>
+              <Link to="/signup">Get Started</Link>
             </Button>
           </div>
 
@@ -67,8 +67,8 @@ const Navbar = () => {
                 <Button variant="outline" size="sm" className="w-full" asChild>
                   <Link to="/login">Log in</Link>
                 </Button>
-                <Button variant="hero" size="sm" className="w-full">
-                  Get Started
+                <Button variant="hero" size="sm" className="w-full" asChild>
+                  <Link to="/signup">Get Started</Link>
                 </Button>
               </div>
             </div>
