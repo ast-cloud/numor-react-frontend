@@ -1,18 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
+import { loginUser } from "@/lib/authStore";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login submitted", { email, password });
+    
+    const result = loginUser(email, password);
+    
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Login successful!",
+      });
+      navigate("/dashboard");
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
