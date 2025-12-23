@@ -1,11 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft, Building } from "lucide-react";
+import { registerUser } from "@/lib/authStore";
+import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -16,8 +20,36 @@ const Signup = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic here
-    console.log("Signup submitted", formData);
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const result = registerUser({
+      name: formData.name,
+      company: formData.company,
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Account created successfully! Please login.",
+      });
+      navigate("/login");
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
