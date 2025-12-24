@@ -1,8 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, ChevronLeft, ChevronRight, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu } from "lucide-react";
 import { logoutUser, getCurrentUser } from "@/lib/authStore";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/hooks/use-theme";
 import { useState } from "react";
 
 const navItems = [
@@ -14,7 +13,6 @@ const navItems = [
 const DashboardSidebar = () => {
   const navigate = useNavigate();
   const user = getCurrentUser();
-  const { theme, toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
 
   const handleLogout = () => {
@@ -24,16 +22,16 @@ const DashboardSidebar = () => {
 
   return (
     <aside className={`${collapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}>
-      {/* Header with Logo and Theme Toggle */}
+      {/* Header with Logo and Hamburger */}
       <div className="p-4 border-b border-border flex items-center justify-between">
         {!collapsed && <h1 className="text-xl font-display font-bold text-primary">Numor</h1>}
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleTheme}
+          onClick={() => setCollapsed(!collapsed)}
           className={`${collapsed ? "mx-auto" : ""} text-muted-foreground hover:text-foreground`}
         >
-          {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          <Menu className="w-5 h-5" />
         </Button>
       </div>
 
@@ -105,18 +103,6 @@ const DashboardSidebar = () => {
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!collapsed && "Logout"}
-        </Button>
-      </div>
-
-      {/* Collapse Toggle */}
-      <div className="p-2 border-t border-border">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setCollapsed(!collapsed)}
-          className="w-full justify-center text-muted-foreground hover:text-foreground"
-        >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </Button>
       </div>
     </aside>
