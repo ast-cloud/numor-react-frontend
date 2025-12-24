@@ -12,7 +12,11 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Security from "./pages/Security";
 import Compliance from "./pages/Compliance";
-import Dashboard from "./pages/Dashboard";
+import DashboardLayout from "./components/DashboardLayout";
+import DashboardHome from "./pages/DashboardHome";
+import Expenses from "./pages/Expenses";
+import Invoices from "./pages/Invoices";
+import DashboardSettings from "./pages/DashboardSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +37,12 @@ const App = () => (
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/security" element={<Security />} />
           <Route path="/compliance" element={<Compliance />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+            <Route path="expenses" element={<Expenses />} />
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="settings" element={<DashboardSettings />} />
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
