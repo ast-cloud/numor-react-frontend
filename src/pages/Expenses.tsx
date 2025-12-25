@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil } from "lucide-react";
+import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil, ArrowUpDown, ArrowUp, ArrowDown, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+type SortField = "date" | "amount" | "category";
+type SortOrder = "asc" | "desc";
 
 type Expense = {
   id: string;
@@ -45,7 +48,57 @@ const Expenses = () => {
   const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([createEmptyItem()]);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
+  // Filtering & Sorting state
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+
   const hasExpenses = expenses.length > 0;
+
+  // Filter and sort expenses
+  const filteredAndSortedExpenses = useMemo(() => {
+    let result = [...expenses];
+
+    // Apply category filter
+    if (categoryFilter !== "all") {
+      result = result.filter((exp) => exp.category === categoryFilter);
+    }
+
+    // Apply sorting
+    result.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "date":
+          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+          break;
+        case "amount":
+          comparison = a.amount - b.amount;
+          break;
+        case "category":
+          comparison = a.category.localeCompare(b.category);
+          break;
+      }
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+
+    return result;
+  }, [expenses, categoryFilter, sortField, sortOrder]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("desc");
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />;
+    return sortOrder === "asc" 
+      ? <ArrowUp className="w-4 h-4 ml-1" /> 
+      : <ArrowDown className="w-4 h-4 ml-1" />;
+  };
 
   const updateItem = (index: number, field: keyof ExpenseItem, value: string) => {
     const updated = [...expenseItems];
@@ -344,44 +397,100 @@ const Expenses = () => {
 
       {/* Expense List */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>Expense List</CardTitle>
+          {hasExpenses && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-muted-foreground" />
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {hasExpenses ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {expenses.map((expense) => (
-                  <TableRow key={expense.id}>
-                    <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-                    <TableCell className="font-medium">{expense.title}</TableCell>
-                    <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
-                    <TableCell>{expense.category}</TableCell>
-                    <TableCell className="text-right">₹{expense.amount.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditExpense(expense)}>
-                          <Pencil className="w-4 h-4" />
+            <>
+              {filteredAndSortedExpenses.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 font-medium hover:bg-transparent"
+                          onClick={() => handleSort("date")}
+                        >
+                          Date {getSortIcon("date")}
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteExpense(expense.id)}>
-                          <Trash2 className="w-4 h-4" />
+                      </TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 font-medium hover:bg-transparent"
+                          onClick={() => handleSort("category")}
+                        >
+                          Category {getSortIcon("category")}
                         </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableHead>
+                      <TableHead className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
+                          onClick={() => handleSort("amount")}
+                        >
+                          Amount {getSortIcon("amount")}
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[100px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAndSortedExpenses.map((expense) => (
+                      <TableRow key={expense.id}>
+                        <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+                        <TableCell className="font-medium">{expense.title}</TableCell>
+                        <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
+                        <TableCell>{expense.category}</TableCell>
+                        <TableCell className="text-right">₹{expense.amount.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditExpense(expense)}>
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteExpense(expense.id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <p className="text-muted-foreground">No expenses match the current filter</p>
+                  <Button variant="link" onClick={() => setCategoryFilter("all")} className="mt-2">
+                    Clear filter
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
