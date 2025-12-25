@@ -65,14 +65,25 @@ const Expenses = () => {
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validItems = expenseItems.filter(item => item.title && item.amount && item.category);
     
-    if (validItems.length === 0) {
-      toast({ title: "Error", description: "Please fill at least one complete expense item (title, amount, category)", variant: "destructive" });
+    // Check if ALL items have their required fields filled
+    const incompleteItems = expenseItems.map((item, index) => {
+      const missingFields: string[] = [];
+      if (!item.title.trim()) missingFields.push("title");
+      if (!item.amount.trim()) missingFields.push("amount");
+      if (!item.category) missingFields.push("category");
+      return { index: index + 1, missingFields };
+    }).filter(item => item.missingFields.length > 0);
+
+    if (incompleteItems.length > 0) {
+      const errorMessage = incompleteItems
+        .map(item => `Item ${item.index}: missing ${item.missingFields.join(", ")}`)
+        .join("; ");
+      toast({ title: "Error", description: `Please fill all required fields. ${errorMessage}`, variant: "destructive" });
       return;
     }
 
-    const newExpenses: Expense[] = validItems.map((item, index) => ({
+    const newExpenses: Expense[] = expenseItems.map((item, index) => ({
       id: `${Date.now()}-${index}`,
       title: item.title,
       description: item.description,
