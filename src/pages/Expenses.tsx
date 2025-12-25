@@ -6,11 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PenLine, Upload, Plus, IndianRupee, Trash2 } from "lucide-react";
+import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type Expense = {
   id: string;
+  title: string;
   description: string;
   amount: number;
   category: string;
@@ -18,22 +19,31 @@ type Expense = {
 };
 
 type ExpenseItem = {
+  title: string;
   description: string;
   amount: string;
   category: string;
+  date: string;
 };
 
 const categories = ["Food & Dining", "Transportation", "Utilities", "Office Supplies", "Travel", "Entertainment", "Other"];
 
-const emptyItem: ExpenseItem = { description: "", amount: "", category: "" };
+const createEmptyItem = (): ExpenseItem => ({
+  title: "",
+  description: "",
+  amount: "",
+  category: "",
+  date: new Date().toISOString().split("T")[0],
+});
 
 const Expenses = () => {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
   const [isOCRDialogOpen, setIsOCRDialogOpen] = useState(false);
-  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split("T")[0]);
-  const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([{ ...emptyItem }]);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([createEmptyItem()]);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   const hasExpenses = expenses.length > 0;
 
@@ -44,7 +54,7 @@ const Expenses = () => {
   };
 
   const addItem = () => {
-    setExpenseItems([...expenseItems, { ...emptyItem }]);
+    setExpenseItems([...expenseItems, createEmptyItem()]);
   };
 
   const removeItem = (index: number) => {
@@ -55,26 +65,48 @@ const Expenses = () => {
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validItems = expenseItems.filter(item => item.description && item.amount && item.category);
+    const validItems = expenseItems.filter(item => item.title && item.amount && item.category);
     
     if (validItems.length === 0) {
-      toast({ title: "Error", description: "Please fill at least one complete expense item", variant: "destructive" });
+      toast({ title: "Error", description: "Please fill at least one complete expense item (title, amount, category)", variant: "destructive" });
       return;
     }
 
     const newExpenses: Expense[] = validItems.map((item, index) => ({
       id: `${Date.now()}-${index}`,
+      title: item.title,
       description: item.description,
       amount: parseFloat(item.amount),
       category: item.category,
-      date: expenseDate,
+      date: item.date,
     }));
 
     setExpenses([...newExpenses, ...expenses]);
-    setExpenseItems([{ ...emptyItem }]);
-    setExpenseDate(new Date().toISOString().split("T")[0]);
+    setExpenseItems([createEmptyItem()]);
     setIsManualDialogOpen(false);
     toast({ title: "Success", description: `${newExpenses.length} expense(s) added successfully` });
+  };
+
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingExpense) return;
+
+    setExpenses(expenses.map(exp => 
+      exp.id === editingExpense.id ? editingExpense : exp
+    ));
+    setIsEditDialogOpen(false);
+    setEditingExpense(null);
+    toast({ title: "Success", description: "Expense updated successfully" });
+  };
+
+  const handleDeleteExpense = (id: string) => {
+    setExpenses(expenses.filter(exp => exp.id !== id));
+    toast({ title: "Deleted", description: "Expense removed successfully" });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,31 +141,41 @@ const Expenses = () => {
               </CardContent>
             </Card>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add Expenses</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleManualSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={expenseDate}
-                  onChange={(e) => setExpenseDate(e.target.value)}
-                />
-              </div>
-              
               <div className="space-y-3">
                 <Label>Expense Items</Label>
                 {expenseItems.map((item, index) => (
-                  <div key={index} className="flex gap-2 items-start p-3 border border-border rounded-lg bg-muted/30">
-                    <div className="flex-1 grid grid-cols-3 gap-2">
+                  <div key={index} className="p-4 border border-border rounded-lg bg-muted/30 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-muted-foreground">Item {index + 1}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => removeItem(index)}
+                        disabled={expenseItems.length === 1}
+                      >
+                        <Trash2 className="w-4 h-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <Input
-                        placeholder="Description *"
-                        value={item.description}
-                        onChange={(e) => updateItem(index, "description", e.target.value)}
+                        placeholder="Title *"
+                        value={item.title}
+                        onChange={(e) => updateItem(index, "title", e.target.value)}
                       />
+                      <Input
+                        type="date"
+                        value={item.date}
+                        onChange={(e) => updateItem(index, "date", e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
                       <div className="relative">
                         <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
@@ -155,17 +197,12 @@ const Expenses = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      <Input
+                        placeholder="Description (optional)"
+                        value={item.description}
+                        onChange={(e) => updateItem(index, "description", e.target.value)}
+                      />
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0"
-                      onClick={() => removeItem(index)}
-                      disabled={expenseItems.length === 1}
-                    >
-                      <Trash2 className="w-4 h-4 text-muted-foreground" />
-                    </Button>
                   </div>
                 ))}
                 <Button type="button" variant="outline" size="sm" onClick={addItem} className="w-full">
@@ -227,6 +264,73 @@ const Expenses = () => {
         </Dialog>
       </div>
 
+      {/* Edit Expense Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Expense</DialogTitle>
+          </DialogHeader>
+          {editingExpense && (
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Title *</Label>
+                <Input
+                  value={editingExpense.title}
+                  onChange={(e) => setEditingExpense({ ...editingExpense, title: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={editingExpense.date}
+                  onChange={(e) => setEditingExpense({ ...editingExpense, date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Amount (₹) *</Label>
+                <div className="relative">
+                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    className="pl-9"
+                    value={editingExpense.amount}
+                    onChange={(e) => setEditingExpense({ ...editingExpense, amount: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Category *</Label>
+                <Select value={editingExpense.category} onValueChange={(value) => setEditingExpense({ ...editingExpense, category: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Input
+                  value={editingExpense.description}
+                  onChange={(e) => setEditingExpense({ ...editingExpense, description: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setIsEditDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="flex-1">Save Changes</Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Expense List */}
       <Card>
         <CardHeader>
@@ -238,18 +342,31 @@ const Expenses = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
+                  <TableHead>Title</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {expenses.map((expense) => (
                   <TableRow key={expense.id}>
                     <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-                    <TableCell>{expense.description}</TableCell>
+                    <TableCell className="font-medium">{expense.title}</TableCell>
+                    <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
                     <TableCell>{expense.category}</TableCell>
                     <TableCell className="text-right">₹{expense.amount.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditExpense(expense)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteExpense(expense.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
