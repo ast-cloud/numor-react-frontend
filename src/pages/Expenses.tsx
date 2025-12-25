@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PenLine, Upload, Plus, IndianRupee } from "lucide-react";
+import { PenLine, Upload, Plus, IndianRupee, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type Expense = {
@@ -17,41 +17,64 @@ type Expense = {
   date: string;
 };
 
+type ExpenseItem = {
+  description: string;
+  amount: string;
+  category: string;
+};
+
 const categories = ["Food & Dining", "Transportation", "Utilities", "Office Supplies", "Travel", "Entertainment", "Other"];
+
+const emptyItem: ExpenseItem = { description: "", amount: "", category: "" };
 
 const Expenses = () => {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
   const [isOCRDialogOpen, setIsOCRDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    description: "",
-    amount: "",
-    category: "",
-    date: new Date().toISOString().split("T")[0],
-  });
+  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split("T")[0]);
+  const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([{ ...emptyItem }]);
 
   const hasExpenses = expenses.length > 0;
 
+  const updateItem = (index: number, field: keyof ExpenseItem, value: string) => {
+    const updated = [...expenseItems];
+    updated[index] = { ...updated[index], [field]: value };
+    setExpenseItems(updated);
+  };
+
+  const addItem = () => {
+    setExpenseItems([...expenseItems, { ...emptyItem }]);
+  };
+
+  const removeItem = (index: number) => {
+    if (expenseItems.length > 1) {
+      setExpenseItems(expenseItems.filter((_, i) => i !== index));
+    }
+  };
+
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.description || !formData.amount || !formData.category) {
-      toast({ title: "Error", description: "Please fill all required fields", variant: "destructive" });
+    const validItems = expenseItems.filter(item => item.description && item.amount && item.category);
+    
+    if (validItems.length === 0) {
+      toast({ title: "Error", description: "Please fill at least one complete expense item", variant: "destructive" });
       return;
     }
 
-    const newExpense: Expense = {
-      id: Date.now().toString(),
-      description: formData.description,
-      amount: parseFloat(formData.amount),
-      category: formData.category,
-      date: formData.date,
-    };
+    const newExpenses: Expense[] = validItems.map((item, index) => ({
+      id: `${Date.now()}-${index}`,
+      description: item.description,
+      amount: parseFloat(item.amount),
+      category: item.category,
+      date: expenseDate,
+    }));
 
-    setExpenses([newExpense, ...expenses]);
-    setFormData({ description: "", amount: "", category: "", date: new Date().toISOString().split("T")[0] });
+    setExpenses([...newExpenses, ...expenses]);
+    setExpenseItems([{ ...emptyItem }]);
+    setExpenseDate(new Date().toISOString().split("T")[0]);
     setIsManualDialogOpen(false);
-    toast({ title: "Success", description: "Expense added successfully" });
+    toast({ title: "Success", description: `${newExpenses.length} expense(s) added successfully` });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +93,7 @@ const Expenses = () => {
       </div>
 
       {/* Add Expense Options */}
-      <div className={`grid gap-4 ${hasExpenses ? "grid-cols-2 max-w-md" : "grid-cols-1 md:grid-cols-2 max-w-2xl"}`}>
+      <div className={`grid gap-4 ${hasExpenses ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2"}`}>
         {/* Manual Entry Option */}
         <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
           <DialogTrigger asChild>
@@ -86,63 +109,76 @@ const Expenses = () => {
               </CardContent>
             </Card>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add Expense</DialogTitle>
+              <DialogTitle>Add Expenses</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleManualSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <Input
-                  id="description"
-                  placeholder="e.g., Office supplies"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount (₹) *</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    className="pl-9"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="category">Category *</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
                 <Input
                   id="date"
                   type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  value={expenseDate}
+                  onChange={(e) => setExpenseDate(e.target.value)}
                 />
               </div>
+              
+              <div className="space-y-3">
+                <Label>Expense Items</Label>
+                {expenseItems.map((item, index) => (
+                  <div key={index} className="flex gap-2 items-start p-3 border border-border rounded-lg bg-muted/30">
+                    <div className="flex-1 grid grid-cols-3 gap-2">
+                      <Input
+                        placeholder="Description *"
+                        value={item.description}
+                        onChange={(e) => updateItem(index, "description", e.target.value)}
+                      />
+                      <div className="relative">
+                        <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Amount *"
+                          className="pl-9"
+                          value={item.amount}
+                          onChange={(e) => updateItem(index, "amount", e.target.value)}
+                        />
+                      </div>
+                      <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Category *" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => removeItem(index)}
+                      disabled={expenseItems.length === 1}
+                    >
+                      <Trash2 className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={addItem} className="w-full">
+                  <Plus className="w-4 h-4 mr-2" /> Add Another Item
+                </Button>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" className="flex-1" onClick={() => setIsManualDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" className="flex-1">
-                  <Plus className="w-4 h-4 mr-2" /> Add Expense
+                  <Plus className="w-4 h-4 mr-2" /> Add {expenseItems.length > 1 ? `${expenseItems.length} Expenses` : "Expense"}
                 </Button>
               </div>
             </form>
