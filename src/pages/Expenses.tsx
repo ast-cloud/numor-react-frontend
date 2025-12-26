@@ -9,14 +9,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil, ArrowUpDown, ArrowUp, ArrowDown, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-type SortField = "date" | "amount" | "category";
+type SortField = "date" | "totalPrice" | "category";
 type SortOrder = "asc" | "desc";
 
 type Expense = {
   id: string;
   title: string;
   description: string;
-  amount: number;
+  quantity: number;
+  unitPrice: number;
   category: string;
   date: string;
 };
@@ -24,7 +25,8 @@ type Expense = {
 type ExpenseItem = {
   title: string;
   description: string;
-  amount: string;
+  quantity: string;
+  unitPrice: string;
   category: string;
   date: string;
 };
@@ -34,7 +36,8 @@ const categories = ["Food & Dining", "Transportation", "Utilities", "Office Supp
 const createEmptyItem = (): ExpenseItem => ({
   title: "",
   description: "",
-  amount: "",
+  quantity: "",
+  unitPrice: "",
   category: "",
   date: new Date().toISOString().split("T")[0],
 });
@@ -71,8 +74,8 @@ const Expenses = () => {
         case "date":
           comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
           break;
-        case "amount":
-          comparison = a.amount - b.amount;
+        case "totalPrice":
+          comparison = (a.quantity * a.unitPrice) - (b.quantity * b.unitPrice);
           break;
         case "category":
           comparison = a.category.localeCompare(b.category);
@@ -123,7 +126,8 @@ const Expenses = () => {
     const incompleteItems = expenseItems.map((item, index) => {
       const missingFields: string[] = [];
       if (!item.title.trim()) missingFields.push("title");
-      if (!item.amount.trim()) missingFields.push("amount");
+      if (!item.quantity.trim()) missingFields.push("quantity");
+      if (!item.unitPrice.trim()) missingFields.push("unit price");
       if (!item.category) missingFields.push("category");
       return { index: index + 1, missingFields };
     }).filter(item => item.missingFields.length > 0);
@@ -140,7 +144,8 @@ const Expenses = () => {
       id: `${Date.now()}-${index}`,
       title: item.title,
       description: item.description,
-      amount: parseFloat(item.amount),
+      quantity: parseFloat(item.quantity),
+      unitPrice: parseFloat(item.unitPrice),
       category: item.category,
       date: item.date,
     }));
@@ -239,16 +244,24 @@ const Expenses = () => {
                         onChange={(e) => updateItem(index, "date", e.target.value)}
                       />
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-4 gap-3">
+                      <Input
+                        type="number"
+                        step="1"
+                        min="1"
+                        placeholder="Quantity *"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                      />
                       <div className="relative">
                         <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           type="number"
                           step="0.01"
-                          placeholder="Amount *"
+                          placeholder="Unit Price *"
                           className="pl-9"
-                          value={item.amount}
-                          onChange={(e) => updateItem(index, "amount", e.target.value)}
+                          value={item.unitPrice}
+                          onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
                         />
                       </div>
                       <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
@@ -351,17 +364,29 @@ const Expenses = () => {
                   onChange={(e) => setEditingExpense({ ...editingExpense, date: e.target.value })}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Amount (₹) *</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Quantity *</Label>
                   <Input
                     type="number"
-                    step="0.01"
-                    className="pl-9"
-                    value={editingExpense.amount}
-                    onChange={(e) => setEditingExpense({ ...editingExpense, amount: parseFloat(e.target.value) || 0 })}
+                    step="1"
+                    min="1"
+                    value={editingExpense.quantity}
+                    onChange={(e) => setEditingExpense({ ...editingExpense, quantity: parseFloat(e.target.value) || 0 })}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Unit Price (₹) *</Label>
+                  <div className="relative">
+                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      className="pl-9"
+                      value={editingExpense.unitPrice}
+                      onChange={(e) => setEditingExpense({ ...editingExpense, unitPrice: parseFloat(e.target.value) || 0 })}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">
@@ -447,14 +472,16 @@ const Expenses = () => {
                           Category {getSortIcon("category")}
                         </Button>
                       </TableHead>
+                      <TableHead className="text-right">Quantity</TableHead>
+                      <TableHead className="text-right">Unit Price</TableHead>
                       <TableHead className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
-                          onClick={() => handleSort("amount")}
+                          onClick={() => handleSort("totalPrice")}
                         >
-                          Amount {getSortIcon("amount")}
+                          Total Price {getSortIcon("totalPrice")}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[100px]">Actions</TableHead>
@@ -467,7 +494,9 @@ const Expenses = () => {
                         <TableCell className="font-medium">{expense.title}</TableCell>
                         <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
                         <TableCell>{expense.category}</TableCell>
-                        <TableCell className="text-right">₹{expense.amount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">{expense.quantity}</TableCell>
+                        <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-medium">₹{(expense.quantity * expense.unitPrice).toFixed(2)}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditExpense(expense)}>
