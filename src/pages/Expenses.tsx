@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil, ArrowUpDown, ArrowUp, ArrowDown, Filter } from "lucide-react";
+import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil, ArrowUpDown, ArrowUp, ArrowDown, Filter, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const OCR_API_URL = "https://0513771666f0.ngrok-free.app/api/expenses/ocr/uploadExpenseForAI";
 
 type SortField = "date" | "totalPrice" | "category";
 type SortOrder = "asc" | "desc";
@@ -50,6 +52,8 @@ const Expenses = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([createEmptyItem()]);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filtering & Sorting state
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -178,11 +182,78 @@ const Expenses = () => {
     toast({ title: "Deleted", description: "Expense removed successfully" });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      toast({ title: "Processing", description: "OCR feature coming soon. File received: " + file.name });
-      setIsOCRDialogOpen(false);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Error", description: "Please upload an image file", variant: "destructive" });
+      return;
+    }
+
+    setIsUploading(true);
+    setIsOCRDialogOpen(false);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(OCR_API_URL, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data?.parsedData) {
+        const parsedData = result.data.parsedData;
+        const items = parsedData.items || [];
+
+        if (items.length === 0) {
+          toast({ title: "No Items Found", description: "Could not extract any items from the bill", variant: "destructive" });
+          return;
+        }
+
+        // Parse date from the response (format: "MM/DD/YYYY")
+        let expenseDate = new Date().toISOString().split("T")[0];
+        if (parsedData.expenseDate) {
+          const dateParts = parsedData.expenseDate.split("/");
+          if (dateParts.length === 3) {
+            const [month, day, year] = dateParts;
+            expenseDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+          }
+        }
+
+        // Map OCR items to form items
+        const prefillItems: ExpenseItem[] = items.map((item: any) => ({
+          title: item.name || "",
+          description: parsedData.merchant ? `From: ${parsedData.merchant}` : "",
+          quantity: String(item.quantity || 1),
+          unitPrice: String(item.unitPrice || 0),
+          category: parsedData.category && categories.includes(parsedData.category) ? parsedData.category : "",
+          date: expenseDate,
+        }));
+
+        setExpenseItems(prefillItems);
+        setIsManualDialogOpen(true);
+        toast({ title: "Success", description: `Parsed ${items.length} item(s) from the bill` });
+      } else {
+        toast({ title: "Error", description: "Failed to parse bill data", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("OCR Error:", error);
+      toast({ title: "Error", description: "Failed to process the bill. Please try again.", variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -302,14 +373,22 @@ const Expenses = () => {
         {/* OCR Upload Option */}
         <Dialog open={isOCRDialogOpen} onOpenChange={setIsOCRDialogOpen}>
           <DialogTrigger asChild>
-            <Card className={`cursor-pointer hover:border-primary transition-colors group ${hasExpenses ? "" : "p-6"}`}>
+            <Card className={`cursor-pointer hover:border-primary transition-colors group ${hasExpenses ? "" : "p-6"} ${isUploading ? "pointer-events-none opacity-70" : ""}`}>
               <CardContent className={`flex flex-col items-center justify-center text-center ${hasExpenses ? "p-4" : "p-8"}`}>
                 <div className={`rounded-full bg-accent/10 flex items-center justify-center mb-3 ${hasExpenses ? "w-10 h-10" : "w-16 h-16"}`}>
-                  <Upload className={`text-accent-foreground ${hasExpenses ? "w-5 h-5" : "w-8 h-8"}`} />
+                  {isUploading ? (
+                    <Loader2 className={`text-accent-foreground animate-spin ${hasExpenses ? "w-5 h-5" : "w-8 h-8"}`} />
+                  ) : (
+                    <Upload className={`text-accent-foreground ${hasExpenses ? "w-5 h-5" : "w-8 h-8"}`} />
+                  )}
                 </div>
-                <h3 className={`font-semibold text-foreground ${hasExpenses ? "text-sm" : "text-lg"}`}>Upload Bill</h3>
+                <h3 className={`font-semibold text-foreground ${hasExpenses ? "text-sm" : "text-lg"}`}>
+                  {isUploading ? "Processing..." : "Upload Bill"}
+                </h3>
                 {!hasExpenses && (
-                  <p className="text-muted-foreground text-sm mt-1">Scan bill with OCR for auto-fill</p>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    {isUploading ? "Scanning your bill with OCR" : "Scan bill with OCR for auto-fill"}
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -321,8 +400,9 @@ const Expenses = () => {
             <div className="space-y-4">
               <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors">
                 <input
+                  ref={fileInputRef}
                   type="file"
-                  accept="image/*,.pdf"
+                  accept="image/*"
                   onChange={handleFileUpload}
                   className="hidden"
                   id="bill-upload"
@@ -330,7 +410,7 @@ const Expenses = () => {
                 <label htmlFor="bill-upload" className="cursor-pointer">
                   <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                   <p className="text-foreground font-medium">Drop your bill here or click to upload</p>
-                  <p className="text-muted-foreground text-sm mt-1">Supports JPG, PNG, PDF</p>
+                  <p className="text-muted-foreground text-sm mt-1">Supports JPG, PNG and other image formats</p>
                 </label>
               </div>
               <Button variant="outline" className="w-full" onClick={() => setIsOCRDialogOpen(false)}>
