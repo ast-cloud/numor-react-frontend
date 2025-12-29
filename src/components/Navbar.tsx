@@ -26,9 +26,9 @@ const Navbar = () => {
             <a href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               How it Works
             </a>
-            <a href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Pricing
-            </a>
+            </Link>
           </div>
 
           {/* CTA Buttons */}
@@ -60,9 +60,9 @@ const Navbar = () => {
               <a href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 How it Works
               </a>
-              <a href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
+              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 Pricing
-              </a>
+              </Link>
               <div className="flex flex-col gap-2 pt-3">
                 <Button variant="outline" size="sm" className="w-full" asChild>
                   <Link to="/login">Log in</Link>
