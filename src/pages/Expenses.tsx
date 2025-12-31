@@ -781,6 +781,37 @@ const Expenses = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Applied Filters Row */}
+                  {(categoryFilter !== "all" || timeRangePreset !== "all") && (
+                    <div className="mb-4 flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-muted-foreground">Applied filters:</span>
+                      {categoryFilter !== "all" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2.5 text-xs bg-muted/50"
+                          onClick={() => setCategoryFilter("all")}
+                        >
+                          Category: {categoryFilter}
+                        </Button>
+                      )}
+                      {timeRangePreset !== "all" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2.5 text-xs bg-muted/50"
+                          onClick={() => {
+                            setTimeRangePreset("all");
+                            setCustomDateRange(undefined);
+                          }}
+                        >
+                          Time period: {getTimeRangeLabel()}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
                   <Table>
                     <TableHeader>
                       <TableRow>
