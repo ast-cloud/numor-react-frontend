@@ -176,6 +176,43 @@ const Expenses = () => {
     }
   };
 
+  // Calculate summary stats for filtered expenses
+  const summaryStats = useMemo(() => {
+    if (filteredAndSortedExpenses.length === 0) return null;
+
+    const totalSpend = filteredAndSortedExpenses.reduce(
+      (sum, exp) => sum + exp.quantity * exp.unitPrice,
+      0
+    );
+    const transactionCount = filteredAndSortedExpenses.length;
+    const averageSpend = totalSpend / transactionCount;
+
+    // Find top category by spend
+    const categorySpend: Record<string, number> = {};
+    filteredAndSortedExpenses.forEach((exp) => {
+      const amount = exp.quantity * exp.unitPrice;
+      categorySpend[exp.category] = (categorySpend[exp.category] || 0) + amount;
+    });
+    const topCategory = Object.entries(categorySpend).sort((a, b) => b[1] - a[1])[0];
+
+    // Find highest single expense
+    const highestExpense = filteredAndSortedExpenses.reduce(
+      (max, exp) => {
+        const amount = exp.quantity * exp.unitPrice;
+        return amount > max.amount ? { amount, title: exp.title } : max;
+      },
+      { amount: 0, title: "" }
+    );
+
+    return {
+      totalSpend,
+      transactionCount,
+      averageSpend,
+      topCategory: topCategory ? { name: topCategory[0], amount: topCategory[1] } : null,
+      highestExpense,
+    };
+  }, [filteredAndSortedExpenses]);
+
   const handleTimeRangeChange = (value: TimeRangePreset) => {
     setTimeRangePreset(value);
     if (value !== "custom") {
@@ -694,8 +731,46 @@ const Expenses = () => {
           {hasExpenses ? (
             <>
               {filteredAndSortedExpenses.length > 0 ? (
-                <Table>
-                  <TableHeader>
+                <>
+                  {/* Summary Strip */}
+                  {summaryStats && (
+                    <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border">
+                      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-2">
+                        <span className="font-medium">{getTimeRangeLabel()} Summary</span>
+                        <span>{summaryStats.transactionCount} transaction{summaryStats.transactionCount !== 1 ? "s" : ""}</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Spend</p>
+                          <p className="text-base font-semibold text-foreground flex items-center">
+                            <IndianRupee className="w-3.5 h-3.5" />
+                            {summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg / Transaction</p>
+                          <p className="text-base font-semibold text-foreground flex items-center">
+                            <IndianRupee className="w-3.5 h-3.5" />
+                            {summaryStats.averageSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Top Category</p>
+                          <p className="text-sm font-medium text-foreground truncate" title={summaryStats.topCategory?.name}>
+                            {summaryStats.topCategory?.name || "—"}
+                          </p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Highest Expense</p>
+                          <p className="text-sm font-medium text-foreground truncate" title={summaryStats.highestExpense.title}>
+                            {summaryStats.highestExpense.title || "—"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <Table>
+                    <TableHeader>
                     <TableRow>
                       <TableHead>
                         <Button
@@ -769,7 +844,8 @@ const Expenses = () => {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
+                  </Table>
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <p className="text-muted-foreground">No expenses match the current filters</p>
