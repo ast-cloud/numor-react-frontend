@@ -180,10 +180,7 @@ const Expenses = () => {
   const summaryStats = useMemo(() => {
     if (filteredAndSortedExpenses.length === 0) return null;
 
-    const totalSpend = filteredAndSortedExpenses.reduce(
-      (sum, exp) => sum + exp.quantity * exp.unitPrice,
-      0
-    );
+    const totalSpend = filteredAndSortedExpenses.reduce((sum, exp) => sum + exp.quantity * exp.unitPrice, 0);
     const transactionCount = filteredAndSortedExpenses.length;
     const averageSpend = totalSpend / transactionCount;
 
@@ -201,7 +198,7 @@ const Expenses = () => {
         const amount = exp.quantity * exp.unitPrice;
         return amount > max.amount ? { amount, title: exp.title } : max;
       },
-      { amount: 0, title: "" }
+      { amount: 0, title: "" },
     );
 
     return {
@@ -365,7 +362,7 @@ const Expenses = () => {
         if (parsedData.expenseDate) {
           const dateParts = parsedData.expenseDate.split("/");
           if (dateParts.length === 3) {
-            const [month, day, year] = dateParts;
+            const [day, month, year] = dateParts;
             expenseDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
           }
         }
@@ -406,7 +403,7 @@ const Expenses = () => {
           <h1 className="text-3xl font-display font-bold text-foreground">Expenses</h1>
           <p className="text-muted-foreground mt-1">Track and manage your business expenses.</p>
         </div>
-        
+
         {/* Quick Action Buttons */}
         <div className="flex items-center gap-2">
           <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
@@ -418,137 +415,133 @@ const Expenses = () => {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Add Expenses</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleManualSubmit} className="space-y-4">
-              <div className="space-y-3">
-                <Label>Expense Items</Label>
-                {expenseItems.map((item, index) => (
-                  <div key={index} className="p-4 border border-border rounded-lg bg-muted/30 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-muted-foreground">Item {index + 1}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => removeItem(index)}
-                        disabled={expenseItems.length === 1}
-                      >
-                        <Trash2 className="w-4 h-4 text-muted-foreground" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input
-                        placeholder="Title *"
-                        value={item.title}
-                        onChange={(e) => updateItem(index, "title", e.target.value)}
-                      />
-                      <Input
-                        type="date"
-                        value={item.date}
-                        onChange={(e) => updateItem(index, "date", e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 gap-3">
-                      <Input
-                        type="number"
-                        step="1"
-                        min="1"
-                        placeholder="Quantity *"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(index, "quantity", e.target.value)}
-                      />
-                      <div className="relative">
-                        <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <DialogHeader>
+                <DialogTitle>Add Expenses</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleManualSubmit} className="space-y-4">
+                <div className="space-y-3">
+                  <Label>Expense Items</Label>
+                  {expenseItems.map((item, index) => (
+                    <div key={index} className="p-4 border border-border rounded-lg bg-muted/30 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-muted-foreground">Item {index + 1}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => removeItem(index)}
+                          disabled={expenseItems.length === 1}
+                        >
+                          <Trash2 className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
                         <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Unit Price *"
-                          className="pl-9"
-                          value={item.unitPrice}
-                          onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
+                          placeholder="Title *"
+                          value={item.title}
+                          onChange={(e) => updateItem(index, "title", e.target.value)}
+                        />
+                        <Input
+                          type="date"
+                          value={item.date}
+                          onChange={(e) => updateItem(index, "date", e.target.value)}
                         />
                       </div>
-                      <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Category *" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>
-                              {cat}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        placeholder="Description (optional)"
-                        value={item.description}
-                        onChange={(e) => updateItem(index, "description", e.target.value)}
-                      />
+                      <div className="grid grid-cols-4 gap-3">
+                        <Input
+                          type="number"
+                          step="1"
+                          min="1"
+                          placeholder="Quantity *"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                        />
+                        <div className="relative">
+                          <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Unit Price *"
+                            className="pl-9"
+                            value={item.unitPrice}
+                            onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
+                          />
+                        </div>
+                        <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Category *" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((cat) => (
+                              <SelectItem key={cat} value={cat}>
+                                {cat}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          placeholder="Description (optional)"
+                          value={item.description}
+                          onChange={(e) => updateItem(index, "description", e.target.value)}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={addItem} className="w-full">
-                  <Plus className="w-4 h-4 mr-2" /> Add Another Item
-                </Button>
-              </div>
+                  ))}
+                  <Button type="button" variant="outline" size="sm" onClick={addItem} className="w-full">
+                    <Plus className="w-4 h-4 mr-2" /> Add Another Item
+                  </Button>
+                </div>
 
-              <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => setIsManualDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="flex-1">
-                  <Plus className="w-4 h-4 mr-2" /> Add{" "}
-                  {expenseItems.length > 1 ? `${expenseItems.length} Expenses` : "Expense"}
-                </Button>
-              </div>
-            </form>
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setIsManualDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="flex-1">
+                    <Plus className="w-4 h-4 mr-2" /> Add{" "}
+                    {expenseItems.length > 1 ? `${expenseItems.length} Expenses` : "Expense"}
+                  </Button>
+                </div>
+              </form>
             </DialogContent>
           </Dialog>
 
           <Dialog open={isOCRDialogOpen} onOpenChange={setIsOCRDialogOpen}>
             <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2"
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4" />
-                )}
+              <Button variant="outline" size="sm" className="gap-2" disabled={isUploading}>
+                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                 <span className="hidden sm:inline">{isUploading ? "Processing..." : "Upload Bill"}</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Upload Bill for OCR</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="bill-upload"
-                />
-                <label htmlFor="bill-upload" className="cursor-pointer">
-                  <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-foreground font-medium">Drop your bill here or click to upload</p>
-                  <p className="text-muted-foreground text-sm mt-1">Supports JPG, PNG and other image formats</p>
-                </label>
+              <DialogHeader>
+                <DialogTitle>Upload Bill for OCR</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="bill-upload"
+                  />
+                  <label htmlFor="bill-upload" className="cursor-pointer">
+                    <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-foreground font-medium">Drop your bill here or click to upload</p>
+                    <p className="text-muted-foreground text-sm mt-1">Supports JPG, PNG and other image formats</p>
+                  </label>
+                </div>
+                <Button variant="outline" className="w-full" onClick={() => setIsOCRDialogOpen(false)}>
+                  Cancel
+                </Button>
               </div>
-              <Button variant="outline" className="w-full" onClick={() => setIsOCRDialogOpen(false)}>
-                Cancel
-              </Button>
-            </div>
             </DialogContent>
           </Dialog>
         </div>
@@ -719,7 +712,12 @@ const Expenses = () => {
                 )}
 
                 {(categoryFilter !== "all" || timeRangePreset !== "all") && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  >
                     Clear
                   </Button>
                 )}
@@ -737,32 +735,46 @@ const Expenses = () => {
                     <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border">
                       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-2">
                         <span className="font-medium">{getTimeRangeLabel()} Summary</span>
-                        <span>{summaryStats.transactionCount} transaction{summaryStats.transactionCount !== 1 ? "s" : ""}</span>
+                        <span>
+                          {summaryStats.transactionCount} transaction{summaryStats.transactionCount !== 1 ? "s" : ""}
+                        </span>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div className="space-y-0.5">
                           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Spend</p>
                           <p className="text-base font-semibold text-foreground flex items-center">
                             <IndianRupee className="w-3.5 h-3.5" />
-                            {summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {summaryStats.totalSpend.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </p>
                         </div>
                         <div className="space-y-0.5">
                           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg / Transaction</p>
                           <p className="text-base font-semibold text-foreground flex items-center">
                             <IndianRupee className="w-3.5 h-3.5" />
-                            {summaryStats.averageSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {summaryStats.averageSpend.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </p>
                         </div>
                         <div className="space-y-0.5">
                           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Top Category</p>
-                          <p className="text-sm font-medium text-foreground truncate" title={summaryStats.topCategory?.name}>
+                          <p
+                            className="text-sm font-medium text-foreground truncate"
+                            title={summaryStats.topCategory?.name}
+                          >
                             {summaryStats.topCategory?.name || "—"}
                           </p>
                         </div>
                         <div className="space-y-0.5">
                           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Highest Expense</p>
-                          <p className="text-sm font-medium text-foreground truncate" title={summaryStats.highestExpense.title}>
+                          <p
+                            className="text-sm font-medium text-foreground truncate"
+                            title={summaryStats.highestExpense.title}
+                          >
                             {summaryStats.highestExpense.title || "—"}
                           </p>
                         </div>
@@ -771,79 +783,79 @@ const Expenses = () => {
                   )}
                   <Table>
                     <TableHeader>
-                    <TableRow>
-                      <TableHead>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 font-medium hover:bg-transparent"
-                          onClick={() => handleSort("date")}
-                        >
-                          Date {getSortIcon("date")}
-                        </Button>
-                      </TableHead>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 font-medium hover:bg-transparent"
-                          onClick={() => handleSort("category")}
-                        >
-                          Category {getSortIcon("category")}
-                        </Button>
-                      </TableHead>
-                      <TableHead className="text-right">Quantity</TableHead>
-                      <TableHead className="text-right">Unit Price</TableHead>
-                      <TableHead className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
-                          onClick={() => handleSort("totalPrice")}
-                        >
-                          Total Price {getSortIcon("totalPrice")}
-                        </Button>
-                      </TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredAndSortedExpenses.map((expense) => (
-                      <TableRow key={expense.id}>
-                        <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-                        <TableCell className="font-medium">{expense.title}</TableCell>
-                        <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
-                        <TableCell>{expense.category}</TableCell>
-                        <TableCell className="text-right">{expense.quantity}</TableCell>
-                        <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-medium">
-                          ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleEditExpense(expense)}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive"
-                              onClick={() => handleDeleteExpense(expense.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                      <TableRow>
+                        <TableHead>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 font-medium hover:bg-transparent"
+                            onClick={() => handleSort("date")}
+                          >
+                            Date {getSortIcon("date")}
+                          </Button>
+                        </TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 font-medium hover:bg-transparent"
+                            onClick={() => handleSort("category")}
+                          >
+                            Category {getSortIcon("category")}
+                          </Button>
+                        </TableHead>
+                        <TableHead className="text-right">Quantity</TableHead>
+                        <TableHead className="text-right">Unit Price</TableHead>
+                        <TableHead className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
+                            onClick={() => handleSort("totalPrice")}
+                          >
+                            Total Price {getSortIcon("totalPrice")}
+                          </Button>
+                        </TableHead>
+                        <TableHead className="w-[100px]">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAndSortedExpenses.map((expense) => (
+                        <TableRow key={expense.id}>
+                          <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+                          <TableCell className="font-medium">{expense.title}</TableCell>
+                          <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
+                          <TableCell>{expense.category}</TableCell>
+                          <TableCell className="text-right">{expense.quantity}</TableCell>
+                          <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
+                          <TableCell className="text-right font-medium">
+                            ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => handleEditExpense(expense)}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive"
+                                onClick={() => handleDeleteExpense(expense.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
                   </Table>
                 </>
               ) : (
