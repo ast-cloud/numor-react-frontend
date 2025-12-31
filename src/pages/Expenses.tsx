@@ -89,6 +89,11 @@ const Expenses = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [unitPriceMin, setUnitPriceMin] = useState<string>("");
+  const [unitPriceMax, setUnitPriceMax] = useState<string>("");
+  const [totalPriceMin, setTotalPriceMin] = useState<string>("");
+  const [totalPriceMax, setTotalPriceMax] = useState<string>("");
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
   // Calculate date range based on preset
   const getDateRange = (): { start: Date; end: Date } | null => {
@@ -135,6 +140,34 @@ const Expenses = () => {
       });
     }
 
+    // Apply unit price filter
+    if (unitPriceMin) {
+      const min = parseFloat(unitPriceMin);
+      if (!isNaN(min)) {
+        result = result.filter((exp) => exp.unitPrice >= min);
+      }
+    }
+    if (unitPriceMax) {
+      const max = parseFloat(unitPriceMax);
+      if (!isNaN(max)) {
+        result = result.filter((exp) => exp.unitPrice <= max);
+      }
+    }
+
+    // Apply total price filter
+    if (totalPriceMin) {
+      const min = parseFloat(totalPriceMin);
+      if (!isNaN(min)) {
+        result = result.filter((exp) => exp.quantity * exp.unitPrice >= min);
+      }
+    }
+    if (totalPriceMax) {
+      const max = parseFloat(totalPriceMax);
+      if (!isNaN(max)) {
+        result = result.filter((exp) => exp.quantity * exp.unitPrice <= max);
+      }
+    }
+
     // Apply sorting
     result.sort((a, b) => {
       let comparison = 0;
@@ -153,7 +186,7 @@ const Expenses = () => {
     });
 
     return result;
-  }, [expenses, categoryFilter, timeRangePreset, customDateRange, sortField, sortOrder]);
+  }, [expenses, categoryFilter, timeRangePreset, customDateRange, unitPriceMin, unitPriceMax, totalPriceMin, totalPriceMax, sortField, sortOrder]);
 
   const getTimeRangeLabel = () => {
     switch (timeRangePreset) {
@@ -222,7 +255,19 @@ const Expenses = () => {
     setCategoryFilter("all");
     setTimeRangePreset("all");
     setCustomDateRange(undefined);
+    setUnitPriceMin("");
+    setUnitPriceMax("");
+    setTotalPriceMin("");
+    setTotalPriceMax("");
   };
+
+  const hasActiveFilters = categoryFilter !== "all" || timeRangePreset !== "all" || unitPriceMin || unitPriceMax || totalPriceMin || totalPriceMax;
+  const activeFilterCount = [
+    categoryFilter !== "all",
+    timeRangePreset !== "all",
+    unitPriceMin || unitPriceMax,
+    totalPriceMin || totalPriceMax,
+  ].filter(Boolean).length;
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -642,83 +687,186 @@ const Expenses = () => {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {hasExpenses && (
               <div className="flex items-center gap-2 flex-wrap">
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="h-8 w-[140px] text-xs">
-                    <Filter className="w-3 h-3 mr-1.5 text-muted-foreground" />
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                      <Filter className="w-3 h-3" />
+                      Filters
+                      {activeFilterCount > 0 && (
+                        <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-4" align="start">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium">Filters</h4>
+                        {hasActiveFilters && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              clearFilters();
+                              setIsFilterPopoverOpen(false);
+                            }}
+                            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            Clear all
+                          </Button>
+                        )}
+                      </div>
 
-                <Select value={timeRangePreset} onValueChange={(v) => handleTimeRangeChange(v as TimeRangePreset)}>
-                  <SelectTrigger className="h-8 w-[120px] text-xs">
-                    <CalendarIcon className="w-3 h-3 mr-1.5 text-muted-foreground" />
-                    <SelectValue placeholder="Time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="this_week">This Week</SelectItem>
-                    <SelectItem value="this_month">This Month</SelectItem>
-                    <SelectItem value="this_quarter">This Quarter</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
+                      {/* Category Filter */}
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Category</Label>
+                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="All Categories" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            {categories.map((cat) => (
+                              <SelectItem key={cat} value={cat}>
+                                {cat}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                {timeRangePreset === "custom" && (
-                  <Popover>
-                    <PopoverTrigger asChild>
+                      {/* Time Range Filter */}
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Time Period</Label>
+                        <Select value={timeRangePreset} onValueChange={(v) => handleTimeRangeChange(v as TimeRangePreset)}>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="All Time" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Time</SelectItem>
+                            <SelectItem value="today">Today</SelectItem>
+                            <SelectItem value="this_week">This Week</SelectItem>
+                            <SelectItem value="this_month">This Month</SelectItem>
+                            <SelectItem value="this_quarter">This Quarter</SelectItem>
+                            <SelectItem value="custom">Custom Range</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {timeRangePreset === "custom" && (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className={cn(
+                                  "h-8 w-full justify-start text-left text-xs font-normal",
+                                  !customDateRange && "text-muted-foreground",
+                                )}
+                              >
+                                <CalendarIcon className="mr-1.5 h-3 w-3" />
+                                {customDateRange?.from ? (
+                                  customDateRange.to ? (
+                                    <>
+                                      {format(customDateRange.from, "MMM d")} - {format(customDateRange.to, "MMM d")}
+                                    </>
+                                  ) : (
+                                    format(customDateRange.from, "MMM d, y")
+                                  )
+                                ) : (
+                                  <span>Pick dates</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                initialFocus
+                                mode="range"
+                                defaultMonth={customDateRange?.from}
+                                selected={customDateRange}
+                                onSelect={setCustomDateRange}
+                                numberOfMonths={2}
+                                className="pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>
+
+                      {/* Unit Price Range */}
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Unit Price Range</Label>
+                        <div className="flex items-center gap-2">
+                          <div className="relative flex-1">
+                            <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                            <Input
+                              type="number"
+                              placeholder="Min"
+                              value={unitPriceMin}
+                              onChange={(e) => setUnitPriceMin(e.target.value)}
+                              className="h-8 pl-6 text-xs"
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground">to</span>
+                          <div className="relative flex-1">
+                            <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                            <Input
+                              type="number"
+                              placeholder="Max"
+                              value={unitPriceMax}
+                              onChange={(e) => setUnitPriceMax(e.target.value)}
+                              className="h-8 pl-6 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Total Price Range */}
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Total Price Range</Label>
+                        <div className="flex items-center gap-2">
+                          <div className="relative flex-1">
+                            <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                            <Input
+                              type="number"
+                              placeholder="Min"
+                              value={totalPriceMin}
+                              onChange={(e) => setTotalPriceMin(e.target.value)}
+                              className="h-8 pl-6 text-xs"
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground">to</span>
+                          <div className="relative flex-1">
+                            <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                            <Input
+                              type="number"
+                              placeholder="Max"
+                              value={totalPriceMax}
+                              onChange={(e) => setTotalPriceMax(e.target.value)}
+                              className="h-8 pl-6 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
                       <Button
-                        variant="outline"
                         size="sm"
-                        className={cn(
-                          "h-8 w-[160px] justify-start text-left text-xs font-normal",
-                          !customDateRange && "text-muted-foreground",
-                        )}
+                        className="w-full h-8 text-xs"
+                        onClick={() => setIsFilterPopoverOpen(false)}
                       >
-                        <CalendarIcon className="mr-1.5 h-3 w-3" />
-                        {customDateRange?.from ? (
-                          customDateRange.to ? (
-                            <>
-                              {format(customDateRange.from, "MMM d")} - {format(customDateRange.to, "MMM d")}
-                            </>
-                          ) : (
-                            format(customDateRange.from, "MMM d, y")
-                          )
-                        ) : (
-                          <span>Pick dates</span>
-                        )}
+                        Apply Filters
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={customDateRange?.from}
-                        selected={customDateRange}
-                        onSelect={setCustomDateRange}
-                        numberOfMonths={2}
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
 
-                {(categoryFilter !== "all" || timeRangePreset !== "all") && (
+                {hasActiveFilters && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={clearFilters}
                     className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    Clear
+                    Clear all
                   </Button>
                 )}
               </div>
@@ -783,7 +931,7 @@ const Expenses = () => {
                   )}
 
                   {/* Applied Filters Row */}
-                  {(categoryFilter !== "all" || timeRangePreset !== "all") && (
+                  {hasActiveFilters && (
                     <div className="mb-4 flex items-center gap-2 flex-wrap">
                       <span className="text-xs text-muted-foreground">Applied filters:</span>
                       {categoryFilter !== "all" && (
@@ -808,6 +956,34 @@ const Expenses = () => {
                           }}
                         >
                           Time period: {getTimeRangeLabel()}
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {(unitPriceMin || unitPriceMax) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
+                          onClick={() => {
+                            setUnitPriceMin("");
+                            setUnitPriceMax("");
+                          }}
+                        >
+                          Unit price: ₹{unitPriceMin || "0"} - ₹{unitPriceMax || "∞"}
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {(totalPriceMin || totalPriceMax) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
+                          onClick={() => {
+                            setTotalPriceMin("");
+                            setTotalPriceMax("");
+                          }}
+                        >
+                          Total price: ₹{totalPriceMin || "0"} - ₹{totalPriceMax || "∞"}
                           <X className="h-3 w-3" />
                         </Button>
                       )}
