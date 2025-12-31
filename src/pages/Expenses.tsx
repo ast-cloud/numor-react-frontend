@@ -94,6 +94,8 @@ const Expenses = () => {
   const [totalPriceMin, setTotalPriceMin] = useState<string>("");
   const [totalPriceMax, setTotalPriceMax] = useState<string>("");
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
+  const [tempCustomDateRange, setTempCustomDateRange] = useState<DateRange | undefined>(undefined);
 
   // Calculate date range based on preset
   const getDateRange = (): { start: Date; end: Date } | null => {
@@ -248,7 +250,17 @@ const Expenses = () => {
     setTimeRangePreset(value);
     if (value !== "custom") {
       setCustomDateRange(undefined);
+      setTempCustomDateRange(undefined);
+    } else {
+      // Auto-open the calendar popover when custom is selected
+      setTempCustomDateRange(customDateRange);
+      setIsCustomDatePopoverOpen(true);
     }
+  };
+
+  const handleApplyCustomDateRange = () => {
+    setCustomDateRange(tempCustomDateRange);
+    setIsCustomDatePopoverOpen(false);
   };
 
   const clearFilters = () => {
@@ -703,7 +715,12 @@ const Expenses = () => {
                   </SelectContent>
                 </Select>
                 {timeRangePreset === "custom" && (
-                  <Popover>
+                  <Popover open={isCustomDatePopoverOpen} onOpenChange={(open) => {
+                    setIsCustomDatePopoverOpen(open);
+                    if (open) {
+                      setTempCustomDateRange(customDateRange);
+                    }
+                  }}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -728,15 +745,27 @@ const Expenses = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={customDateRange?.from}
-                        selected={customDateRange}
-                        onSelect={setCustomDateRange}
-                        numberOfMonths={2}
-                        className="pointer-events-auto"
-                      />
+                      <div className="flex flex-col">
+                        <Calendar
+                          initialFocus
+                          mode="range"
+                          defaultMonth={tempCustomDateRange?.from}
+                          selected={tempCustomDateRange}
+                          onSelect={setTempCustomDateRange}
+                          numberOfMonths={2}
+                          className="pointer-events-auto"
+                        />
+                        <div className="p-3 border-t border-border">
+                          <Button 
+                            size="sm" 
+                            className="w-full"
+                            onClick={handleApplyCustomDateRange}
+                            disabled={!tempCustomDateRange?.from}
+                          >
+                            Apply
+                          </Button>
+                        </div>
+                      </div>
                     </PopoverContent>
                   </Popover>
                 )}
