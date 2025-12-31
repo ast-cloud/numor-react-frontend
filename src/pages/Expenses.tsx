@@ -176,6 +176,43 @@ const Expenses = () => {
     }
   };
 
+  // Calculate summary stats for filtered expenses
+  const summaryStats = useMemo(() => {
+    if (filteredAndSortedExpenses.length === 0) return null;
+
+    const totalSpend = filteredAndSortedExpenses.reduce(
+      (sum, exp) => sum + exp.quantity * exp.unitPrice,
+      0
+    );
+    const transactionCount = filteredAndSortedExpenses.length;
+    const averageSpend = totalSpend / transactionCount;
+
+    // Find top category by spend
+    const categorySpend: Record<string, number> = {};
+    filteredAndSortedExpenses.forEach((exp) => {
+      const amount = exp.quantity * exp.unitPrice;
+      categorySpend[exp.category] = (categorySpend[exp.category] || 0) + amount;
+    });
+    const topCategory = Object.entries(categorySpend).sort((a, b) => b[1] - a[1])[0];
+
+    // Find highest single expense
+    const highestExpense = filteredAndSortedExpenses.reduce(
+      (max, exp) => {
+        const amount = exp.quantity * exp.unitPrice;
+        return amount > max.amount ? { amount, title: exp.title } : max;
+      },
+      { amount: 0, title: "" }
+    );
+
+    return {
+      totalSpend,
+      transactionCount,
+      averageSpend,
+      topCategory: topCategory ? { name: topCategory[0], amount: topCategory[1] } : null,
+      highestExpense,
+    };
+  }, [filteredAndSortedExpenses]);
+
   const handleTimeRangeChange = (value: TimeRangePreset) => {
     setTimeRangePreset(value);
     if (value !== "custom") {
@@ -328,7 +365,7 @@ const Expenses = () => {
         if (parsedData.expenseDate) {
           const dateParts = parsedData.expenseDate.split("/");
           if (dateParts.length === 3) {
-            const [day, month, year] = dateParts;
+            const [month, day, year] = dateParts;
             expenseDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
           }
         }
@@ -362,32 +399,25 @@ const Expenses = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Expenses</h1>
-        <p className="text-muted-foreground mt-1">Track and manage your business expenses.</p>
-      </div>
-
-      {/* Add Expense Options */}
-      <div className={`grid gap-4 ${hasExpenses ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2"}`}>
-        {/* Manual Entry Option */}
-        <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
-          <DialogTrigger asChild>
-            <Card className={`cursor-pointer hover:border-primary transition-colors group ${hasExpenses ? "" : "p-6"}`}>
-              <CardContent
-                className={`flex flex-col items-center justify-center text-center ${hasExpenses ? "p-4" : "p-8"}`}
-              >
-                <div
-                  className={`rounded-full bg-primary/10 flex items-center justify-center mb-3 ${hasExpenses ? "w-10 h-10" : "w-16 h-16"}`}
-                >
-                  <PenLine className={`text-primary ${hasExpenses ? "w-5 h-5" : "w-8 h-8"}`} />
-                </div>
-                <h3 className={`font-semibold text-foreground ${hasExpenses ? "text-sm" : "text-lg"}`}>Manual Entry</h3>
-                {!hasExpenses && <p className="text-muted-foreground text-sm mt-1">Fill in expense details manually</p>}
-              </CardContent>
-            </Card>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+    <div className="space-y-6">
+      {/* Header with Actions */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground">Expenses</h1>
+          <p className="text-muted-foreground mt-1">Track and manage your business expenses.</p>
+        </div>
+        
+        {/* Quick Action Buttons */}
+        <div className="flex items-center gap-2">
+          <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="default" size="sm" className="gap-2">
+                <PenLine className="w-4 h-4" />
+                <span className="hidden sm:inline">Manual Entry</span>
+                <span className="sm:hidden">Add</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add Expenses</DialogTitle>
             </DialogHeader>
@@ -476,39 +506,26 @@ const Expenses = () => {
                 </Button>
               </div>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
 
-        {/* OCR Upload Option */}
-        <Dialog open={isOCRDialogOpen} onOpenChange={setIsOCRDialogOpen}>
-          <DialogTrigger asChild>
-            <Card
-              className={`cursor-pointer hover:border-primary transition-colors group ${hasExpenses ? "" : "p-6"} ${isUploading ? "pointer-events-none opacity-70" : ""}`}
-            >
-              <CardContent
-                className={`flex flex-col items-center justify-center text-center ${hasExpenses ? "p-4" : "p-8"}`}
+          <Dialog open={isOCRDialogOpen} onOpenChange={setIsOCRDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                disabled={isUploading}
               >
-                <div
-                  className={`rounded-full bg-accent/10 flex items-center justify-center mb-3 ${hasExpenses ? "w-10 h-10" : "w-16 h-16"}`}
-                >
-                  {isUploading ? (
-                    <Loader2 className={`text-accent-foreground animate-spin ${hasExpenses ? "w-5 h-5" : "w-8 h-8"}`} />
-                  ) : (
-                    <Upload className={`text-accent-foreground ${hasExpenses ? "w-5 h-5" : "w-8 h-8"}`} />
-                  )}
-                </div>
-                <h3 className={`font-semibold text-foreground ${hasExpenses ? "text-sm" : "text-lg"}`}>
-                  {isUploading ? "Processing..." : "Upload Bill"}
-                </h3>
-                {!hasExpenses && (
-                  <p className="text-muted-foreground text-sm mt-1">
-                    {isUploading ? "Scanning your bill with OCR" : "Scan bill with OCR for auto-fill"}
-                  </p>
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4" />
                 )}
-              </CardContent>
-            </Card>
-          </DialogTrigger>
-          <DialogContent>
+                <span className="hidden sm:inline">{isUploading ? "Processing..." : "Upload Bill"}</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
             <DialogHeader>
               <DialogTitle>Upload Bill for OCR</DialogTitle>
             </DialogHeader>
@@ -532,11 +549,10 @@ const Expenses = () => {
                 Cancel
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-
-      {/* Edit Expense Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -628,15 +644,15 @@ const Expenses = () => {
 
       {/* Expense List */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle>Expense List</CardTitle>
-          {hasExpenses && (
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-muted-foreground" />
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="text-lg">Expense List</CardTitle>
+            {hasExpenses && (
+              <div className="flex items-center gap-2 flex-wrap">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by category" />
+                  <SelectTrigger className="h-8 w-[140px] text-xs">
+                    <Filter className="w-3 h-3 mr-1.5 text-muted-foreground" />
+                    <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
@@ -647,12 +663,11 @@ const Expenses = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+
                 <Select value={timeRangePreset} onValueChange={(v) => handleTimeRangeChange(v as TimeRangePreset)}>
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Time range" />
+                  <SelectTrigger className="h-8 w-[120px] text-xs">
+                    <CalendarIcon className="w-3 h-3 mr-1.5 text-muted-foreground" />
+                    <SelectValue placeholder="Time" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Time</SelectItem>
@@ -660,34 +675,36 @@ const Expenses = () => {
                     <SelectItem value="this_week">This Week</SelectItem>
                     <SelectItem value="this_month">This Month</SelectItem>
                     <SelectItem value="this_quarter">This Quarter</SelectItem>
-                    <SelectItem value="custom">Custom Range</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
                   </SelectContent>
                 </Select>
+
                 {timeRangePreset === "custom" && (
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        size="sm"
                         className={cn(
-                          "w-[200px] justify-start text-left font-normal",
+                          "h-8 w-[160px] justify-start text-left text-xs font-normal",
                           !customDateRange && "text-muted-foreground",
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon className="mr-1.5 h-3 w-3" />
                         {customDateRange?.from ? (
                           customDateRange.to ? (
                             <>
-                              {format(customDateRange.from, "LLL dd")} - {format(customDateRange.to, "LLL dd")}
+                              {format(customDateRange.from, "MMM d")} - {format(customDateRange.to, "MMM d")}
                             </>
                           ) : (
-                            format(customDateRange.from, "LLL dd, y")
+                            format(customDateRange.from, "MMM d, y")
                           )
                         ) : (
-                          <span>Pick a date range</span>
+                          <span>Pick dates</span>
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0" align="end">
                       <Calendar
                         initialFocus
                         mode="range"
@@ -700,16 +717,60 @@ const Expenses = () => {
                     </PopoverContent>
                   </Popover>
                 )}
+
+                {(categoryFilter !== "all" || timeRangePreset !== "all") && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground">
+                    Clear
+                  </Button>
+                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {hasExpenses ? (
             <>
               {filteredAndSortedExpenses.length > 0 ? (
-                <Table>
-                  <TableHeader>
+                <>
+                  {/* Summary Strip */}
+                  {summaryStats && (
+                    <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border">
+                      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-2">
+                        <span className="font-medium">{getTimeRangeLabel()} Summary</span>
+                        <span>{summaryStats.transactionCount} transaction{summaryStats.transactionCount !== 1 ? "s" : ""}</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Spend</p>
+                          <p className="text-base font-semibold text-foreground flex items-center">
+                            <IndianRupee className="w-3.5 h-3.5" />
+                            {summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg / Transaction</p>
+                          <p className="text-base font-semibold text-foreground flex items-center">
+                            <IndianRupee className="w-3.5 h-3.5" />
+                            {summaryStats.averageSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Top Category</p>
+                          <p className="text-sm font-medium text-foreground truncate" title={summaryStats.topCategory?.name}>
+                            {summaryStats.topCategory?.name || "—"}
+                          </p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Highest Expense</p>
+                          <p className="text-sm font-medium text-foreground truncate" title={summaryStats.highestExpense.title}>
+                            {summaryStats.highestExpense.title || "—"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <Table>
+                    <TableHeader>
                     <TableRow>
                       <TableHead>
                         <Button
@@ -783,7 +844,8 @@ const Expenses = () => {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
+                  </Table>
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <p className="text-muted-foreground">No expenses match the current filters</p>
