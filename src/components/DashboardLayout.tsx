@@ -10,7 +10,7 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-background flex relative">
       <DashboardSidebar />
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 pt-14">
         <Outlet />
       </main>
       {/* Dark Mode Toggle - Top Right */}
