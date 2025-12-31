@@ -684,9 +684,49 @@ const Expenses = () => {
       {/* Expense List */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
             {hasExpenses && (
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {/* Date Filter - Separate */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                      <CalendarIcon className="w-3 h-3" />
+                      {getTimeRangeLabel()}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-3" align="end">
+                    <div className="space-y-3">
+                      <Label className="text-xs text-muted-foreground">Time Period</Label>
+                      <Select value={timeRangePreset} onValueChange={(v) => handleTimeRangeChange(v as TimeRangePreset)}>
+                        <SelectTrigger className="h-8 text-xs w-40">
+                          <SelectValue placeholder="All Time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Time</SelectItem>
+                          <SelectItem value="today">Today</SelectItem>
+                          <SelectItem value="this_week">This Week</SelectItem>
+                          <SelectItem value="this_month">This Month</SelectItem>
+                          <SelectItem value="this_quarter">This Quarter</SelectItem>
+                          <SelectItem value="custom">Custom Range</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {timeRangePreset === "custom" && (
+                        <Calendar
+                          initialFocus
+                          mode="range"
+                          defaultMonth={customDateRange?.from}
+                          selected={customDateRange}
+                          onSelect={setCustomDateRange}
+                          numberOfMonths={2}
+                          className="pointer-events-auto"
+                        />
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Generic Filters */}
                 <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
@@ -699,7 +739,7 @@ const Expenses = () => {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-80 p-4" align="start">
+                  <PopoverContent className="w-80 p-4" align="end">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-medium">Filters</h4>
@@ -734,62 +774,6 @@ const Expenses = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
-
-                      {/* Time Range Filter */}
-                      <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Time Period</Label>
-                        <Select value={timeRangePreset} onValueChange={(v) => handleTimeRangeChange(v as TimeRangePreset)}>
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="All Time" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Time</SelectItem>
-                            <SelectItem value="today">Today</SelectItem>
-                            <SelectItem value="this_week">This Week</SelectItem>
-                            <SelectItem value="this_month">This Month</SelectItem>
-                            <SelectItem value="this_quarter">This Quarter</SelectItem>
-                            <SelectItem value="custom">Custom Range</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {timeRangePreset === "custom" && (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className={cn(
-                                  "h-8 w-full justify-start text-left text-xs font-normal",
-                                  !customDateRange && "text-muted-foreground",
-                                )}
-                              >
-                                <CalendarIcon className="mr-1.5 h-3 w-3" />
-                                {customDateRange?.from ? (
-                                  customDateRange.to ? (
-                                    <>
-                                      {format(customDateRange.from, "MMM d")} - {format(customDateRange.to, "MMM d")}
-                                    </>
-                                  ) : (
-                                    format(customDateRange.from, "MMM d, y")
-                                  )
-                                ) : (
-                                  <span>Pick dates</span>
-                                )}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                initialFocus
-                                mode="range"
-                                defaultMonth={customDateRange?.from}
-                                selected={customDateRange}
-                                onSelect={setCustomDateRange}
-                                numberOfMonths={2}
-                                className="pointer-events-auto"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        )}
                       </div>
 
                       {/* Unit Price Range */}
