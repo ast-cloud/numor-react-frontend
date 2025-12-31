@@ -21,6 +21,7 @@ import {
   Filter,
   Loader2,
   CalendarIcon,
+  X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay, startOfWeek, startOfMonth, startOfQuarter, endOfDay, isWithinInterval } from "date-fns";
@@ -639,7 +640,6 @@ const Expenses = () => {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg">Expense List</CardTitle>
             {hasExpenses && (
               <div className="flex items-center gap-2 flex-wrap">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -790,23 +790,25 @@ const Expenses = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 px-2.5 text-xs bg-muted/50"
+                          className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
                           onClick={() => setCategoryFilter("all")}
                         >
                           Category: {categoryFilter}
+                          <X className="h-3 w-3" />
                         </Button>
                       )}
                       {timeRangePreset !== "all" && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 px-2.5 text-xs bg-muted/50"
+                          className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
                           onClick={() => {
                             setTimeRangePreset("all");
                             setCustomDateRange(undefined);
                           }}
                         >
                           Time period: {getTimeRangeLabel()}
+                          <X className="h-3 w-3" />
                         </Button>
                       )}
                     </div>
