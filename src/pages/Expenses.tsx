@@ -8,13 +8,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil, ArrowUpDown, ArrowUp, ArrowDown, Filter, Loader2, CalendarIcon } from "lucide-react";
+import {
+  PenLine,
+  Upload,
+  Plus,
+  IndianRupee,
+  Trash2,
+  Pencil,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Filter,
+  Loader2,
+  CalendarIcon,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay, startOfWeek, startOfMonth, startOfQuarter, endOfDay, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
-const OCR_API_URL = "https://0513771666f0.ngrok-free.app/api/expenses/ocr/uploadExpenseForAI";
+const OCR_API_URL = "https://3fb7db89986e.ngrok-free.app/api/expenses/ocr/uploadExpenseForAI";
 
 type SortField = "date" | "totalPrice" | "category";
 type SortOrder = "asc" | "desc";
@@ -39,7 +52,15 @@ type ExpenseItem = {
   date: string;
 };
 
-const categories = ["Food & Dining", "Transportation", "Utilities", "Office Supplies", "Travel", "Entertainment", "Other"];
+const categories = [
+  "Food & Dining",
+  "Transportation",
+  "Utilities",
+  "Office Supplies",
+  "Travel",
+  "Entertainment",
+  "Other",
+];
 
 const createEmptyItem = (): ExpenseItem => ({
   title: "",
@@ -121,7 +142,7 @@ const Expenses = () => {
           comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
           break;
         case "totalPrice":
-          comparison = (a.quantity * a.unitPrice) - (b.quantity * b.unitPrice);
+          comparison = a.quantity * a.unitPrice - b.quantity * b.unitPrice;
           break;
         case "category":
           comparison = a.category.localeCompare(b.category);
@@ -135,10 +156,14 @@ const Expenses = () => {
 
   const getTimeRangeLabel = () => {
     switch (timeRangePreset) {
-      case "today": return "Today";
-      case "this_week": return "This Week";
-      case "this_month": return "This Month";
-      case "this_quarter": return "This Quarter";
+      case "today":
+        return "Today";
+      case "this_week":
+        return "This Week";
+      case "this_month":
+        return "This Month";
+      case "this_quarter":
+        return "This Quarter";
       case "custom":
         if (customDateRange?.from) {
           return customDateRange.to
@@ -146,7 +171,8 @@ const Expenses = () => {
             : format(customDateRange.from, "MMM d, yyyy");
         }
         return "Custom Range";
-      default: return "All Time";
+      default:
+        return "All Time";
     }
   };
 
@@ -174,9 +200,7 @@ const Expenses = () => {
 
   const getSortIcon = (field: SortField) => {
     if (sortField !== field) return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />;
-    return sortOrder === "asc" 
-      ? <ArrowUp className="w-4 h-4 ml-1" /> 
-      : <ArrowDown className="w-4 h-4 ml-1" />;
+    return sortOrder === "asc" ? <ArrowUp className="w-4 h-4 ml-1" /> : <ArrowDown className="w-4 h-4 ml-1" />;
   };
 
   const updateItem = (index: number, field: keyof ExpenseItem, value: string) => {
@@ -197,22 +221,28 @@ const Expenses = () => {
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Check if ALL items have their required fields filled
-    const incompleteItems = expenseItems.map((item, index) => {
-      const missingFields: string[] = [];
-      if (!item.title.trim()) missingFields.push("title");
-      if (!item.quantity.trim()) missingFields.push("quantity");
-      if (!item.unitPrice.trim()) missingFields.push("unit price");
-      if (!item.category) missingFields.push("category");
-      return { index: index + 1, missingFields };
-    }).filter(item => item.missingFields.length > 0);
+    const incompleteItems = expenseItems
+      .map((item, index) => {
+        const missingFields: string[] = [];
+        if (!item.title.trim()) missingFields.push("title");
+        if (!item.quantity.trim()) missingFields.push("quantity");
+        if (!item.unitPrice.trim()) missingFields.push("unit price");
+        if (!item.category) missingFields.push("category");
+        return { index: index + 1, missingFields };
+      })
+      .filter((item) => item.missingFields.length > 0);
 
     if (incompleteItems.length > 0) {
       const errorMessage = incompleteItems
-        .map(item => `Item ${item.index}: missing ${item.missingFields.join(", ")}`)
+        .map((item) => `Item ${item.index}: missing ${item.missingFields.join(", ")}`)
         .join("; ");
-      toast({ title: "Error", description: `Please fill all required fields. ${errorMessage}`, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Please fill all required fields. ${errorMessage}`,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -241,16 +271,14 @@ const Expenses = () => {
     e.preventDefault();
     if (!editingExpense) return;
 
-    setExpenses(expenses.map(exp => 
-      exp.id === editingExpense.id ? editingExpense : exp
-    ));
+    setExpenses(expenses.map((exp) => (exp.id === editingExpense.id ? editingExpense : exp)));
     setIsEditDialogOpen(false);
     setEditingExpense(null);
     toast({ title: "Success", description: "Expense updated successfully" });
   };
 
   const handleDeleteExpense = (id: string) => {
-    setExpenses(expenses.filter(exp => exp.id !== id));
+    setExpenses(expenses.filter((exp) => exp.id !== id));
     toast({ title: "Deleted", description: "Expense removed successfully" });
   };
 
@@ -287,7 +315,11 @@ const Expenses = () => {
         const items = parsedData.items || [];
 
         if (items.length === 0) {
-          toast({ title: "No Items Found", description: "Could not extract any items from the bill", variant: "destructive" });
+          toast({
+            title: "No Items Found",
+            description: "Could not extract any items from the bill",
+            variant: "destructive",
+          });
           return;
         }
 
@@ -342,14 +374,16 @@ const Expenses = () => {
         <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
           <DialogTrigger asChild>
             <Card className={`cursor-pointer hover:border-primary transition-colors group ${hasExpenses ? "" : "p-6"}`}>
-              <CardContent className={`flex flex-col items-center justify-center text-center ${hasExpenses ? "p-4" : "p-8"}`}>
-                <div className={`rounded-full bg-primary/10 flex items-center justify-center mb-3 ${hasExpenses ? "w-10 h-10" : "w-16 h-16"}`}>
+              <CardContent
+                className={`flex flex-col items-center justify-center text-center ${hasExpenses ? "p-4" : "p-8"}`}
+              >
+                <div
+                  className={`rounded-full bg-primary/10 flex items-center justify-center mb-3 ${hasExpenses ? "w-10 h-10" : "w-16 h-16"}`}
+                >
                   <PenLine className={`text-primary ${hasExpenses ? "w-5 h-5" : "w-8 h-8"}`} />
                 </div>
                 <h3 className={`font-semibold text-foreground ${hasExpenses ? "text-sm" : "text-lg"}`}>Manual Entry</h3>
-                {!hasExpenses && (
-                  <p className="text-muted-foreground text-sm mt-1">Fill in expense details manually</p>
-                )}
+                {!hasExpenses && <p className="text-muted-foreground text-sm mt-1">Fill in expense details manually</p>}
               </CardContent>
             </Card>
           </DialogTrigger>
@@ -413,7 +447,9 @@ const Expenses = () => {
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -435,7 +471,8 @@ const Expenses = () => {
                   Cancel
                 </Button>
                 <Button type="submit" className="flex-1">
-                  <Plus className="w-4 h-4 mr-2" /> Add {expenseItems.length > 1 ? `${expenseItems.length} Expenses` : "Expense"}
+                  <Plus className="w-4 h-4 mr-2" /> Add{" "}
+                  {expenseItems.length > 1 ? `${expenseItems.length} Expenses` : "Expense"}
                 </Button>
               </div>
             </form>
@@ -445,9 +482,15 @@ const Expenses = () => {
         {/* OCR Upload Option */}
         <Dialog open={isOCRDialogOpen} onOpenChange={setIsOCRDialogOpen}>
           <DialogTrigger asChild>
-            <Card className={`cursor-pointer hover:border-primary transition-colors group ${hasExpenses ? "" : "p-6"} ${isUploading ? "pointer-events-none opacity-70" : ""}`}>
-              <CardContent className={`flex flex-col items-center justify-center text-center ${hasExpenses ? "p-4" : "p-8"}`}>
-                <div className={`rounded-full bg-accent/10 flex items-center justify-center mb-3 ${hasExpenses ? "w-10 h-10" : "w-16 h-16"}`}>
+            <Card
+              className={`cursor-pointer hover:border-primary transition-colors group ${hasExpenses ? "" : "p-6"} ${isUploading ? "pointer-events-none opacity-70" : ""}`}
+            >
+              <CardContent
+                className={`flex flex-col items-center justify-center text-center ${hasExpenses ? "p-4" : "p-8"}`}
+              >
+                <div
+                  className={`rounded-full bg-accent/10 flex items-center justify-center mb-3 ${hasExpenses ? "w-10 h-10" : "w-16 h-16"}`}
+                >
                   {isUploading ? (
                     <Loader2 className={`text-accent-foreground animate-spin ${hasExpenses ? "w-5 h-5" : "w-8 h-8"}`} />
                   ) : (
@@ -524,7 +567,9 @@ const Expenses = () => {
                     step="1"
                     min="1"
                     value={editingExpense.quantity}
-                    onChange={(e) => setEditingExpense({ ...editingExpense, quantity: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setEditingExpense({ ...editingExpense, quantity: parseFloat(e.target.value) || 0 })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -536,20 +581,27 @@ const Expenses = () => {
                       step="0.01"
                       className="pl-9"
                       value={editingExpense.unitPrice}
-                      onChange={(e) => setEditingExpense({ ...editingExpense, unitPrice: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setEditingExpense({ ...editingExpense, unitPrice: parseFloat(e.target.value) || 0 })
+                      }
                     />
                   </div>
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Category *</Label>
-                <Select value={editingExpense.category} onValueChange={(value) => setEditingExpense({ ...editingExpense, category: value })}>
+                <Select
+                  value={editingExpense.category}
+                  onValueChange={(value) => setEditingExpense({ ...editingExpense, category: value })}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -565,7 +617,9 @@ const Expenses = () => {
                 <Button type="button" variant="outline" className="flex-1" onClick={() => setIsEditDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" className="flex-1">Save Changes</Button>
+                <Button type="submit" className="flex-1">
+                  Save Changes
+                </Button>
               </div>
             </form>
           )}
@@ -587,7 +641,9 @@ const Expenses = () => {
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -614,15 +670,14 @@ const Expenses = () => {
                         variant="outline"
                         className={cn(
                           "w-[200px] justify-start text-left font-normal",
-                          !customDateRange && "text-muted-foreground"
+                          !customDateRange && "text-muted-foreground",
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {customDateRange?.from ? (
                           customDateRange.to ? (
                             <>
-                              {format(customDateRange.from, "LLL dd")} -{" "}
-                              {format(customDateRange.to, "LLL dd")}
+                              {format(customDateRange.from, "LLL dd")} - {format(customDateRange.to, "LLL dd")}
                             </>
                           ) : (
                             format(customDateRange.from, "LLL dd, y")
@@ -702,13 +757,25 @@ const Expenses = () => {
                         <TableCell>{expense.category}</TableCell>
                         <TableCell className="text-right">{expense.quantity}</TableCell>
                         <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-medium">₹{(expense.quantity * expense.unitPrice).toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
+                        </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditExpense(expense)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleEditExpense(expense)}
+                            >
                               <Pencil className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteExpense(expense.id)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleDeleteExpense(expense.id)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
