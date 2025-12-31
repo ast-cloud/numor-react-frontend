@@ -6,13 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil, ArrowUpDown, ArrowUp, ArrowDown, Filter, Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { PenLine, Upload, Plus, IndianRupee, Trash2, Pencil, ArrowUpDown, ArrowUp, ArrowDown, Filter, Loader2, CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { format, startOfDay, startOfWeek, startOfMonth, startOfQuarter, endOfDay, isWithinInterval } from "date-fns";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
 const OCR_API_URL = "https://0513771666f0.ngrok-free.app/api/expenses/ocr/uploadExpenseForAI";
 
 type SortField = "date" | "totalPrice" | "category";
 type SortOrder = "asc" | "desc";
+type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
 type Expense = {
   id: string;
@@ -57,8 +63,35 @@ const Expenses = () => {
 
   // Filtering & Sorting state
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("all");
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+
+  // Calculate date range based on preset
+  const getDateRange = (): { start: Date; end: Date } | null => {
+    const today = new Date();
+    switch (timeRangePreset) {
+      case "today":
+        return { start: startOfDay(today), end: endOfDay(today) };
+      case "this_week":
+        return { start: startOfWeek(today, { weekStartsOn: 1 }), end: endOfDay(today) };
+      case "this_month":
+        return { start: startOfMonth(today), end: endOfDay(today) };
+      case "this_quarter":
+        return { start: startOfQuarter(today), end: endOfDay(today) };
+      case "custom":
+        if (customDateRange?.from) {
+          return {
+            start: startOfDay(customDateRange.from),
+            end: endOfDay(customDateRange.to || customDateRange.from),
+          };
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
 
   const hasExpenses = expenses.length > 0;
 
@@ -69,6 +102,15 @@ const Expenses = () => {
     // Apply category filter
     if (categoryFilter !== "all") {
       result = result.filter((exp) => exp.category === categoryFilter);
+    }
+
+    // Apply time range filter
+    const dateRange = getDateRange();
+    if (dateRange) {
+      result = result.filter((exp) => {
+        const expenseDate = new Date(exp.date);
+        return isWithinInterval(expenseDate, { start: dateRange.start, end: dateRange.end });
+      });
     }
 
     // Apply sorting
@@ -89,7 +131,37 @@ const Expenses = () => {
     });
 
     return result;
-  }, [expenses, categoryFilter, sortField, sortOrder]);
+  }, [expenses, categoryFilter, timeRangePreset, customDateRange, sortField, sortOrder]);
+
+  const getTimeRangeLabel = () => {
+    switch (timeRangePreset) {
+      case "today": return "Today";
+      case "this_week": return "This Week";
+      case "this_month": return "This Month";
+      case "this_quarter": return "This Quarter";
+      case "custom":
+        if (customDateRange?.from) {
+          return customDateRange.to
+            ? `${format(customDateRange.from, "MMM d")} - ${format(customDateRange.to, "MMM d")}`
+            : format(customDateRange.from, "MMM d, yyyy");
+        }
+        return "Custom Range";
+      default: return "All Time";
+    }
+  };
+
+  const handleTimeRangeChange = (value: TimeRangePreset) => {
+    setTimeRangePreset(value);
+    if (value !== "custom") {
+      setCustomDateRange(undefined);
+    }
+  };
+
+  const clearFilters = () => {
+    setCategoryFilter("all");
+    setTimeRangePreset("all");
+    setCustomDateRange(undefined);
+  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -505,7 +577,7 @@ const Expenses = () => {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>Expense List</CardTitle>
           {hasExpenses && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-muted-foreground" />
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -519,6 +591,60 @@ const Expenses = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                <Select value={timeRangePreset} onValueChange={(v) => handleTimeRangeChange(v as TimeRangePreset)}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Time range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="this_week">This Week</SelectItem>
+                    <SelectItem value="this_month">This Month</SelectItem>
+                    <SelectItem value="this_quarter">This Quarter</SelectItem>
+                    <SelectItem value="custom">Custom Range</SelectItem>
+                  </SelectContent>
+                </Select>
+                {timeRangePreset === "custom" && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-[200px] justify-start text-left font-normal",
+                          !customDateRange && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {customDateRange?.from ? (
+                          customDateRange.to ? (
+                            <>
+                              {format(customDateRange.from, "LLL dd")} -{" "}
+                              {format(customDateRange.to, "LLL dd")}
+                            </>
+                          ) : (
+                            format(customDateRange.from, "LLL dd, y")
+                          )
+                        ) : (
+                          <span>Pick a date range</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={customDateRange?.from}
+                        selected={customDateRange}
+                        onSelect={setCustomDateRange}
+                        numberOfMonths={2}
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
               </div>
             </div>
           )}
@@ -593,9 +719,9 @@ const Expenses = () => {
                 </Table>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <p className="text-muted-foreground">No expenses match the current filter</p>
-                  <Button variant="link" onClick={() => setCategoryFilter("all")} className="mt-2">
-                    Clear filter
+                  <p className="text-muted-foreground">No expenses match the current filters</p>
+                  <Button variant="link" onClick={clearFilters} className="mt-2">
+                    Clear all filters
                   </Button>
                 </div>
               )}
