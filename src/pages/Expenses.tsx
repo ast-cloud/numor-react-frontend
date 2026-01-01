@@ -1121,97 +1121,97 @@ const Expenses = () => {
               )}
 
               <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="whitespace-nowrap">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 font-medium hover:bg-transparent"
-                          onClick={() => handleSort("date")}
-                        >
-                          Date {getSortIcon("date")}
-                        </Button>
-                      </TableHead>
-                      <TableHead className="whitespace-nowrap">Title</TableHead>
-                      <TableHead className="whitespace-nowrap">Description</TableHead>
-                      <TableHead className="whitespace-nowrap">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 font-medium hover:bg-transparent"
-                          onClick={() => handleSort("category")}
-                        >
-                          Category {getSortIcon("category")}
-                        </Button>
-                      </TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Quantity</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Unit Price</TableHead>
-                      <TableHead className="whitespace-nowrap">Tax Type</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Tax %</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
-                          onClick={() => handleSort("totalPrice")}
-                        >
-                          Total Price {getSortIcon("totalPrice")}
-                        </Button>
-                      </TableHead>
-                      <TableHead className="w-[100px]">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredAndSortedExpenses.length > 0 ? (
-                      filteredAndSortedExpenses.map((expense) => (
-                        <TableRow key={expense.id}>
-                          <TableCell className="whitespace-nowrap">{new Date(expense.date).toLocaleDateString()}</TableCell>
-                          <TableCell className="font-medium whitespace-nowrap">{expense.title}</TableCell>
-                          <TableCell className="text-muted-foreground max-w-[200px] truncate">{expense.description || "-"}</TableCell>
-                          <TableCell className="whitespace-nowrap">{expense.category}</TableCell>
-                          <TableCell className="text-right whitespace-nowrap">{expense.quantity}</TableCell>
-                          <TableCell className="text-right whitespace-nowrap">₹{expense.unitPrice.toFixed(2)}</TableCell>
-                          <TableCell className="whitespace-nowrap">{expense.taxType || "-"}</TableCell>
-                          <TableCell className="text-right whitespace-nowrap">{expense.taxPercentage > 0 ? `${expense.taxPercentage}%` : "-"}</TableCell>
-                          <TableCell className="text-right font-medium whitespace-nowrap">
-                            ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => handleEditExpense(expense)}
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={() => handleDeleteExpense(expense.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={10} className="h-32 text-center">
-                          <div className="flex flex-col items-center justify-center">
-                            <p className="text-muted-foreground">No expenses match the current filters</p>
-                            <Button variant="link" onClick={clearFilters} className="mt-2">
-                              Clear all filters
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-medium hover:bg-transparent"
+                        onClick={() => handleSort("date")}
+                      >
+                        Date {getSortIcon("date")}
+                      </Button>
+                    </TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-medium hover:bg-transparent"
+                        onClick={() => handleSort("category")}
+                      >
+                        Category {getSortIcon("category")}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-right">Quantity</TableHead>
+                    <TableHead className="text-right">Unit Price</TableHead>
+                    <TableHead>Tax Type</TableHead>
+                    <TableHead className="text-right">Tax %</TableHead>
+                    <TableHead className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
+                        onClick={() => handleSort("totalPrice")}
+                      >
+                        Total Price {getSortIcon("totalPrice")}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAndSortedExpenses.length > 0 ? (
+                    filteredAndSortedExpenses.map((expense) => (
+                      <TableRow key={expense.id}>
+                        <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+                        <TableCell className="font-medium">{expense.title}</TableCell>
+                        <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
+                        <TableCell>{expense.category}</TableCell>
+                        <TableCell className="text-right">{expense.quantity}</TableCell>
+                        <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
+                        <TableCell>{expense.taxType || "-"}</TableCell>
+                        <TableCell className="text-right">{expense.taxPercentage > 0 ? `${expense.taxPercentage}%` : "-"}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleEditExpense(expense)}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleDeleteExpense(expense.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </TableCell>
                       </TableRow>
-                    )}
-                  </TableBody>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={10} className="h-32 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <p className="text-muted-foreground">No expenses match the current filters</p>
+                          <Button variant="link" onClick={clearFilters} className="mt-2">
+                            Clear all filters
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
               </Table>
             </>
           ) : (
