@@ -1146,8 +1146,10 @@ const Expenses = () => {
                       </Button>
                     </TableHead>
                     <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
-                    <TableHead className="text-right">
+                    <TableHead className="text-right whitespace-nowrap">Unit Price</TableHead>
+                    <TableHead className="whitespace-nowrap">Tax Type</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Tax %</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1169,8 +1171,10 @@ const Expenses = () => {
                         <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
                         <TableCell>{expense.category}</TableCell>
                         <TableCell className="text-right">{expense.quantity}</TableCell>
-                        <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className="text-right whitespace-nowrap">₹{expense.unitPrice.toFixed(2)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{expense.taxType || "-"}</TableCell>
+                        <TableCell className="text-right whitespace-nowrap">{expense.taxPercentage > 0 ? `${expense.taxPercentage}%` : "-"}</TableCell>
+                        <TableCell className="text-right font-medium whitespace-nowrap">
                           ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
                         </TableCell>
                         <TableCell>
@@ -1197,7 +1201,7 @@ const Expenses = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-32 text-center">
+                      <TableCell colSpan={10} className="h-32 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <p className="text-muted-foreground">No expenses match the current filters</p>
                           <Button variant="link" onClick={clearFilters} className="mt-2">
