@@ -1147,8 +1147,6 @@ const Expenses = () => {
                     </TableHead>
                     <TableHead className="text-right">Quantity</TableHead>
                     <TableHead className="text-right">Unit Price</TableHead>
-                    <TableHead>Tax Type</TableHead>
-                    <TableHead className="text-right">Tax %</TableHead>
                     <TableHead className="text-right">
                       <Button
                         variant="ghost"
@@ -1172,8 +1170,6 @@ const Expenses = () => {
                         <TableCell>{expense.category}</TableCell>
                         <TableCell className="text-right">{expense.quantity}</TableCell>
                         <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
-                        <TableCell>{expense.taxType || "-"}</TableCell>
-                        <TableCell className="text-right">{expense.taxPercentage > 0 ? `${expense.taxPercentage}%` : "-"}</TableCell>
                         <TableCell className="text-right font-medium">
                           ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
                         </TableCell>
@@ -1201,7 +1197,7 @@ const Expenses = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={10} className="h-32 text-center">
+                      <TableCell colSpan={8} className="h-32 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <p className="text-muted-foreground">No expenses match the current filters</p>
                           <Button variant="link" onClick={clearFilters} className="mt-2">
