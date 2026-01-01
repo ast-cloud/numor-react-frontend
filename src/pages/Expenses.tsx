@@ -41,6 +41,8 @@ type Expense = {
   description: string;
   quantity: number;
   unitPrice: number;
+  taxType: string;
+  taxPercentage: number;
   category: string;
   date: string;
 };
@@ -50,6 +52,8 @@ type ExpenseItem = {
   description: string;
   quantity: string;
   unitPrice: string;
+  taxType: string;
+  taxPercentage: string;
   category: string;
   date: string;
 };
@@ -69,6 +73,8 @@ const createEmptyItem = (): ExpenseItem => ({
   description: "",
   quantity: "",
   unitPrice: "",
+  taxType: "",
+  taxPercentage: "",
   category: "",
   date: new Date().toISOString().split("T")[0],
 });
@@ -388,6 +394,8 @@ const Expenses = () => {
       description: item.description,
       quantity: parseFloat(item.quantity),
       unitPrice: parseFloat(item.unitPrice),
+      taxType: item.taxType,
+      taxPercentage: parseFloat(item.taxPercentage) || 0,
       category: item.category,
       date: item.date,
     }));
@@ -475,6 +483,8 @@ const Expenses = () => {
           description: parsedData.merchant ? `From: ${parsedData.merchant}` : "",
           quantity: String(item.quantity || 1),
           unitPrice: String(item.unit_price_before_tax || 0),
+          taxType: String(item.tax_type || ""),
+          taxPercentage: String(item.tax_percentage || ""),
           category: parsedData.category && categories.includes(parsedData.category) ? parsedData.category : "",
           date: expenseDate,
         }));
@@ -550,7 +560,7 @@ const Expenses = () => {
                           onChange={(e) => updateItem(index, "date", e.target.value)}
                         />
                       </div>
-                      <div className="grid grid-cols-4 gap-3">
+                      <div className="grid grid-cols-5 gap-3">
                         <Input
                           type="number"
                           step="1"
@@ -570,6 +580,20 @@ const Expenses = () => {
                             onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
                           />
                         </div>
+                        <Input
+                          placeholder="Tax Type"
+                          value={item.taxType}
+                          onChange={(e) => updateItem(index, "taxType", e.target.value)}
+                        />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="100"
+                          placeholder="Tax %"
+                          value={item.taxPercentage}
+                          onChange={(e) => updateItem(index, "taxPercentage", e.target.value)}
+                        />
                         <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Category *" />
@@ -582,12 +606,12 @@ const Expenses = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <Input
-                          placeholder="Description (optional)"
-                          value={item.description}
-                          onChange={(e) => updateItem(index, "description", e.target.value)}
-                        />
                       </div>
+                      <Input
+                        placeholder="Description (optional)"
+                        value={item.description}
+                        onChange={(e) => updateItem(index, "description", e.target.value)}
+                      />
                     </div>
                   ))}
                   <Button type="button" variant="outline" size="sm" onClick={addItem} className="w-full">
@@ -697,6 +721,29 @@ const Expenses = () => {
                       }
                     />
                   </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tax Type</Label>
+                  <Input
+                    value={editingExpense.taxType}
+                    onChange={(e) => setEditingExpense({ ...editingExpense, taxType: e.target.value })}
+                    placeholder="e.g., VAT, GST"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tax %</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={editingExpense.taxPercentage}
+                    onChange={(e) =>
+                      setEditingExpense({ ...editingExpense, taxPercentage: parseFloat(e.target.value) || 0 })
+                    }
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -1100,6 +1147,8 @@ const Expenses = () => {
                     </TableHead>
                     <TableHead className="text-right">Quantity</TableHead>
                     <TableHead className="text-right">Unit Price</TableHead>
+                    <TableHead>Tax Type</TableHead>
+                    <TableHead className="text-right">Tax %</TableHead>
                     <TableHead className="text-right">
                       <Button
                         variant="ghost"
@@ -1123,6 +1172,8 @@ const Expenses = () => {
                         <TableCell>{expense.category}</TableCell>
                         <TableCell className="text-right">{expense.quantity}</TableCell>
                         <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
+                        <TableCell>{expense.taxType || "-"}</TableCell>
+                        <TableCell className="text-right">{expense.taxPercentage > 0 ? `${expense.taxPercentage}%` : "-"}</TableCell>
                         <TableCell className="text-right font-medium">
                           ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
                         </TableCell>
@@ -1150,7 +1201,7 @@ const Expenses = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-32 text-center">
+                      <TableCell colSpan={10} className="h-32 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <p className="text-muted-foreground">No expenses match the current filters</p>
                           <Button variant="link" onClick={clearFilters} className="mt-2">
