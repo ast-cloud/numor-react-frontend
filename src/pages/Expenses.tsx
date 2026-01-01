@@ -239,6 +239,8 @@ const Expenses = () => {
         averageSpend: 0,
         topCategory: null,
         highestExpense: { amount: 0, title: "" },
+        totalTax: 0,
+        taxByType: {} as Record<string, number>,
       };
     }
 
@@ -263,12 +265,27 @@ const Expenses = () => {
       { amount: 0, title: "" },
     );
 
+    // Calculate tax summary
+    let totalTax = 0;
+    const taxByType: Record<string, number> = {};
+    filteredAndSortedExpenses.forEach((exp) => {
+      if (exp.taxPercentage > 0) {
+        const baseAmount = exp.quantity * exp.unitPrice;
+        const taxAmount = baseAmount * (exp.taxPercentage / 100);
+        totalTax += taxAmount;
+        const taxType = exp.taxType || "Other";
+        taxByType[taxType] = (taxByType[taxType] || 0) + taxAmount;
+      }
+    });
+
     return {
       totalSpend,
       transactionCount,
       averageSpend,
       topCategory: topCategory ? { name: topCategory[0], amount: topCategory[1] } : null,
       highestExpense,
+      totalTax,
+      taxByType,
     };
   }, [filteredAndSortedExpenses]);
 
@@ -1014,7 +1031,7 @@ const Expenses = () => {
                     {summaryStats.transactionCount} transaction{summaryStats.transactionCount !== 1 ? "s" : ""}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   <div className="space-y-0.5">
                     <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Spend</p>
                     <p className="text-base font-semibold text-foreground flex items-center">
@@ -1024,6 +1041,31 @@ const Expenses = () => {
                         maximumFractionDigits: 2,
                       })}
                     </p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Tax</p>
+                    <p className="text-base font-semibold text-foreground flex items-center">
+                      <IndianRupee className="w-3.5 h-3.5" />
+                      {summaryStats.totalTax.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Tax Breakdown</p>
+                    <div className="text-xs font-medium text-foreground">
+                      {Object.keys(summaryStats.taxByType).length > 0 ? (
+                        Object.entries(summaryStats.taxByType).map(([type, amount]) => (
+                          <span key={type} className="flex items-center gap-1">
+                            {type}: <IndianRupee className="w-2.5 h-2.5" />
+                            {amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-muted-foreground">N/A</span>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg / Transaction</p>
