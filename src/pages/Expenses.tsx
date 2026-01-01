@@ -215,7 +215,15 @@ const Expenses = () => {
 
   // Calculate summary stats for filtered expenses
   const summaryStats = useMemo(() => {
-    if (filteredAndSortedExpenses.length === 0) return null;
+    if (filteredAndSortedExpenses.length === 0) {
+      return {
+        totalSpend: 0,
+        transactionCount: 0,
+        averageSpend: 0,
+        topCategory: null,
+        highestExpense: { amount: 0, title: "" },
+      };
+    }
 
     const totalSpend = filteredAndSortedExpenses.reduce((sum, exp) => sum + exp.quantity * exp.unitPrice, 0);
     const transactionCount = filteredAndSortedExpenses.length;
@@ -942,206 +950,212 @@ const Expenses = () => {
         <CardContent>
           {hasExpenses ? (
             <>
-              {filteredAndSortedExpenses.length > 0 ? (
-                <>
-                  {/* Summary Strip */}
-                  {summaryStats && (
-                    <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border">
-                      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-2">
-                        <span className="font-medium">{getTimeRangeLabel()} Summary</span>
-                        <span>
-                          {summaryStats.transactionCount} transaction{summaryStats.transactionCount !== 1 ? "s" : ""}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Spend</p>
-                          <p className="text-base font-semibold text-foreground flex items-center">
-                            <IndianRupee className="w-3.5 h-3.5" />
-                            {summaryStats.totalSpend.toLocaleString("en-IN", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </p>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg / Transaction</p>
-                          <p className="text-base font-semibold text-foreground flex items-center">
-                            <IndianRupee className="w-3.5 h-3.5" />
-                            {summaryStats.averageSpend.toLocaleString("en-IN", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </p>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Top Category</p>
-                          <p
-                            className="text-sm font-medium text-foreground truncate"
-                            title={summaryStats.topCategory?.name}
-                          >
-                            {summaryStats.topCategory?.name || "—"}
-                          </p>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Highest Expense</p>
-                          <p
-                            className="text-sm font-medium text-foreground truncate"
-                            title={summaryStats.highestExpense.title}
-                          >
-                            {summaryStats.highestExpense.title || "—"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+              {/* Summary Strip - Always visible when there are expenses */}
+              <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border">
+                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-2">
+                  <span className="font-medium">{getTimeRangeLabel()} Summary</span>
+                  <span>
+                    {summaryStats.transactionCount} transaction{summaryStats.transactionCount !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Spend</p>
+                    <p className="text-base font-semibold text-foreground flex items-center">
+                      <IndianRupee className="w-3.5 h-3.5" />
+                      {summaryStats.totalSpend.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg / Transaction</p>
+                    <p className="text-base font-semibold text-foreground flex items-center">
+                      {summaryStats.transactionCount > 0 ? (
+                        <>
+                          <IndianRupee className="w-3.5 h-3.5" />
+                          {summaryStats.averageSpend.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">N/A</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Top Category</p>
+                    <p
+                      className="text-sm font-medium text-foreground truncate"
+                      title={summaryStats.topCategory?.name}
+                    >
+                      {summaryStats.topCategory?.name || "N/A"}
+                    </p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Highest Expense</p>
+                    <p
+                      className="text-sm font-medium text-foreground truncate"
+                      title={summaryStats.highestExpense.title}
+                    >
+                      {summaryStats.highestExpense.title || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-                  {/* Applied Filters Row */}
-                  {hasActiveFilters && (
-                    <div className="mb-4 flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-muted-foreground">Applied filters:</span>
-                      {categoryFilter.map((cat) => (
-                        <Button
-                          key={cat}
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                          onClick={() => toggleCategoryFilter(cat)}
-                        >
-                          {cat}
-                          <X className="h-3 w-3" />
-                        </Button>
-                      ))}
-                      {timeRangePreset !== "all" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                          onClick={() => {
-                            setTimeRangePreset("all");
-                            setCustomDateRange(undefined);
-                          }}
-                        >
-                          Time period: {getTimeRangeLabel()}
-                          <X className="h-3 w-3" />
-                        </Button>
-                      )}
-                      {(unitPriceMin || unitPriceMax) && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                          onClick={() => {
-                            setUnitPriceMin("");
-                            setUnitPriceMax("");
-                          }}
-                        >
-                          Unit price: ₹{unitPriceMin || "0"} - ₹{unitPriceMax || "∞"}
-                          <X className="h-3 w-3" />
-                        </Button>
-                      )}
-                      {(totalPriceMin || totalPriceMax) && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                          onClick={() => {
-                            setTotalPriceMin("");
-                            setTotalPriceMax("");
-                          }}
-                        >
-                          Total price: ₹{totalPriceMin || "0"} - ₹{totalPriceMax || "∞"}
-                          <X className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
+              {/* Applied Filters Row */}
+              {hasActiveFilters && (
+                <div className="mb-4 flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-muted-foreground">Applied filters:</span>
+                  {categoryFilter.map((cat) => (
+                    <Button
+                      key={cat}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
+                      onClick={() => toggleCategoryFilter(cat)}
+                    >
+                      {cat}
+                      <X className="h-3 w-3" />
+                    </Button>
+                  ))}
+                  {timeRangePreset !== "all" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
+                      onClick={() => {
+                        setTimeRangePreset("all");
+                        setCustomDateRange(undefined);
+                      }}
+                    >
+                      Time period: {getTimeRangeLabel()}
+                      <X className="h-3 w-3" />
+                    </Button>
                   )}
-
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 font-medium hover:bg-transparent"
-                            onClick={() => handleSort("date")}
-                          >
-                            Date {getSortIcon("date")}
-                          </Button>
-                        </TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 font-medium hover:bg-transparent"
-                            onClick={() => handleSort("category")}
-                          >
-                            Category {getSortIcon("category")}
-                          </Button>
-                        </TableHead>
-                        <TableHead className="text-right">Quantity</TableHead>
-                        <TableHead className="text-right">Unit Price</TableHead>
-                        <TableHead className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
-                            onClick={() => handleSort("totalPrice")}
-                          >
-                            Total Price {getSortIcon("totalPrice")}
-                          </Button>
-                        </TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredAndSortedExpenses.map((expense) => (
-                        <TableRow key={expense.id}>
-                          <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-                          <TableCell className="font-medium">{expense.title}</TableCell>
-                          <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
-                          <TableCell>{expense.category}</TableCell>
-                          <TableCell className="text-right">{expense.quantity}</TableCell>
-                          <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
-                          <TableCell className="text-right font-medium">
-                            ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => handleEditExpense(expense)}
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={() => handleDeleteExpense(expense.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <p className="text-muted-foreground">No expenses match the current filters</p>
-                  <Button variant="link" onClick={clearFilters} className="mt-2">
-                    Clear all filters
-                  </Button>
+                  {(unitPriceMin || unitPriceMax) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
+                      onClick={() => {
+                        setUnitPriceMin("");
+                        setUnitPriceMax("");
+                      }}
+                    >
+                      Unit price: ₹{unitPriceMin || "0"} - ₹{unitPriceMax || "∞"}
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                  {(totalPriceMin || totalPriceMax) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
+                      onClick={() => {
+                        setTotalPriceMin("");
+                        setTotalPriceMax("");
+                      }}
+                    >
+                      Total price: ₹{totalPriceMin || "0"} - ₹{totalPriceMax || "∞"}
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
               )}
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-medium hover:bg-transparent"
+                        onClick={() => handleSort("date")}
+                      >
+                        Date {getSortIcon("date")}
+                      </Button>
+                    </TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-medium hover:bg-transparent"
+                        onClick={() => handleSort("category")}
+                      >
+                        Category {getSortIcon("category")}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-right">Quantity</TableHead>
+                    <TableHead className="text-right">Unit Price</TableHead>
+                    <TableHead className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
+                        onClick={() => handleSort("totalPrice")}
+                      >
+                        Total Price {getSortIcon("totalPrice")}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAndSortedExpenses.length > 0 ? (
+                    filteredAndSortedExpenses.map((expense) => (
+                      <TableRow key={expense.id}>
+                        <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+                        <TableCell className="font-medium">{expense.title}</TableCell>
+                        <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
+                        <TableCell>{expense.category}</TableCell>
+                        <TableCell className="text-right">{expense.quantity}</TableCell>
+                        <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleEditExpense(expense)}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleDeleteExpense(expense.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="h-32 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <p className="text-muted-foreground">No expenses match the current filters</p>
+                          <Button variant="link" onClick={clearFilters} className="mt-2">
+                            Clear all filters
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
