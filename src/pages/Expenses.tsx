@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -246,17 +246,31 @@ const Expenses = () => {
     };
   }, [filteredAndSortedExpenses]);
 
+  const [shouldOpenCustomPopover, setShouldOpenCustomPopover] = useState(false);
+
   const handleTimeRangeChange = (value: TimeRangePreset) => {
     setTimeRangePreset(value);
     if (value !== "custom") {
       setCustomDateRange(undefined);
       setTempCustomDateRange(undefined);
+      setShouldOpenCustomPopover(false);
     } else {
-      // Auto-open the calendar popover when custom is selected
+      // Flag to open the popover after it mounts
       setTempCustomDateRange(customDateRange);
-      setIsCustomDatePopoverOpen(true);
+      setShouldOpenCustomPopover(true);
     }
   };
+
+  // Open the custom date popover after it mounts
+  useEffect(() => {
+    if (shouldOpenCustomPopover && timeRangePreset === "custom") {
+      const timer = setTimeout(() => {
+        setIsCustomDatePopoverOpen(true);
+        setShouldOpenCustomPopover(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldOpenCustomPopover, timeRangePreset]);
 
   const handleApplyCustomDateRange = () => {
     setCustomDateRange(tempCustomDateRange);
