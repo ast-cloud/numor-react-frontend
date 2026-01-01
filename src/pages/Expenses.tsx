@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   PenLine,
   Upload,
@@ -84,7 +85,7 @@ const Expenses = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filtering & Sorting state
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("all");
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [sortField, setSortField] = useState<SortField>("date");
@@ -129,8 +130,8 @@ const Expenses = () => {
     let result = [...expenses];
 
     // Apply category filter
-    if (categoryFilter !== "all") {
-      result = result.filter((exp) => exp.category === categoryFilter);
+    if (categoryFilter.length > 0) {
+      result = result.filter((exp) => categoryFilter.includes(exp.category));
     }
 
     // Apply time range filter
@@ -278,7 +279,7 @@ const Expenses = () => {
   };
 
   const clearFilters = () => {
-    setCategoryFilter("all");
+    setCategoryFilter([]);
     setTimeRangePreset("all");
     setCustomDateRange(undefined);
     setUnitPriceMin("");
@@ -287,9 +288,17 @@ const Expenses = () => {
     setTotalPriceMax("");
   };
 
-  const hasActiveFilters = categoryFilter !== "all" || timeRangePreset !== "all" || unitPriceMin || unitPriceMax || totalPriceMin || totalPriceMax;
+  const toggleCategoryFilter = (category: string) => {
+    setCategoryFilter(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  const hasActiveFilters = categoryFilter.length > 0 || timeRangePreset !== "all" || unitPriceMin || unitPriceMax || totalPriceMin || totalPriceMax;
   const activeFilterCount = [
-    categoryFilter !== "all",
+    categoryFilter.length > 0,
     timeRangePreset !== "all",
     unitPriceMin || unitPriceMax,
     totalPriceMin || totalPriceMax,
@@ -818,20 +827,35 @@ const Expenses = () => {
 
                       {/* Category Filter */}
                       <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Category</Label>
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="All Categories" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
-                            {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat}>
+                        <Label className="text-xs text-muted-foreground">Categories</Label>
+                        <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                          {categories.map((cat) => (
+                            <div key={cat} className="flex items-center gap-2">
+                              <Checkbox 
+                                id={`cat-${cat}`}
+                                checked={categoryFilter.includes(cat)}
+                                onCheckedChange={() => toggleCategoryFilter(cat)}
+                                className="h-4 w-4"
+                              />
+                              <label 
+                                htmlFor={`cat-${cat}`} 
+                                className="text-xs cursor-pointer flex-1"
+                              >
                                 {cat}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                        {categoryFilter.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs px-2 text-muted-foreground"
+                            onClick={() => setCategoryFilter([])}
+                          >
+                            Clear categories
+                          </Button>
+                        )}
                       </div>
 
                       {/* Unit Price Range */}
@@ -976,14 +1000,14 @@ const Expenses = () => {
                   {hasActiveFilters && (
                     <div className="mb-4 flex items-center gap-2 flex-wrap">
                       <span className="text-xs text-muted-foreground">Applied filters:</span>
-                      {categoryFilter !== "all" && (
+                      {categoryFilter.length > 0 && (
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                          onClick={() => setCategoryFilter("all")}
+                          onClick={() => setCategoryFilter([])}
                         >
-                          Category: {categoryFilter}
+                          Categories: {categoryFilter.length === 1 ? categoryFilter[0] : `${categoryFilter.length} selected`}
                           <X className="h-3 w-3" />
                         </Button>
                       )}
