@@ -31,7 +31,7 @@ import { DateRange } from "react-day-picker";
 
 const OCR_API_URL = "https://3fb7db89986e.ngrok-free.app/api/expenses/ocr/uploadExpenseForAI";
 
-type SortField = "date" | "totalPrice" | "category";
+type SortField = "date" | "totalPrice" | "category" | "unitPrice" | "taxPercentage";
 type SortOrder = "asc" | "desc";
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
@@ -189,6 +189,12 @@ const Expenses = () => {
           break;
         case "category":
           comparison = a.category.localeCompare(b.category);
+          break;
+        case "unitPrice":
+          comparison = a.unitPrice - b.unitPrice;
+          break;
+        case "taxPercentage":
+          comparison = (a.taxPercentage || 0) - (b.taxPercentage || 0);
           break;
       }
       return sortOrder === "asc" ? comparison : -comparison;
@@ -1146,9 +1152,27 @@ const Expenses = () => {
                       </Button>
                     </TableHead>
                     <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
+                    <TableHead className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
+                        onClick={() => handleSort("unitPrice")}
+                      >
+                        Unit Price {getSortIcon("unitPrice")}
+                      </Button>
+                    </TableHead>
                     <TableHead>Tax Type</TableHead>
-                    <TableHead className="text-right">Tax %</TableHead>
+                    <TableHead className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
+                        onClick={() => handleSort("taxPercentage")}
+                      >
+                        Tax % {getSortIcon("taxPercentage")}
+                      </Button>
+                    </TableHead>
                     <TableHead className="text-right">
                       <Button
                         variant="ghost"
