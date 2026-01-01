@@ -189,7 +189,18 @@ const Expenses = () => {
     });
 
     return result;
-  }, [expenses, categoryFilter, timeRangePreset, customDateRange, unitPriceMin, unitPriceMax, totalPriceMin, totalPriceMax, sortField, sortOrder]);
+  }, [
+    expenses,
+    categoryFilter,
+    timeRangePreset,
+    customDateRange,
+    unitPriceMin,
+    unitPriceMax,
+    totalPriceMin,
+    totalPriceMax,
+    sortField,
+    sortOrder,
+  ]);
 
   const getTimeRangeLabel = () => {
     switch (timeRangePreset) {
@@ -297,14 +308,16 @@ const Expenses = () => {
   };
 
   const toggleCategoryFilter = (category: string) => {
-    setCategoryFilter(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
+    setCategoryFilter((prev) => (prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]));
   };
 
-  const hasActiveFilters = categoryFilter.length > 0 || timeRangePreset !== "all" || unitPriceMin || unitPriceMax || totalPriceMin || totalPriceMax;
+  const hasActiveFilters =
+    categoryFilter.length > 0 ||
+    timeRangePreset !== "all" ||
+    unitPriceMin ||
+    unitPriceMax ||
+    totalPriceMin ||
+    totalPriceMax;
   const activeFilterCount = [
     categoryFilter.length > 0,
     timeRangePreset !== "all",
@@ -461,7 +474,7 @@ const Expenses = () => {
           title: item.name || "",
           description: parsedData.merchant ? `From: ${parsedData.merchant}` : "",
           quantity: String(item.quantity || 1),
-          unitPrice: String(item.unitPrice || 0),
+          unitPrice: String(item.unit_price_before_tax || 0),
           category: parsedData.category && categories.includes(parsedData.category) ? parsedData.category : "",
           date: expenseDate,
         }));
@@ -746,20 +759,20 @@ const Expenses = () => {
                   </SelectContent>
                 </Select>
                 {timeRangePreset === "custom" && (
-                  <Popover open={isCustomDatePopoverOpen} onOpenChange={(open) => {
-                    setIsCustomDatePopoverOpen(open);
-                    if (open) {
-                      setTempCustomDateRange(customDateRange);
-                    }
-                  }}>
+                  <Popover
+                    open={isCustomDatePopoverOpen}
+                    onOpenChange={(open) => {
+                      setIsCustomDatePopoverOpen(open);
+                      if (open) {
+                        setTempCustomDateRange(customDateRange);
+                      }
+                    }}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         size="sm"
-                        className={cn(
-                          "h-8 text-xs gap-1.5",
-                          !customDateRange && "text-muted-foreground",
-                        )}
+                        className={cn("h-8 text-xs gap-1.5", !customDateRange && "text-muted-foreground")}
                       >
                         <CalendarIcon className="w-3 h-3" />
                         {customDateRange?.from ? (
@@ -787,8 +800,8 @@ const Expenses = () => {
                           className="pointer-events-auto"
                         />
                         <div className="p-2 border-t border-border flex justify-end">
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             className="h-7 px-3 text-xs"
                             onClick={handleApplyCustomDateRange}
                             disabled={!tempCustomDateRange?.from}
@@ -844,9 +857,9 @@ const Expenses = () => {
                               size="sm"
                               className={cn(
                                 "h-7 px-2.5 text-xs",
-                                categoryFilter.includes(cat) 
-                                  ? "bg-primary/15 text-primary hover:bg-primary/20" 
-                                  : "text-muted-foreground hover:text-foreground"
+                                categoryFilter.includes(cat)
+                                  ? "bg-primary/15 text-primary hover:bg-primary/20"
+                                  : "text-muted-foreground hover:text-foreground",
                               )}
                               onClick={() => toggleCategoryFilter(cat)}
                             >
@@ -922,11 +935,7 @@ const Expenses = () => {
                         </div>
                       </div>
 
-                      <Button
-                        size="sm"
-                        className="w-full h-8 text-xs"
-                        onClick={() => setIsFilterPopoverOpen(false)}
-                      >
+                      <Button size="sm" className="w-full h-8 text-xs" onClick={() => setIsFilterPopoverOpen(false)}>
                         Apply Filters
                       </Button>
                     </div>
@@ -987,10 +996,7 @@ const Expenses = () => {
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Top Category</p>
-                    <p
-                      className="text-sm font-medium text-foreground truncate"
-                      title={summaryStats.topCategory?.name}
-                    >
+                    <p className="text-sm font-medium text-foreground truncate" title={summaryStats.topCategory?.name}>
                       {summaryStats.topCategory?.name || "N/A"}
                     </p>
                   </div>
