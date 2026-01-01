@@ -1120,8 +1120,7 @@ const Expenses = () => {
                 </div>
               )}
 
-              <div className="overflow-x-auto">
-                <Table>
+              <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="whitespace-nowrap">
@@ -1213,8 +1212,7 @@ const Expenses = () => {
                       </TableRow>
                     )}
                   </TableBody>
-                </Table>
-              </div>
+              </Table>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
