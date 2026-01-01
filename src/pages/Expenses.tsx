@@ -1000,17 +1000,18 @@ const Expenses = () => {
                   {hasActiveFilters && (
                     <div className="mb-4 flex items-center gap-2 flex-wrap">
                       <span className="text-xs text-muted-foreground">Applied filters:</span>
-                      {categoryFilter.length > 0 && (
+                      {categoryFilter.map((cat) => (
                         <Button
+                          key={cat}
                           variant="ghost"
                           size="sm"
                           className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                          onClick={() => setCategoryFilter([])}
+                          onClick={() => toggleCategoryFilter(cat)}
                         >
-                          Categories: {categoryFilter.length === 1 ? categoryFilter[0] : `${categoryFilter.length} selected`}
+                          {cat}
                           <X className="h-3 w-3" />
                         </Button>
-                      )}
+                      ))}
                       {timeRangePreset !== "all" && (
                         <Button
                           variant="ghost"
