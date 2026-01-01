@@ -769,10 +769,10 @@ const Expenses = () => {
                           numberOfMonths={2}
                           className="pointer-events-auto"
                         />
-                        <div className="p-3 border-t border-border">
+                        <div className="p-2 border-t border-border flex justify-end">
                           <Button 
                             size="sm" 
-                            className="w-full"
+                            className="h-7 px-3 text-xs"
                             onClick={handleApplyCustomDateRange}
                             disabled={!tempCustomDateRange?.from}
                           >
