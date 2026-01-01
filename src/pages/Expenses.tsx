@@ -828,22 +828,22 @@ const Expenses = () => {
                       {/* Category Filter */}
                       <div className="space-y-2">
                         <Label className="text-xs text-muted-foreground">Categories</Label>
-                        <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                        <div className="flex flex-wrap gap-1.5">
                           {categories.map((cat) => (
-                            <div key={cat} className="flex items-center gap-2">
-                              <Checkbox 
-                                id={`cat-${cat}`}
-                                checked={categoryFilter.includes(cat)}
-                                onCheckedChange={() => toggleCategoryFilter(cat)}
-                                className="h-4 w-4"
-                              />
-                              <label 
-                                htmlFor={`cat-${cat}`} 
-                                className="text-xs cursor-pointer flex-1"
-                              >
-                                {cat}
-                              </label>
-                            </div>
+                            <Button
+                              key={cat}
+                              variant="ghost"
+                              size="sm"
+                              className={cn(
+                                "h-7 px-2.5 text-xs",
+                                categoryFilter.includes(cat) 
+                                  ? "bg-primary/15 text-primary hover:bg-primary/20" 
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
+                              onClick={() => toggleCategoryFilter(cat)}
+                            >
+                              {cat}
+                            </Button>
                           ))}
                         </div>
                         {categoryFilter.length > 0 && (
