@@ -7,7 +7,7 @@ import { useState } from "react";
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Expenses", url: "/dashboard/expenses", icon: Receipt },
-  { title: "Invoices", url: "/dashboard/invoices", icon: FileText },
+  { title: "Income", url: "/dashboard/income", icon: FileText },
 ];
 
 const DashboardSidebar = () => {
