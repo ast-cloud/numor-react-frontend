@@ -1,23 +1,23 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const Invoices = () => {
+const Income = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Invoices</h1>
-        <p className="text-muted-foreground mt-1">Create and manage your invoices.</p>
+        <h1 className="text-3xl font-display font-bold text-foreground">Income</h1>
+        <p className="text-muted-foreground mt-1">Track and manage your income.</p>
       </div>
 
       <Card className="h-96">
         <CardHeader>
-          <CardTitle>Invoice List</CardTitle>
+          <CardTitle>Income List</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-72">
-          <p className="text-muted-foreground">Invoices content placeholder</p>
+          <p className="text-muted-foreground">Income content placeholder</p>
         </CardContent>
       </Card>
     </div>
   );
 };
 
-export default Invoices;
+export default Income;

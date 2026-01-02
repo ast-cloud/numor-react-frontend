@@ -16,7 +16,7 @@ import Pricing from "./pages/Pricing";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import Expenses from "./pages/Expenses";
-import Invoices from "./pages/Invoices";
+import Income from "./pages/Income";
 import DashboardSettings from "./pages/DashboardSettings";
 import NotFound from "./pages/NotFound";
 
@@ -42,7 +42,7 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
             <Route path="expenses" element={<Expenses />} />
-            <Route path="invoices" element={<Invoices />} />
+            <Route path="income" element={<Income />} />
             <Route path="settings" element={<DashboardSettings />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
