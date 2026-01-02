@@ -150,7 +150,10 @@ const Income = () => {
   const handleTimeRangeChange = (value: TimeRangePreset) => {
     setTimeRangePreset(value);
     if (value === "custom") {
-      setIsCustomDatePopoverOpen(true);
+      // Delay opening popover to avoid conflict with Select dropdown closing
+      setTimeout(() => {
+        setIsCustomDatePopoverOpen(true);
+      }, 100);
     } else {
       setCustomDateRange(undefined);
     }
