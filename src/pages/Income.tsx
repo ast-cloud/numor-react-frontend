@@ -81,7 +81,20 @@ const Income = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("all");
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
+  const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
   const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
+
+  const handleApplyDateRange = () => {
+    setCustomDateRange(tempDateRange);
+    setIsCustomDatePopoverOpen(false);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsCustomDatePopoverOpen(open);
+    if (open) {
+      setTempDateRange(customDateRange);
+    }
+  };
 
   const parseDate = (dateStr: string) => {
     return parse(dateStr, "dd/MM/yyyy", new Date());
@@ -210,7 +223,7 @@ const Income = () => {
             </Select>
 
             {timeRangePreset === "custom" && (
-              <Popover open={isCustomDatePopoverOpen} onOpenChange={setIsCustomDatePopoverOpen}>
+              <Popover open={isCustomDatePopoverOpen} onOpenChange={handleOpenChange}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="h-8 text-sm justify-start text-left font-normal">
                     <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
@@ -230,12 +243,17 @@ const Income = () => {
                 <PopoverContent className="w-auto p-0" align="end">
                   <Calendar
                     mode="range"
-                    selected={customDateRange}
-                    onSelect={setCustomDateRange}
+                    selected={tempDateRange}
+                    onSelect={setTempDateRange}
                     numberOfMonths={2}
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
                   />
+                  <div className="flex justify-end p-3 pt-0 border-t border-border">
+                    <Button size="sm" onClick={handleApplyDateRange} disabled={!tempDateRange?.from}>
+                      Apply
+                    </Button>
+                  </div>
                 </PopoverContent>
               </Popover>
             )}
