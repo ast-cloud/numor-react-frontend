@@ -208,7 +208,7 @@ const Income = () => {
         <div className="flex justify-end mt-4 mb-2">
           <div className="flex items-center gap-2">
             <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
-              <SelectTrigger className="w-[130px] h-8 text-sm">
+              <SelectTrigger className="w-[150px] h-8 text-sm">
                 <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
                 <SelectValue placeholder="All Time" />
               </SelectTrigger>
