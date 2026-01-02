@@ -15,14 +15,14 @@ interface Invoice {
 }
 
 const mockInvoices: Invoice[] = [
-  { id: "1", invoiceNumber: "INV-2025001", clientName: "Acme Corporation", dueDate: "Due 15 January 2026", amount: 12500.00, status: "paid" },
-  { id: "2", invoiceNumber: "INV-2025002", clientName: "Global Tech Solutions", dueDate: "Due 20 January 2026", amount: 8750.50, status: "unpaid" },
-  { id: "3", invoiceNumber: "INV-2025003", clientName: "Design Studio LLC", dueDate: "Due 10 January 2026", amount: 3200.00, status: "overdue" },
-  { id: "4", invoiceNumber: "INV-2025004", clientName: "Marketing Pro Agency", dueDate: "Due 25 January 2026", amount: 15000.00, status: "draft" },
-  { id: "5", invoiceNumber: "INV-2025005", clientName: "Tech Innovators Inc", dueDate: "Due 18 January 2026", amount: 22400.00, status: "paid" },
-  { id: "6", invoiceNumber: "INV-2025006", clientName: "Creative Works Studio", dueDate: "Due 05 January 2026", amount: 6800.00, status: "overdue" },
-  { id: "7", invoiceNumber: "INV-2025007", clientName: "Business Consulting Group", dueDate: "Due 28 January 2026", amount: 9500.00, status: "unpaid" },
-  { id: "8", invoiceNumber: "INV-2025008", clientName: "Digital Media Partners", dueDate: "Due 30 January 2026", amount: 4200.00, status: "draft" },
+  { id: "1", invoiceNumber: "INV-2025001", clientName: "Acme Corporation", dueDate: "15/01/2026", amount: 12500.00, status: "paid" },
+  { id: "2", invoiceNumber: "INV-2025002", clientName: "Global Tech Solutions", dueDate: "20/01/2026", amount: 8750.50, status: "unpaid" },
+  { id: "3", invoiceNumber: "INV-2025003", clientName: "Design Studio LLC", dueDate: "10/01/2026", amount: 3200.00, status: "overdue" },
+  { id: "4", invoiceNumber: "INV-2025004", clientName: "Marketing Pro Agency", dueDate: "25/01/2026", amount: 15000.00, status: "draft" },
+  { id: "5", invoiceNumber: "INV-2025005", clientName: "Tech Innovators Inc", dueDate: "18/01/2026", amount: 22400.00, status: "paid" },
+  { id: "6", invoiceNumber: "INV-2025006", clientName: "Creative Works Studio", dueDate: "05/01/2026", amount: 6800.00, status: "overdue" },
+  { id: "7", invoiceNumber: "INV-2025007", clientName: "Business Consulting Group", dueDate: "28/01/2026", amount: 9500.00, status: "unpaid" },
+  { id: "8", invoiceNumber: "INV-2025008", clientName: "Digital Media Partners", dueDate: "30/01/2026", amount: 4200.00, status: "draft" },
 ];
 
 const statusStyles: Record<InvoiceStatus, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
