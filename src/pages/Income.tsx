@@ -4,9 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MoreHorizontal, CalendarIcon, X } from "lucide-react";
-import { format, parse } from "date-fns";
+import { format, parse, startOfDay, endOfDay, startOfWeek, startOfMonth, startOfQuarter, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
+
+type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
 type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue";
 
@@ -75,31 +79,86 @@ const InvoiceRow = ({ invoice }: { invoice: Invoice }) => {
 
 const Income = () => {
   const [activeTab, setActiveTab] = useState("all");
-  const [startDate, setStartDate] = useState<Date | undefined>();
-  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("all");
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
+  const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
 
   const parseDate = (dateStr: string) => {
     return parse(dateStr, "dd/MM/yyyy", new Date());
   };
 
+  const getDateRange = (): { start: Date; end: Date } | null => {
+    const today = new Date();
+    switch (timeRangePreset) {
+      case "today":
+        return { start: startOfDay(today), end: endOfDay(today) };
+      case "this_week":
+        return { start: startOfWeek(today, { weekStartsOn: 1 }), end: endOfDay(today) };
+      case "this_month":
+        return { start: startOfMonth(today), end: endOfDay(today) };
+      case "this_quarter":
+        return { start: startOfQuarter(today), end: endOfDay(today) };
+      case "custom":
+        if (customDateRange?.from) {
+          return {
+            start: startOfDay(customDateRange.from),
+            end: endOfDay(customDateRange.to || customDateRange.from),
+          };
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
+
   const filterInvoices = (status: string) => {
     let filtered = status === "all" ? mockInvoices : mockInvoices.filter((inv) => inv.status === status);
     
-    if (startDate || endDate) {
+    const dateRange = getDateRange();
+    if (dateRange) {
       filtered = filtered.filter((inv) => {
         const invoiceDate = parseDate(inv.dueDate);
-        if (startDate && invoiceDate < startDate) return false;
-        if (endDate && invoiceDate > endDate) return false;
-        return true;
+        return isWithinInterval(invoiceDate, { start: dateRange.start, end: dateRange.end });
       });
     }
     
     return filtered;
   };
 
+  const getTimeRangeLabel = () => {
+    switch (timeRangePreset) {
+      case "today":
+        return "Today";
+      case "this_week":
+        return "This Week";
+      case "this_month":
+        return "This Month";
+      case "this_quarter":
+        return "This Quarter";
+      case "custom":
+        if (customDateRange?.from) {
+          return customDateRange.to
+            ? `${format(customDateRange.from, "MMM d")} - ${format(customDateRange.to, "MMM d")}`
+            : format(customDateRange.from, "MMM d, yyyy");
+        }
+        return "Custom Range";
+      default:
+        return "All Time";
+    }
+  };
+
+  const handleTimeRangeChange = (value: TimeRangePreset) => {
+    setTimeRangePreset(value);
+    if (value === "custom") {
+      setIsCustomDatePopoverOpen(true);
+    } else {
+      setCustomDateRange(undefined);
+    }
+  };
+
   const clearDateFilter = () => {
-    setStartDate(undefined);
-    setEndDate(undefined);
+    setTimeRangePreset("all");
+    setCustomDateRange(undefined);
   };
 
   const tabs = [
@@ -117,63 +176,6 @@ const Income = () => {
         <p className="text-muted-foreground mt-1">Track and manage your income.</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[160px] justify-start text-left font-normal",
-                  !startDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, "dd/MM/yyyy") : "Start date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={setStartDate}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
-          <span className="text-muted-foreground">to</span>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[160px] justify-start text-left font-normal",
-                  !endDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, "dd/MM/yyyy") : "End date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={setEndDate}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
-          {(startDate || endDate) && (
-            <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-9 w-9">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 gap-6">
           {tabs.map((tab) => (
@@ -186,6 +188,62 @@ const Income = () => {
             </TabsTrigger>
           ))}
         </TabsList>
+
+        <div className="flex flex-wrap items-center gap-4 mt-4 mb-2">
+          <div className="flex items-center gap-2">
+            <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
+              <SelectTrigger className="w-[150px]">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="All Time" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="this_week">This Week</SelectItem>
+                <SelectItem value="this_month">This Month</SelectItem>
+                <SelectItem value="this_quarter">This Quarter</SelectItem>
+                <SelectItem value="custom">Custom Range</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {timeRangePreset === "custom" && (
+              <Popover open={isCustomDatePopoverOpen} onOpenChange={setIsCustomDatePopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {customDateRange?.from ? (
+                      customDateRange.to ? (
+                        <>
+                          {format(customDateRange.from, "dd/MM/yyyy")} - {format(customDateRange.to, "dd/MM/yyyy")}
+                        </>
+                      ) : (
+                        format(customDateRange.from, "dd/MM/yyyy")
+                      )
+                    ) : (
+                      "Pick date range"
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    selected={customDateRange}
+                    onSelect={setCustomDateRange}
+                    numberOfMonths={2}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {timeRangePreset !== "all" && (
+              <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-9 w-9">
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
 
         {tabs.map((tab) => (
           <TabsContent key={tab.value} value={tab.value} className="mt-6">
