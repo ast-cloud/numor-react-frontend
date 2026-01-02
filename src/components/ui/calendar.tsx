@@ -1,52 +1,105 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, getDefaultClassNames, type DayButtonProps } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
+function CalendarDayButton({
+  className,
+  day,
+  modifiers,
+  ...props
+}: DayButtonProps) {
+  const defaultClassNames = getDefaultClassNames();
+  const ref = React.useRef<HTMLButtonElement>(null);
+
+  React.useEffect(() => {
+    if (modifiers.focused) ref.current?.focus();
+  }, [modifiers.focused]);
+
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        buttonVariants({ variant: "ghost" }),
+        "h-9 w-9 p-0 font-normal",
+        modifiers.today && "bg-accent text-accent-foreground",
+        modifiers.selected &&
+          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+        modifiers.outside && "text-muted-foreground opacity-50",
+        modifiers.disabled && "text-muted-foreground opacity-50",
+        modifiers.hidden && "invisible",
+        modifiers.range_middle &&
+          "bg-accent text-accent-foreground rounded-none",
+        modifiers.range_start && "rounded-r-none",
+        modifiers.range_end && "rounded-l-none",
+        defaultClassNames.day_button,
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
   ({ className, classNames, showOutsideDays = true, ...props }, ref) => {
+    const defaultClassNames = getDefaultClassNames();
+
     return (
       <div ref={ref}>
         <DayPicker
           showOutsideDays={showOutsideDays}
           className={cn("p-3 pointer-events-auto", className)}
           classNames={{
-            months: "flex flex-col sm:flex-row gap-4",
-            month: "flex flex-col gap-4",
-            month_caption: "flex justify-center pt-1 relative items-center w-full",
-            caption_label: "text-sm font-medium",
-            nav: "flex items-center gap-1",
+            root: cn("w-fit", defaultClassNames.root),
+            months: cn(
+              "flex flex-col sm:flex-row gap-4 relative",
+              defaultClassNames.months
+            ),
+            month: cn("flex flex-col gap-4 w-full", defaultClassNames.month),
+            month_caption: cn(
+              "flex justify-center pt-1 relative items-center w-full h-9",
+              defaultClassNames.month_caption
+            ),
+            caption_label: cn(
+              "text-sm font-medium select-none",
+              defaultClassNames.caption_label
+            ),
+            nav: cn(
+              "flex items-center gap-1 w-full absolute top-0 inset-x-0 justify-between px-1",
+              defaultClassNames.nav
+            ),
             button_previous: cn(
               buttonVariants({ variant: "outline" }),
-              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1 z-10"
+              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 z-10",
+              defaultClassNames.button_previous
             ),
             button_next: cn(
               buttonVariants({ variant: "outline" }),
-              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1 z-10"
+              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 z-10",
+              defaultClassNames.button_next
             ),
-            month_grid: "w-full border-collapse space-y-1",
-            weekdays: "flex",
-            weekday: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-            week: "flex w-full mt-2",
-            day: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-range-start)]:rounded-l-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-            day_button: cn(
-              buttonVariants({ variant: "ghost" }),
-              "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+            month_grid: cn("w-full border-collapse", defaultClassNames.month_grid),
+            weekdays: cn("flex", defaultClassNames.weekdays),
+            weekday: cn(
+              "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] select-none flex-1 text-center",
+              defaultClassNames.weekday
             ),
-            range_start: "day-range-start",
-            range_end: "day-range-end",
-            selected:
-              "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-            today: "bg-accent text-accent-foreground",
-            outside:
-              "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-            disabled: "text-muted-foreground opacity-50",
-            range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-            hidden: "invisible",
+            week: cn("flex w-full mt-2", defaultClassNames.week),
+            day: cn(
+              "relative p-0 text-center text-sm flex-1 flex items-center justify-center aspect-square select-none",
+              defaultClassNames.day
+            ),
+            range_start: cn("rounded-l-md", defaultClassNames.range_start),
+            range_middle: cn("rounded-none", defaultClassNames.range_middle),
+            range_end: cn("rounded-r-md", defaultClassNames.range_end),
+            today: cn("", defaultClassNames.today),
+            outside: cn("", defaultClassNames.outside),
+            disabled: cn("", defaultClassNames.disabled),
+            hidden: cn("invisible", defaultClassNames.hidden),
             ...classNames,
           }}
           components={{
@@ -56,6 +109,7 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
               }
               return <ChevronRight className="h-4 w-4" />;
             },
+            DayButton: CalendarDayButton,
           }}
           {...props}
         />
