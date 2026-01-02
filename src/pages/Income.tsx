@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MoreHorizontal, CalendarIcon, X } from "lucide-react";
+import { format, parse } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue";
 
@@ -70,10 +75,31 @@ const InvoiceRow = ({ invoice }: { invoice: Invoice }) => {
 
 const Income = () => {
   const [activeTab, setActiveTab] = useState("all");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+
+  const parseDate = (dateStr: string) => {
+    return parse(dateStr, "dd/MM/yyyy", new Date());
+  };
 
   const filterInvoices = (status: string) => {
-    if (status === "all") return mockInvoices;
-    return mockInvoices.filter((inv) => inv.status === status);
+    let filtered = status === "all" ? mockInvoices : mockInvoices.filter((inv) => inv.status === status);
+    
+    if (startDate || endDate) {
+      filtered = filtered.filter((inv) => {
+        const invoiceDate = parseDate(inv.dueDate);
+        if (startDate && invoiceDate < startDate) return false;
+        if (endDate && invoiceDate > endDate) return false;
+        return true;
+      });
+    }
+    
+    return filtered;
+  };
+
+  const clearDateFilter = () => {
+    setStartDate(undefined);
+    setEndDate(undefined);
   };
 
   const tabs = [
@@ -89,6 +115,63 @@ const Income = () => {
       <div>
         <h1 className="text-3xl font-display font-bold text-foreground">Invoices</h1>
         <p className="text-muted-foreground mt-1">Track and manage your income.</p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[160px] justify-start text-left font-normal",
+                  !startDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, "dd/MM/yyyy") : "Start date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={startDate}
+                onSelect={setStartDate}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          <span className="text-muted-foreground">to</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[160px] justify-start text-left font-normal",
+                  !endDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, "dd/MM/yyyy") : "End date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={endDate}
+                onSelect={setEndDate}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          {(startDate || endDate) && (
+            <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-9 w-9">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
