@@ -189,11 +189,11 @@ const Income = () => {
           ))}
         </TabsList>
 
-        <div className="flex flex-wrap items-center gap-4 mt-4 mb-2">
+        <div className="flex justify-end mt-4 mb-2">
           <div className="flex items-center gap-2">
             <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
-              <SelectTrigger className="w-[150px]">
-                <CalendarIcon className="mr-2 h-4 w-4" />
+              <SelectTrigger className="w-[130px] h-8 text-sm">
+                <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
                 <SelectValue placeholder="All Time" />
               </SelectTrigger>
               <SelectContent>
@@ -209,22 +209,22 @@ const Income = () => {
             {timeRangePreset === "custom" && (
               <Popover open={isCustomDatePopoverOpen} onOpenChange={setIsCustomDatePopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                  <Button variant="outline" size="sm" className="h-8 text-sm justify-start text-left font-normal">
+                    <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
                     {customDateRange?.from ? (
                       customDateRange.to ? (
                         <>
-                          {format(customDateRange.from, "dd/MM/yyyy")} - {format(customDateRange.to, "dd/MM/yyyy")}
+                          {format(customDateRange.from, "dd/MM/yy")} - {format(customDateRange.to, "dd/MM/yy")}
                         </>
                       ) : (
-                        format(customDateRange.from, "dd/MM/yyyy")
+                        format(customDateRange.from, "dd/MM/yy")
                       )
                     ) : (
-                      "Pick date range"
+                      "Pick range"
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0" align="end">
                   <Calendar
                     mode="range"
                     selected={customDateRange}
@@ -238,8 +238,8 @@ const Income = () => {
             )}
 
             {timeRangePreset !== "all" && (
-              <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-9 w-9">
-                <X className="h-4 w-4" />
+              <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-8 w-8">
+                <X className="h-3.5 w-3.5" />
               </Button>
             )}
           </div>
