@@ -24,11 +24,9 @@ interface InvoiceFormData {
   invoiceNumber: string;
   invoiceDate: Date | undefined;
   dueDate: Date | undefined;
-  paymentTerms: string;
   currency: string;
   clientName: string;
   clientAddress: string;
-  clientVat: string;
   lineItems: LineItem[];
   bankName: string;
   iban: string;
@@ -41,11 +39,9 @@ const initialFormData: InvoiceFormData = {
   invoiceNumber: "",
   invoiceDate: new Date(),
   dueDate: undefined,
-  paymentTerms: "net_14",
   currency: "USD",
   clientName: "",
   clientAddress: "",
-  clientVat: "",
   lineItems: [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
   bankName: "",
   iban: "",
@@ -136,7 +132,7 @@ const CreateInvoiceDialog = () => {
 
         <div className="space-y-6 py-4">
           {/* Invoice Details */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="invoiceNumber">Invoice No.</Label>
               <Input
@@ -190,21 +186,6 @@ const CreateInvoiceDialog = () => {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="space-y-2">
-              <Label>Payment Terms</Label>
-              <Select value={formData.paymentTerms} onValueChange={(value) => handleInputChange("paymentTerms", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select terms" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="due_on_receipt">Due on Receipt</SelectItem>
-                  <SelectItem value="net_7">Net 7</SelectItem>
-                  <SelectItem value="net_14">Net 14</SelectItem>
-                  <SelectItem value="net_30">Net 30</SelectItem>
-                  <SelectItem value="net_60">Net 60</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="space-y-2">
@@ -226,25 +207,14 @@ const CreateInvoiceDialog = () => {
           {/* Client Info */}
           <div className="space-y-4">
             <h3 className="font-medium text-foreground">Client Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Client Name</Label>
-                <Input
-                  id="clientName"
-                  placeholder="e.g. Design Smith Interior Works LLC"
-                  value={formData.clientName}
-                  onChange={(e) => handleInputChange("clientName", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientVat">Client VAT</Label>
-                <Input
-                  id="clientVat"
-                  placeholder="e.g. 7145"
-                  value={formData.clientVat}
-                  onChange={(e) => handleInputChange("clientVat", e.target.value)}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="clientName">Client Name</Label>
+              <Input
+                id="clientName"
+                placeholder="e.g. Design Smith Interior Works LLC"
+                value={formData.clientName}
+                onChange={(e) => handleInputChange("clientName", e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="clientAddress">Client Address</Label>
