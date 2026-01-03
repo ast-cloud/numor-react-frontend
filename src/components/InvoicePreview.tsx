@@ -133,13 +133,13 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
 
   const PageWrapper = ({ children, pageNum }: { children: React.ReactNode; pageNum: number }) => (
     <div 
-      className="bg-white text-black font-sans relative"
+      className="bg-white text-black font-sans relative overflow-hidden"
       style={{ 
         width: `${A4_WIDTH}px`, 
-        height: `${A4_HEIGHT}px`, 
+        minHeight: `${A4_HEIGHT}px`, 
         padding: `${PAGE_PADDING}px`,
+        paddingBottom: `${PAGE_PADDING + 16}px`,
         boxSizing: 'border-box',
-        pageBreakAfter: 'always',
         boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
       }}
     >
@@ -311,10 +311,10 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
               </div>
               <div className="flex-1 space-y-1 text-xs">
                 <p className="font-bold text-slate-700 border-b border-slate-300 pb-1">Notes / Terms</p>
-                <ul className="list-disc list-inside space-y-0.5 text-slate-600">
+                <ul className="list-disc list-inside space-y-0.5 text-slate-600 max-h-20 overflow-hidden">
                   {notesArray.length > 0 ? (
-                    notesArray.map((note, index) => (
-                      <li key={index}>{note}</li>
+                    notesArray.slice(0, 5).map((note, index) => (
+                      <li key={index} className="truncate">{note}</li>
                     ))
                   ) : (
                     <li>Payment due as per terms.</li>
@@ -414,10 +414,10 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
                   </div>
                   <div className="flex-1 space-y-1 text-xs">
                     <p className="font-bold text-slate-700 border-b border-slate-300 pb-1">Notes / Terms</p>
-                    <ul className="list-disc list-inside space-y-0.5 text-slate-600">
+                    <ul className="list-disc list-inside space-y-0.5 text-slate-600 max-h-20 overflow-hidden">
                       {notesArray.length > 0 ? (
-                        notesArray.map((note, index) => (
-                          <li key={index}>{note}</li>
+                        notesArray.slice(0, 5).map((note, index) => (
+                          <li key={index} className="truncate">{note}</li>
                         ))
                       ) : (
                         <li>Payment due as per terms.</li>
