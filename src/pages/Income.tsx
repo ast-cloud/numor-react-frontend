@@ -9,6 +9,7 @@ import { MoreHorizontal, CalendarIcon, X, ArrowUpDown } from "lucide-react";
 import { format, parse, startOfDay, endOfDay, startOfWeek, startOfMonth, startOfQuarter, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
@@ -211,9 +212,12 @@ const Income = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Invoices</h1>
-        <p className="text-muted-foreground mt-1">Track and manage your income.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground">Invoices</h1>
+          <p className="text-muted-foreground mt-1">Track and manage your income.</p>
+        </div>
+        <CreateInvoiceDialog />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
