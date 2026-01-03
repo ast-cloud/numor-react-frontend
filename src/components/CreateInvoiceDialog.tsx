@@ -174,20 +174,17 @@ const CreateInvoiceDialog = () => {
           <Plus className="h-5 w-5" />
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn("max-h-[95vh]", showPreview ? "max-w-[900px]" : "max-w-4xl")}>
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-            {showPreview && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBackToForm}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            )}
-            {showPreview ? "Invoice Preview" : "Create New Invoice"}
-          </DialogTitle>
-        </DialogHeader>
-
+      <DialogContent className={cn("max-h-[95vh] overflow-hidden p-0", showPreview ? "max-w-[900px]" : "max-w-4xl")}>
         {showPreview ? (
           <>
+            <DialogHeader className="px-6 pt-6 pb-4">
+              <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBackToForm}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                Invoice Preview
+              </DialogTitle>
+            </DialogHeader>
             <ScrollArea className="max-h-[calc(95vh-140px)]">
               <div className="flex justify-center py-4 bg-muted/30">
                 <div className="shadow-2xl">
@@ -195,7 +192,7 @@ const CreateInvoiceDialog = () => {
                 </div>
               </div>
             </ScrollArea>
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 p-6 border-t">
               <Button variant="outline" onClick={handleBackToForm}>
                 Back to Edit
               </Button>
@@ -205,7 +202,11 @@ const CreateInvoiceDialog = () => {
             </div>
           </>
         ) : (
-          <div className="space-y-6 py-4 px-1 max-h-[calc(95vh-140px)] overflow-y-auto">
+          <div className="max-h-[95vh] overflow-y-auto px-6">
+            <DialogHeader className="sticky top-0 bg-background py-6 z-10">
+              <DialogTitle className="text-xl font-semibold">Create New Invoice</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 pb-6">
             {/* Invoice Details */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="space-y-2">
@@ -560,7 +561,7 @@ const CreateInvoiceDialog = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-4 border-t sticky bottom-0 bg-background pb-6">
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
@@ -570,6 +571,7 @@ const CreateInvoiceDialog = () => {
               <Button onClick={handlePreview}>
                 Create Invoice
               </Button>
+            </div>
             </div>
           </div>
         )}
