@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, CalendarIcon, Trash2 } from "lucide-react";
+import { Plus, CalendarIcon, Trash2, Upload } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -20,11 +21,21 @@ interface LineItem {
   taxPercent: number;
 }
 
+interface SellerInfo {
+  logo: string;
+  name: string;
+  address: string;
+  taxId: string;
+  email: string;
+  phone: string;
+}
+
 interface InvoiceFormData {
   invoiceNumber: string;
   invoiceDate: Date | undefined;
   dueDate: Date | undefined;
   currency: string;
+  seller: SellerInfo;
   clientName: string;
   clientAddress: string;
   lineItems: LineItem[];
@@ -35,11 +46,22 @@ interface InvoiceFormData {
   notes: string;
 }
 
+// Dummy seller data (would come from user settings)
+const defaultSellerInfo: SellerInfo = {
+  logo: "",
+  name: "Acme Corporation LLC",
+  address: "123 Business Street, Suite 100, Dubai, UAE",
+  taxId: "TRN-100234567890003",
+  email: "billing@acmecorp.com",
+  phone: "+971 4 123 4567",
+};
+
 const initialFormData: InvoiceFormData = {
   invoiceNumber: "",
   invoiceDate: new Date(),
   dueDate: undefined,
   currency: "USD",
+  seller: { ...defaultSellerInfo },
   clientName: "",
   clientAddress: "",
   lineItems: [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
@@ -56,6 +78,13 @@ const CreateInvoiceDialog = () => {
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | Date | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSellerChange = (field: keyof SellerInfo, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      seller: { ...prev.seller, [field]: value },
+    }));
   };
 
   const handleLineItemChange = (id: string, field: keyof LineItem, value: string | number) => {
@@ -202,6 +231,89 @@ const CreateInvoiceDialog = () => {
                 <SelectItem value="INR">INR</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Seller Info */}
+          <div className="space-y-4">
+            <h3 className="font-medium text-foreground">Seller Information</h3>
+            <div className="flex items-start gap-4">
+              <div className="flex flex-col items-center gap-2">
+                <Avatar className="h-16 w-16 border">
+                  <AvatarImage src={formData.seller.logo} alt="Seller logo" />
+                  <AvatarFallback className="bg-muted">
+                    <Upload className="h-6 w-6 text-muted-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+                <Label htmlFor="sellerLogo" className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                  Upload Logo
+                </Label>
+                <Input
+                  id="sellerLogo"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        handleSellerChange("logo", reader.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="sellerName">Name</Label>
+                  <Input
+                    id="sellerName"
+                    placeholder="e.g. Acme Corporation LLC"
+                    value={formData.seller.name}
+                    onChange={(e) => handleSellerChange("name", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sellerTaxId">Tax ID</Label>
+                  <Input
+                    id="sellerTaxId"
+                    placeholder="e.g. TRN-100234567890003"
+                    value={formData.seller.taxId}
+                    onChange={(e) => handleSellerChange("taxId", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sellerEmail">Email</Label>
+                  <Input
+                    id="sellerEmail"
+                    type="email"
+                    placeholder="e.g. billing@acmecorp.com"
+                    value={formData.seller.email}
+                    onChange={(e) => handleSellerChange("email", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sellerPhone">Phone Number</Label>
+                  <Input
+                    id="sellerPhone"
+                    placeholder="e.g. +971 4 123 4567"
+                    value={formData.seller.phone}
+                    onChange={(e) => handleSellerChange("phone", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="sellerAddress">Address</Label>
+                  <Textarea
+                    id="sellerAddress"
+                    placeholder="e.g. 123 Business Street, Suite 100, Dubai, UAE"
+                    value={formData.seller.address}
+                    onChange={(e) => handleSellerChange("address", e.target.value)}
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Client Info */}
