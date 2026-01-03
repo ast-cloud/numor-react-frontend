@@ -3,41 +3,70 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/authStore";
 import { useToast } from "@/hooks/use-toast";
-import { User, Building2, Mail, Pencil, Save, X } from "lucide-react";
+import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin } from "lucide-react";
 
 const DashboardSettings = () => {
   const user = getCurrentUser();
   const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
+  
+  const [profileData, setProfileData] = useState({
     name: user?.name || "",
-    company: user?.company || "",
     email: user?.email || "",
   });
 
-  const handleSave = () => {
-    // Update the user in the auth store (in a real app, this would be an API call)
+  const [companyData, setCompanyData] = useState({
+    companyName: user?.company || "",
+    address: "",
+    taxId: "",
+    email: "",
+    phone: "",
+  });
+
+  const handleSaveProfile = () => {
     if (user) {
-      user.name = formData.name;
-      user.company = formData.company;
-      user.email = formData.email;
+      user.name = profileData.name;
     }
-    setIsEditing(false);
+    setIsEditingProfile(false);
     toast({
-      title: "Settings saved",
+      title: "Profile saved",
       description: "Your profile has been updated successfully.",
     });
   };
 
-  const handleCancel = () => {
-    setFormData({
+  const handleCancelProfile = () => {
+    setProfileData({
       name: user?.name || "",
-      company: user?.company || "",
       email: user?.email || "",
     });
-    setIsEditing(false);
+    setIsEditingProfile(false);
+  };
+
+  const handleSaveCompany = () => {
+    if (user) {
+      user.company = companyData.companyName;
+    }
+    setIsEditingCompany(false);
+    toast({
+      title: "Company details saved",
+      description: "Your company information has been updated successfully.",
+    });
+  };
+
+  const handleCancelCompany = () => {
+    setCompanyData({
+      companyName: user?.company || "",
+      address: "",
+      taxId: "",
+      email: "",
+      phone: "",
+    });
+    setIsEditingCompany(false);
   };
 
   return (
@@ -47,24 +76,25 @@ const DashboardSettings = () => {
         <p className="text-muted-foreground mt-1">Manage your account and preferences.</p>
       </div>
 
+      {/* Profile Information */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Profile Information</CardTitle>
-            <CardDescription>Your personal and business details</CardDescription>
+            <CardDescription>Your personal details</CardDescription>
           </div>
-          {!isEditing ? (
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+          {!isEditingProfile ? (
+            <Button variant="outline" size="sm" onClick={() => setIsEditingProfile(true)}>
               <Pencil className="w-4 h-4 mr-2" />
               Edit
             </Button>
           ) : (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancel}>
+              <Button variant="outline" size="sm" onClick={handleCancelProfile}>
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSave}>
+              <Button size="sm" onClick={handleSaveProfile}>
                 <Save className="w-4 h-4 mr-2" />
                 Save
               </Button>
@@ -78,55 +108,154 @@ const DashboardSettings = () => {
                 <User className="w-4 h-4 text-muted-foreground" />
                 Full Name
               </Label>
-              {isEditing ? (
+              {isEditingProfile ? (
                 <Input
                   id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={profileData.name}
+                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                   placeholder="Enter your name"
                 />
               ) : (
                 <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {formData.name || "Not set"}
+                  {profileData.name || "Not set"}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="company" className="flex items-center gap-2">
+              <Label htmlFor="primaryEmail" className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                Primary Email
+              </Label>
+              <p className="text-sm py-2 px-3 bg-muted/50 rounded-md text-muted-foreground">
+                {profileData.email || "Not set"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Company Details */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Company Details</CardTitle>
+            <CardDescription>Your business information for invoices and documents</CardDescription>
+          </div>
+          {!isEditingCompany ? (
+            <Button variant="outline" size="sm" onClick={() => setIsEditingCompany(true)}>
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleCancelCompany}>
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSaveCompany}>
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+            </div>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="companyName" className="flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-muted-foreground" />
                 Company Name
               </Label>
-              {isEditing ? (
+              {isEditingCompany ? (
                 <Input
-                  id="company"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  id="companyName"
+                  value={companyData.companyName}
+                  onChange={(e) => setCompanyData({ ...companyData, companyName: e.target.value })}
                   placeholder="Enter company name"
                 />
               ) : (
                 <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {formData.company || "Not set"}
+                  {companyData.companyName || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="taxId" className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                Tax ID / GST Number
+              </Label>
+              {isEditingCompany ? (
+                <Input
+                  id="taxId"
+                  value={companyData.taxId}
+                  onChange={(e) => setCompanyData({ ...companyData, taxId: e.target.value })}
+                  placeholder="Enter tax ID"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {companyData.taxId || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="companyEmail" className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                Company Email
+              </Label>
+              {isEditingCompany ? (
+                <Input
+                  id="companyEmail"
+                  type="email"
+                  value={companyData.email}
+                  onChange={(e) => setCompanyData({ ...companyData, email: e.target.value })}
+                  placeholder="Enter company email"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {companyData.email || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="companyPhone" className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                Phone Number
+              </Label>
+              {isEditingCompany ? (
+                <Input
+                  id="companyPhone"
+                  type="tel"
+                  value={companyData.phone}
+                  onChange={(e) => setCompanyData({ ...companyData, phone: e.target.value })}
+                  placeholder="Enter phone number"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {companyData.phone || "Not set"}
                 </p>
               )}
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-muted-foreground" />
-                Email Address
+              <Label htmlFor="address" className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                Address
               </Label>
-              {isEditing ? (
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="Enter your email"
+              {isEditingCompany ? (
+                <Textarea
+                  id="address"
+                  value={companyData.address}
+                  onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
+                  placeholder="Enter company address"
+                  rows={3}
                 />
               ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {formData.email || "Not set"}
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md min-h-[60px] whitespace-pre-wrap">
+                  {companyData.address || "Not set"}
                 </p>
               )}
             </div>
