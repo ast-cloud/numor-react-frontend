@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,14 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/authStore";
 import { useToast } from "@/hooks/use-toast";
-import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin } from "lucide-react";
+import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2 } from "lucide-react";
 
 const DashboardSettings = () => {
   const user = getCurrentUser();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
@@ -27,6 +29,40 @@ const DashboardSettings = () => {
     email: "",
     phone: "",
   });
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 2MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCompanyLogo(reader.result as string);
+        toast({
+          title: "Logo uploaded",
+          description: "Your company logo has been updated.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setCompanyLogo(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    toast({
+      title: "Logo removed",
+      description: "Your company logo has been removed.",
+    });
+  };
 
   const handleSaveProfile = () => {
     if (user) {
@@ -161,6 +197,57 @@ const DashboardSettings = () => {
           )}
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Company Logo Upload */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2">
+              <Upload className="w-4 h-4 text-muted-foreground" />
+              Company Logo
+            </Label>
+            <div className="flex items-center gap-4">
+              <div className="w-24 h-24 border-2 border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30 overflow-hidden">
+                {companyLogo ? (
+                  <img
+                    src={companyLogo}
+                    alt="Company logo"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Building2 className="w-10 h-10 text-muted-foreground/50" />
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                  id="logo-upload"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Logo
+                </Button>
+                {companyLogo && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveLogo}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove
+                  </Button>
+                )}
+                <p className="text-xs text-muted-foreground">PNG, JPG up to 2MB</p>
+              </div>
+            </div>
+          </div>
+
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="companyName" className="flex items-center gap-2">
