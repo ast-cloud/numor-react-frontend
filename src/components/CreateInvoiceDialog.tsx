@@ -203,7 +203,7 @@ const CreateInvoiceDialog = () => {
           </>
         ) : (
           <div className="max-h-[95vh] overflow-y-auto px-6">
-            <DialogHeader className="sticky top-0 bg-background py-6 z-10">
+            <DialogHeader className="py-6">
               <DialogTitle className="text-xl font-semibold">Create New Invoice</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 pb-6">
@@ -561,7 +561,7 @@ const CreateInvoiceDialog = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t sticky bottom-0 bg-background pb-6">
+            <div className="flex justify-end gap-3 pt-4 pb-6 border-t">
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
