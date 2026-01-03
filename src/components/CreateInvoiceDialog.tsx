@@ -386,9 +386,20 @@ const CreateInvoiceDialog = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Pieces">Pieces</SelectItem>
+                        <SelectItem value="Units">Units</SelectItem>
                         <SelectItem value="Hours">Hours</SelectItem>
                         <SelectItem value="Days">Days</SelectItem>
-                        <SelectItem value="Units">Units</SelectItem>
+                        <SelectItem value="Weeks">Weeks</SelectItem>
+                        <SelectItem value="Months">Months</SelectItem>
+                        <SelectItem value="Kg">Kg</SelectItem>
+                        <SelectItem value="Grams">Grams</SelectItem>
+                        <SelectItem value="Liters">Liters</SelectItem>
+                        <SelectItem value="Meters">Meters</SelectItem>
+                        <SelectItem value="Sq. Meters">Sq. Meters</SelectItem>
+                        <SelectItem value="Feet">Feet</SelectItem>
+                        <SelectItem value="Sq. Feet">Sq. Feet</SelectItem>
+                        <SelectItem value="Boxes">Boxes</SelectItem>
+                        <SelectItem value="Cartons">Cartons</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
