@@ -78,6 +78,8 @@ const CreateInvoiceDialog = () => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<InvoiceFormData>(initialFormData);
   const [showPreview, setShowPreview] = useState(false);
+  const [invoiceDateOpen, setInvoiceDateOpen] = useState(false);
+  const [dueDateOpen, setDueDateOpen] = useState(false);
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | Date | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -220,7 +222,7 @@ const CreateInvoiceDialog = () => {
               </div>
               <div className="space-y-2">
                 <Label>Invoice Date</Label>
-                <Popover>
+                <Popover open={invoiceDateOpen} onOpenChange={setInvoiceDateOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -234,15 +236,19 @@ const CreateInvoiceDialog = () => {
                     <Calendar
                       mode="single"
                       selected={formData.invoiceDate}
-                      onSelect={(date) => handleInputChange("invoiceDate", date)}
+                      onSelect={(date) => {
+                        handleInputChange("invoiceDate", date);
+                        setInvoiceDateOpen(false);
+                      }}
                       initialFocus
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
               </div>
               <div className="space-y-2">
                 <Label>Due Date</Label>
-                <Popover>
+                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -256,8 +262,12 @@ const CreateInvoiceDialog = () => {
                     <Calendar
                       mode="single"
                       selected={formData.dueDate}
-                      onSelect={(date) => handleInputChange("dueDate", date)}
+                      onSelect={(date) => {
+                        handleInputChange("dueDate", date);
+                        setDueDateOpen(false);
+                      }}
                       initialFocus
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
