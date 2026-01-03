@@ -205,7 +205,7 @@ const CreateInvoiceDialog = () => {
             </div>
           </>
         ) : (
-          <div className="space-y-6 py-4 max-h-[calc(95vh-140px)] overflow-y-auto">
+          <div className="space-y-6 py-4 px-1 max-h-[calc(95vh-140px)] overflow-y-auto">
             {/* Invoice Details */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="space-y-2">
