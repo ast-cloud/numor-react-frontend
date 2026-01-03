@@ -140,6 +140,12 @@ const CreateInvoiceDialog = () => {
     setFormData(initialFormData);
   };
 
+  const handleSaveAsDraft = () => {
+    console.log("Draft Invoice Data:", { ...formData, status: "draft" });
+    setOpen(false);
+    setFormData(initialFormData);
+  };
+
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
@@ -517,6 +523,9 @@ const CreateInvoiceDialog = () => {
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
+            </Button>
+            <Button variant="secondary" onClick={handleSaveAsDraft}>
+              Save as Draft
             </Button>
             <Button onClick={handleSubmit}>
               Create Invoice
