@@ -20,6 +20,7 @@ const DashboardSettings = () => {
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
+    phone: "",
   });
 
   const [companyData, setCompanyData] = useState({
@@ -79,6 +80,7 @@ const DashboardSettings = () => {
     setProfileData({
       name: user?.name || "",
       email: user?.email || "",
+      phone: "",
     });
     setIsEditingProfile(false);
   };
@@ -166,6 +168,26 @@ const DashboardSettings = () => {
               <p className="text-sm py-2 px-3 bg-muted/50 rounded-md text-muted-foreground">
                 {profileData.email || "Not set"}
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="profilePhone" className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                Phone Number
+              </Label>
+              {isEditingProfile ? (
+                <Input
+                  id="profilePhone"
+                  type="tel"
+                  value={profileData.phone}
+                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                  placeholder="Enter your phone number"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {profileData.phone || "Not set"}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
