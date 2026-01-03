@@ -227,19 +227,20 @@ const DashboardSettings = () => {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="h-7 text-xs px-2"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Logo
+                  <Upload className="w-3 h-3 mr-1.5" />
+                  Upload
                 </Button>
                 {companyLogo && (
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-7 text-xs px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={handleRemoveLogo}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="w-3 h-3 mr-1.5" />
                     Remove
                   </Button>
                 )}
