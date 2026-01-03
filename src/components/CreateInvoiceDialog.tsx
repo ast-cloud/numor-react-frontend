@@ -178,8 +178,8 @@ const CreateInvoiceDialog = () => {
       </DialogTrigger>
       <DialogContent className={cn("max-h-[95vh] overflow-hidden p-0", showPreview ? "max-w-[900px]" : "max-w-4xl")}>
         {showPreview ? (
-          <>
-            <DialogHeader className="px-6 pt-6 pb-4">
+          <div className="flex flex-col max-h-[95vh]">
+            <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
               <DialogTitle className="text-xl font-semibold flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBackToForm}>
                   <ArrowLeft className="h-4 w-4" />
@@ -187,14 +187,14 @@ const CreateInvoiceDialog = () => {
                 Invoice Preview
               </DialogTitle>
             </DialogHeader>
-            <ScrollArea className="max-h-[calc(95vh-140px)]">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="flex justify-center py-4 bg-muted/30">
                 <div className="shadow-2xl">
                   <InvoicePreview formData={formData} />
                 </div>
               </div>
             </ScrollArea>
-            <div className="flex justify-end gap-3 p-6 border-t">
+            <div className="flex justify-end gap-3 p-6 border-t flex-shrink-0">
               <Button variant="outline" onClick={handleBackToForm}>
                 Back to Edit
               </Button>
@@ -202,7 +202,7 @@ const CreateInvoiceDialog = () => {
                 Confirm & Create Invoice
               </Button>
             </div>
-          </>
+          </div>
         ) : (
           <div className="max-h-[95vh] overflow-y-auto px-6">
             <DialogHeader className="py-6">
