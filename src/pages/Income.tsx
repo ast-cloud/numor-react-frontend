@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreHorizontal, CalendarIcon, X } from "lucide-react";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown } from "lucide-react";
 import { format, parse, startOfDay, endOfDay, startOfWeek, startOfMonth, startOfQuarter, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
+
+type SortOption = "due_date_asc" | "due_date_desc" | "amount_asc" | "amount_desc" | "client_asc" | "client_desc";
 
 type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue";
 
@@ -83,6 +85,7 @@ const Income = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
   const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>("due_date_desc");
 
   const handleApplyDateRange = () => {
     setCustomDateRange(tempDateRange);
@@ -124,6 +127,27 @@ const Income = () => {
     }
   };
 
+  const sortInvoices = (invoices: Invoice[]) => {
+    return [...invoices].sort((a, b) => {
+      switch (sortOption) {
+        case "due_date_asc":
+          return parseDate(a.dueDate).getTime() - parseDate(b.dueDate).getTime();
+        case "due_date_desc":
+          return parseDate(b.dueDate).getTime() - parseDate(a.dueDate).getTime();
+        case "amount_asc":
+          return a.amount - b.amount;
+        case "amount_desc":
+          return b.amount - a.amount;
+        case "client_asc":
+          return a.clientName.localeCompare(b.clientName);
+        case "client_desc":
+          return b.clientName.localeCompare(a.clientName);
+        default:
+          return 0;
+      }
+    });
+  };
+
   const filterInvoices = (status: string) => {
     let filtered = status === "all" ? mockInvoices : mockInvoices.filter((inv) => inv.status === status);
     
@@ -135,7 +159,7 @@ const Income = () => {
       });
     }
     
-    return filtered;
+    return sortInvoices(filtered);
   };
 
   const getTimeRangeLabel = () => {
@@ -207,6 +231,21 @@ const Income = () => {
 
         <div className="flex justify-end mt-4 mb-2">
           <div className="flex items-center gap-2">
+            <Select value={sortOption} onValueChange={(value: SortOption) => setSortOption(value)}>
+              <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
+                <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="due_date_desc">Due Date (Newest)</SelectItem>
+                <SelectItem value="due_date_asc">Due Date (Oldest)</SelectItem>
+                <SelectItem value="amount_desc">Amount (High-Low)</SelectItem>
+                <SelectItem value="amount_asc">Amount (Low-High)</SelectItem>
+                <SelectItem value="client_asc">Client (A-Z)</SelectItem>
+                <SelectItem value="client_desc">Client (Z-A)</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
               <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
                 <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
