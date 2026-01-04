@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreHorizontal, CalendarIcon, X, ArrowUpDown } from "lucide-react";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download } from "lucide-react";
 import { format, parse, startOfDay, endOfDay, startOfWeek, startOfMonth, startOfQuarter, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
+import { useToast } from "@/hooks/use-toast";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
@@ -99,10 +100,37 @@ const Income = () => {
   const [sortOption, setSortOption] = useState<SortOption>("due_date_desc");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
+  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+  const { toast } = useToast();
 
   const handleInvoiceClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setIsPdfDialogOpen(true);
+  };
+
+  const handleDownloadPdf = () => {
+    if (selectedInvoice) {
+      const link = document.createElement('a');
+      link.href = selectedInvoice.pdfUrl;
+      link.download = `${selectedInvoice.invoiceNumber}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleStatusChange = (newStatus: InvoiceStatus) => {
+    if (selectedInvoice) {
+      setInvoices(prev => prev.map(inv => 
+        inv.id === selectedInvoice.id ? { ...inv, status: newStatus } : inv
+      ));
+      setSelectedInvoice({ ...selectedInvoice, status: newStatus });
+      toast({
+        title: "Status updated",
+        description: `Invoice ${selectedInvoice.invoiceNumber} marked as ${statusStyles[newStatus].label}`,
+      });
+    }
   };
 
   const handleApplyDateRange = () => {
@@ -167,7 +195,7 @@ const Income = () => {
   };
 
   const filterInvoices = (status: string) => {
-    let filtered = status === "all" ? mockInvoices : mockInvoices.filter((inv) => inv.status === status);
+    let filtered = status === "all" ? invoices : invoices.filter((inv) => inv.status === status);
     
     const dateRange = getDateRange();
     if (dateRange) {
@@ -350,10 +378,32 @@ const Income = () => {
       {/* PDF Preview Dialog */}
       <Dialog open={isPdfDialogOpen} onOpenChange={setIsPdfDialogOpen}>
         <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
-            </DialogTitle>
+          <DialogHeader className="flex-shrink-0">
+            <div className="flex items-center justify-between pr-8">
+              <DialogTitle>
+                {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
+              </DialogTitle>
+              <div className="flex items-center gap-2">
+                <Select 
+                  value={selectedInvoice?.status} 
+                  onValueChange={(value: InvoiceStatus) => handleStatusChange(value)}
+                >
+                  <SelectTrigger className="w-[120px] h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="unpaid">Unpaid</SelectItem>
+                    <SelectItem value="overdue">Overdue</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+                  <Download className="h-4 w-4 mr-1.5" />
+                  Download
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
           <div className="flex-1 min-h-0">
             {selectedInvoice && (
