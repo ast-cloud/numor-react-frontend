@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,17 +25,20 @@ interface Invoice {
   dueDate: string;
   amount: number;
   status: InvoiceStatus;
+  pdfUrl: string;
 }
 
+const DUMMY_PDF_URL = "https://pdfobject.com/pdf/sample.pdf";
+
 const mockInvoices: Invoice[] = [
-  { id: "1", invoiceNumber: "INV-2025001", clientName: "Acme Corporation", dueDate: "15/01/2026", amount: 12500.00, status: "paid" },
-  { id: "2", invoiceNumber: "INV-2025002", clientName: "Global Tech Solutions", dueDate: "20/01/2026", amount: 8750.50, status: "unpaid" },
-  { id: "3", invoiceNumber: "INV-2025003", clientName: "Design Studio LLC", dueDate: "10/01/2026", amount: 3200.00, status: "overdue" },
-  { id: "4", invoiceNumber: "INV-2025004", clientName: "Marketing Pro Agency", dueDate: "25/01/2026", amount: 15000.00, status: "draft" },
-  { id: "5", invoiceNumber: "INV-2025005", clientName: "Tech Innovators Inc", dueDate: "18/01/2026", amount: 22400.00, status: "paid" },
-  { id: "6", invoiceNumber: "INV-2025006", clientName: "Creative Works Studio", dueDate: "05/01/2026", amount: 6800.00, status: "overdue" },
-  { id: "7", invoiceNumber: "INV-2025007", clientName: "Business Consulting Group", dueDate: "28/01/2026", amount: 9500.00, status: "unpaid" },
-  { id: "8", invoiceNumber: "INV-2025008", clientName: "Digital Media Partners", dueDate: "30/01/2026", amount: 4200.00, status: "draft" },
+  { id: "1", invoiceNumber: "INV-2025001", clientName: "Acme Corporation", dueDate: "15/01/2026", amount: 12500.00, status: "paid", pdfUrl: DUMMY_PDF_URL },
+  { id: "2", invoiceNumber: "INV-2025002", clientName: "Global Tech Solutions", dueDate: "20/01/2026", amount: 8750.50, status: "unpaid", pdfUrl: DUMMY_PDF_URL },
+  { id: "3", invoiceNumber: "INV-2025003", clientName: "Design Studio LLC", dueDate: "10/01/2026", amount: 3200.00, status: "overdue", pdfUrl: DUMMY_PDF_URL },
+  { id: "4", invoiceNumber: "INV-2025004", clientName: "Marketing Pro Agency", dueDate: "25/01/2026", amount: 15000.00, status: "draft", pdfUrl: DUMMY_PDF_URL },
+  { id: "5", invoiceNumber: "INV-2025005", clientName: "Tech Innovators Inc", dueDate: "18/01/2026", amount: 22400.00, status: "paid", pdfUrl: DUMMY_PDF_URL },
+  { id: "6", invoiceNumber: "INV-2025006", clientName: "Creative Works Studio", dueDate: "05/01/2026", amount: 6800.00, status: "overdue", pdfUrl: DUMMY_PDF_URL },
+  { id: "7", invoiceNumber: "INV-2025007", clientName: "Business Consulting Group", dueDate: "28/01/2026", amount: 9500.00, status: "unpaid", pdfUrl: DUMMY_PDF_URL },
+  { id: "8", invoiceNumber: "INV-2025008", clientName: "Digital Media Partners", dueDate: "30/01/2026", amount: 4200.00, status: "draft", pdfUrl: DUMMY_PDF_URL },
 ];
 
 const statusStyles: Record<InvoiceStatus, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
@@ -52,11 +56,14 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const InvoiceRow = ({ invoice }: { invoice: Invoice }) => {
+const InvoiceRow = ({ invoice, onClick }: { invoice: Invoice; onClick: () => void }) => {
   const { variant, label } = statusStyles[invoice.status];
   
   return (
-    <div className="flex items-center justify-between py-4 px-4 border-b border-border hover:bg-muted/50 transition-colors">
+    <div 
+      className="flex items-center justify-between py-4 px-4 border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-foreground">{invoice.invoiceNumber}</span>
@@ -72,7 +79,10 @@ const InvoiceRow = ({ invoice }: { invoice: Invoice }) => {
         <span className="font-semibold text-foreground min-w-[100px] text-right">
           {formatCurrency(invoice.amount)}
         </span>
-        <button className="p-1 hover:bg-muted rounded-md transition-colors">
+        <button 
+          className="p-1 hover:bg-muted rounded-md transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
           <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
         </button>
       </div>
@@ -87,6 +97,13 @@ const Income = () => {
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
   const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("due_date_desc");
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
+
+  const handleInvoiceClick = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setIsPdfDialogOpen(true);
+  };
 
   const handleApplyDateRange = () => {
     setCustomDateRange(tempDateRange);
@@ -314,7 +331,11 @@ const Income = () => {
             <div className="bg-card rounded-lg border border-border overflow-hidden">
               {filterInvoices(tab.value).length > 0 ? (
                 filterInvoices(tab.value).map((invoice) => (
-                  <InvoiceRow key={invoice.id} invoice={invoice} />
+                  <InvoiceRow 
+                    key={invoice.id} 
+                    invoice={invoice} 
+                    onClick={() => handleInvoiceClick(invoice)}
+                  />
                 ))
               ) : (
                 <div className="flex items-center justify-center h-32 text-muted-foreground">
@@ -325,6 +346,26 @@ const Income = () => {
           </TabsContent>
         ))}
       </Tabs>
+
+      {/* PDF Preview Dialog */}
+      <Dialog open={isPdfDialogOpen} onOpenChange={setIsPdfDialogOpen}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0">
+            {selectedInvoice && (
+              <iframe
+                src={selectedInvoice.pdfUrl}
+                className="w-full h-full border rounded-lg"
+                title={`Invoice ${selectedInvoice.invoiceNumber}`}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
