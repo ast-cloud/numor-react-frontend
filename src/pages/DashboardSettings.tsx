@@ -174,18 +174,18 @@ const DashboardSettings = () => {
             <CardDescription className="text-sm">Your personal details</CardDescription>
           </div>
           {!isEditingProfile ? (
-            <Button variant="outline" size="sm" onClick={() => setIsEditingProfile(true)}>
-              <Pencil className="w-4 h-4 mr-2" />
+            <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => setIsEditingProfile(true)}>
+              <Pencil className="w-3 h-3 mr-1.5" />
               Edit
             </Button>
           ) : (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancelProfile}>
-                <X className="w-4 h-4 mr-2" />
+              <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={handleCancelProfile}>
+                <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSaveProfile}>
-                <Save className="w-4 h-4 mr-2" />
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfile}>
+                <Save className="w-3 h-3 mr-1.5" />
                 Save
               </Button>
             </div>
@@ -253,18 +253,18 @@ const DashboardSettings = () => {
             <CardDescription className="text-sm">Your business information for invoices and documents</CardDescription>
           </div>
           {!isEditingCompany ? (
-            <Button variant="outline" size="sm" onClick={() => setIsEditingCompany(true)}>
-              <Pencil className="w-4 h-4 mr-2" />
+            <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => setIsEditingCompany(true)}>
+              <Pencil className="w-3 h-3 mr-1.5" />
               Edit
             </Button>
           ) : (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancelCompany}>
-                <X className="w-4 h-4 mr-2" />
+              <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={handleCancelCompany}>
+                <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSaveCompany}>
-                <Save className="w-4 h-4 mr-2" />
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveCompany}>
+                <Save className="w-3 h-3 mr-1.5" />
                 Save
               </Button>
             </div>
@@ -432,8 +432,8 @@ const DashboardSettings = () => {
             <CardTitle className="text-xl font-semibold">Clients</CardTitle>
             <CardDescription className="text-sm">Manage your client information for invoices</CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={handleAddClient}>
-            <Plus className="w-4 h-4 mr-2" />
+          <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={handleAddClient}>
+            <Plus className="w-3 h-3 mr-1.5" />
             Add Client
           </Button>
         </CardHeader>
