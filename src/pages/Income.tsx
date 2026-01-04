@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle } from "lucide-react";
 import { format, parse, startOfDay, endOfDay, startOfWeek, startOfMonth, startOfQuarter, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
@@ -57,7 +58,17 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const InvoiceRow = ({ invoice, onClick }: { invoice: Invoice; onClick: () => void }) => {
+const InvoiceRow = ({ 
+  invoice, 
+  onClick, 
+  onStatusChange, 
+  onDownload 
+}: { 
+  invoice: Invoice; 
+  onClick: () => void;
+  onStatusChange: (invoiceId: string, status: InvoiceStatus) => void;
+  onDownload: (invoice: Invoice) => void;
+}) => {
   const { variant, label } = statusStyles[invoice.status];
   
   return (
@@ -80,12 +91,43 @@ const InvoiceRow = ({ invoice, onClick }: { invoice: Invoice; onClick: () => voi
         <span className="font-semibold text-foreground min-w-[100px] text-right">
           {formatCurrency(invoice.amount)}
         </span>
-        <button 
-          className="p-1 hover:bg-muted rounded-md transition-colors"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button 
+              className="p-1 hover:bg-muted rounded-md transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Circle className="mr-2 h-4 w-4" />
+                Change Status
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange(invoice.id, "draft"); }}>
+                  Draft
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange(invoice.id, "paid"); }}>
+                  Paid
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange(invoice.id, "unpaid"); }}>
+                  Unpaid
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange(invoice.id, "overdue"); }}>
+                  Overdue
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDownload(invoice); }}>
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -108,11 +150,12 @@ const Income = () => {
     setIsPdfDialogOpen(true);
   };
 
-  const handleDownloadPdf = () => {
-    if (selectedInvoice) {
+  const handleDownloadPdf = (invoice?: Invoice) => {
+    const target = invoice || selectedInvoice;
+    if (target) {
       const link = document.createElement('a');
-      link.href = selectedInvoice.pdfUrl;
-      link.download = `${selectedInvoice.invoiceNumber}.pdf`;
+      link.href = target.pdfUrl;
+      link.download = `${target.invoiceNumber}.pdf`;
       link.target = '_blank';
       document.body.appendChild(link);
       link.click();
@@ -120,16 +163,25 @@ const Income = () => {
     }
   };
 
-  const handleStatusChange = (newStatus: InvoiceStatus) => {
-    if (selectedInvoice) {
+  const handleStatusChange = (invoiceId: string, newStatus: InvoiceStatus) => {
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    if (invoice) {
       setInvoices(prev => prev.map(inv => 
-        inv.id === selectedInvoice.id ? { ...inv, status: newStatus } : inv
+        inv.id === invoiceId ? { ...inv, status: newStatus } : inv
       ));
-      setSelectedInvoice({ ...selectedInvoice, status: newStatus });
+      if (selectedInvoice?.id === invoiceId) {
+        setSelectedInvoice({ ...selectedInvoice, status: newStatus });
+      }
       toast({
         title: "Status updated",
-        description: `Invoice ${selectedInvoice.invoiceNumber} marked as ${statusStyles[newStatus].label}`,
+        description: `Invoice ${invoice.invoiceNumber} marked as ${statusStyles[newStatus].label}`,
       });
+    }
+  };
+
+  const handleDialogStatusChange = (newStatus: InvoiceStatus) => {
+    if (selectedInvoice) {
+      handleStatusChange(selectedInvoice.id, newStatus);
     }
   };
 
@@ -363,6 +415,8 @@ const Income = () => {
                     key={invoice.id} 
                     invoice={invoice} 
                     onClick={() => handleInvoiceClick(invoice)}
+                    onStatusChange={handleStatusChange}
+                    onDownload={handleDownloadPdf}
                   />
                 ))
               ) : (
@@ -386,7 +440,7 @@ const Income = () => {
               <div className="flex items-center gap-2">
                 <Select 
                   value={selectedInvoice?.status} 
-                  onValueChange={(value: InvoiceStatus) => handleStatusChange(value)}
+                  onValueChange={(value: InvoiceStatus) => handleDialogStatusChange(value)}
                 >
                   <SelectTrigger className="w-[120px] h-8 text-sm">
                     <SelectValue />
@@ -398,7 +452,7 @@ const Income = () => {
                     <SelectItem value="overdue">Overdue</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+                <Button variant="outline" size="sm" onClick={() => handleDownloadPdf()}>
                   <Download className="h-4 w-4 mr-1.5" />
                   Download
                 </Button>
