@@ -162,16 +162,16 @@ const DashboardSettings = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your account and preferences.</p>
+        <h1 className="text-4xl font-display font-bold text-foreground tracking-tight">Settings</h1>
+        <p className="text-muted-foreground mt-2 text-lg">Manage your account and preferences.</p>
       </div>
 
       {/* Profile Information */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>Your personal details</CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-semibold">Profile Information</CardTitle>
+            <CardDescription className="text-sm">Your personal details</CardDescription>
           </div>
           {!isEditingProfile ? (
             <Button variant="outline" size="sm" onClick={() => setIsEditingProfile(true)}>
@@ -248,9 +248,9 @@ const DashboardSettings = () => {
       {/* Company Details */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Company Details</CardTitle>
-            <CardDescription>Your business information for invoices and documents</CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-semibold">Company Details</CardTitle>
+            <CardDescription className="text-sm">Your business information for invoices and documents</CardDescription>
           </div>
           {!isEditingCompany ? (
             <Button variant="outline" size="sm" onClick={() => setIsEditingCompany(true)}>
@@ -428,9 +428,9 @@ const DashboardSettings = () => {
       {/* Clients */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Clients</CardTitle>
-            <CardDescription>Manage your client information for invoices</CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-semibold">Clients</CardTitle>
+            <CardDescription className="text-sm">Manage your client information for invoices</CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={handleAddClient}>
             <Plus className="w-4 h-4 mr-2" />
