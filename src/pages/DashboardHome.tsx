@@ -1,5 +1,15 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, DollarSign, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TrendingUp, TrendingDown, DollarSign, FileText, CalendarIcon, X } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
+
+type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
 const stats = [
   { title: "Total Revenue", value: "$45,231", change: "+20.1%", trend: "up", icon: DollarSign },
@@ -9,11 +19,126 @@ const stats = [
 ];
 
 const DashboardHome = () => {
+  const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("this_month");
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
+  const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
+  const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
+
+  const handleTimeRangeChange = (value: TimeRangePreset) => {
+    setTimeRangePreset(value);
+    if (value === "custom") {
+      setTimeout(() => {
+        setIsCustomDatePopoverOpen(true);
+      }, 100);
+    } else {
+      setCustomDateRange(undefined);
+    }
+  };
+
+  const handleApplyDateRange = () => {
+    setCustomDateRange(tempDateRange);
+    setIsCustomDatePopoverOpen(false);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsCustomDatePopoverOpen(open);
+    if (open) {
+      setTempDateRange(customDateRange);
+    }
+  };
+
+  const clearDateFilter = () => {
+    setTimeRangePreset("this_month");
+    setCustomDateRange(undefined);
+  };
+
+  const getTimeRangeLabel = () => {
+    switch (timeRangePreset) {
+      case "today":
+        return "Today";
+      case "this_week":
+        return "This Week";
+      case "this_month":
+        return "This Month";
+      case "this_quarter":
+        return "This Quarter";
+      case "custom":
+        if (customDateRange?.from) {
+          return customDateRange.to
+            ? `${format(customDateRange.from, "MMM d")} - ${format(customDateRange.to, "MMM d")}`
+            : format(customDateRange.from, "MMM d, yyyy");
+        }
+        return "Custom Range";
+      default:
+        return "All Time";
+    }
+  };
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back! Here's your financial overview.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Welcome back! Here's your financial overview.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
+            <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
+              <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+              <SelectValue placeholder="This Month" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="this_week">This Week</SelectItem>
+              <SelectItem value="this_month">This Month</SelectItem>
+              <SelectItem value="this_quarter">This Quarter</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {timeRangePreset === "custom" && (
+            <Popover open={isCustomDatePopoverOpen} onOpenChange={handleOpenChange}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-sm justify-start text-left font-normal">
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                  {customDateRange?.from ? (
+                    customDateRange.to ? (
+                      <>
+                        {format(customDateRange.from, "dd/MM/yy")} - {format(customDateRange.to, "dd/MM/yy")}
+                      </>
+                    ) : (
+                      format(customDateRange.from, "dd/MM/yy")
+                    )
+                  ) : (
+                    "Pick range"
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="range"
+                  selected={tempDateRange}
+                  onSelect={setTempDateRange}
+                  numberOfMonths={2}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+                <div className="flex justify-end p-3 pt-0 border-t border-border">
+                  <Button size="sm" onClick={handleApplyDateRange} disabled={!tempDateRange?.from}>
+                    Apply
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+
+          {timeRangePreset !== "this_month" && (
+            <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-8 w-8">
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats Grid */}
