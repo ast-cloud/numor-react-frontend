@@ -432,7 +432,7 @@ const DashboardSettings = () => {
             <CardTitle className="text-xl font-semibold">Clients</CardTitle>
             <CardDescription className="text-sm">Manage your client information for invoices</CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={handleAddClient}>
+          <Button variant="outline" size="sm" className="h-7 text-xs px-2.5 w-fit" onClick={handleAddClient}>
             <Plus className="w-3 h-3 mr-1.5" />
             Add Client
           </Button>
