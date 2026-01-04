@@ -172,7 +172,7 @@ const CreateInvoiceDialog = () => {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="icon" className="h-9 w-9 rounded-full">
+        <Button size="icon" className="h-9 w-9 rounded-lg">
           <Plus className="h-5 w-5" />
         </Button>
       </DialogTrigger>
