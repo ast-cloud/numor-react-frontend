@@ -100,29 +100,29 @@ const InvoiceRow = ({
               <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Circle className="mr-2 h-4 w-4" />
                 Change Status
               </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange(invoice.id, "draft"); }}>
+              <DropdownMenuSubContent onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "draft")}>
                   Draft
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange(invoice.id, "paid"); }}>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "paid")}>
                   Paid
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange(invoice.id, "unpaid"); }}>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "unpaid")}>
                   Unpaid
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStatusChange(invoice.id, "overdue"); }}>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "overdue")}>
                   Overdue
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDownload(invoice); }}>
+            <DropdownMenuItem onClick={() => onDownload(invoice)}>
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </DropdownMenuItem>
