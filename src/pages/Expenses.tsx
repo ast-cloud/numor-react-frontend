@@ -29,7 +29,7 @@ import { format, startOfDay, startOfWeek, startOfMonth, startOfQuarter, endOfDay
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
-const OCR_API_URL = "https://3fb7db89986e.ngrok-free.app/api/expenses/ocr/uploadExpenseForAI";
+const OCR_API_URL = "https://dda4eae2447e.ngrok-free.app/api/expenses/ocr/uploadExpenseForAI";
 
 type SortField = "date" | "totalPrice" | "category";
 type SortOrder = "asc" | "desc";
