@@ -199,35 +199,16 @@ const DashboardHome = () => {
       </div>
 
       {/* Edit Mode Controls */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant={isEditMode ? "default" : "outline"}
-          size="sm"
-          onClick={() => setIsEditMode(!isEditMode)}
-          className="gap-2"
-        >
-          {isEditMode ? (
-            <>
-              <Check className="h-4 w-4" />
-              Done
-            </>
-          ) : (
-            <>
-              <Pencil className="h-4 w-4" />
-              Edit Dashboard
-            </>
-          )}
-        </Button>
-
+      <div className="flex items-center justify-end gap-2">
         {isEditMode && availableToAdd.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="gap-2 h-7 text-xs">
+                <Plus className="h-3 w-3" />
                 Add Widget
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64">
+            <DropdownMenuContent align="end" className="w-64">
               {availableToAdd.map((widget) => (
                 <DropdownMenuItem
                   key={widget.id}
@@ -241,6 +222,25 @@ const DashboardHome = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
+
+        <Button
+          variant={isEditMode ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setIsEditMode(!isEditMode)}
+          className="gap-1.5 h-7 text-xs"
+        >
+          {isEditMode ? (
+            <>
+              <Check className="h-3 w-3" />
+              Done
+            </>
+          ) : (
+            <>
+              <Pencil className="h-3 w-3" />
+              Edit
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Customizable Widget Grid */}
