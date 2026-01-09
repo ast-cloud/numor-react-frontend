@@ -4,10 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, TrendingDown, DollarSign, FileText, CalendarIcon, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { TrendingUp, TrendingDown, DollarSign, FileText, CalendarIcon, X, Pencil, Plus, Check } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import {
+  ExpensesByCategoryWidget,
+  RevenueOverTimeWidget,
+  IncomeVsExpensesWidget,
+  CashFlowWidget,
+  TopClientsWidget,
+  PaymentStatusWidget,
+  availableWidgets,
+  WidgetType,
+} from "@/components/dashboard/widgets";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
@@ -23,6 +39,11 @@ const DashboardHome = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
   const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [activeWidgets, setActiveWidgets] = useState<WidgetType[]>([
+    "revenue-over-time",
+    "expenses-by-category",
+  ]);
 
   const handleTimeRangeChange = (value: TimeRangePreset) => {
     setTimeRangePreset(value);
@@ -52,27 +73,43 @@ const DashboardHome = () => {
     setCustomDateRange(undefined);
   };
 
-  const getTimeRangeLabel = () => {
-    switch (timeRangePreset) {
-      case "today":
-        return "Today";
-      case "this_week":
-        return "This Week";
-      case "this_month":
-        return "This Month";
-      case "this_quarter":
-        return "This Quarter";
-      case "custom":
-        if (customDateRange?.from) {
-          return customDateRange.to
-            ? `${format(customDateRange.from, "MMM d")} - ${format(customDateRange.to, "MMM d")}`
-            : format(customDateRange.from, "MMM d, yyyy");
-        }
-        return "Custom Range";
-      default:
-        return "All Time";
+  const handleAddWidget = (widgetType: WidgetType) => {
+    if (!activeWidgets.includes(widgetType)) {
+      setActiveWidgets([...activeWidgets, widgetType]);
     }
   };
+
+  const handleRemoveWidget = (widgetType: WidgetType) => {
+    setActiveWidgets(activeWidgets.filter((w) => w !== widgetType));
+  };
+
+  const renderWidget = (type: WidgetType) => {
+    const props = {
+      onRemove: () => handleRemoveWidget(type),
+      isEditMode,
+    };
+
+    switch (type) {
+      case "expenses-by-category":
+        return <ExpensesByCategoryWidget key={type} {...props} />;
+      case "revenue-over-time":
+        return <RevenueOverTimeWidget key={type} {...props} />;
+      case "income-vs-expenses":
+        return <IncomeVsExpensesWidget key={type} {...props} />;
+      case "cash-flow":
+        return <CashFlowWidget key={type} {...props} />;
+      case "top-clients":
+        return <TopClientsWidget key={type} {...props} />;
+      case "payment-status":
+        return <PaymentStatusWidget key={type} {...props} />;
+      default:
+        return null;
+    }
+  };
+
+  const availableToAdd = availableWidgets.filter(
+    (widget) => !activeWidgets.includes(widget.type)
+  );
 
   return (
     <div className="space-y-8">
@@ -141,7 +178,7 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Always visible, not customizable */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
           <Card key={stat.title}>
@@ -161,25 +198,64 @@ const DashboardHome = () => {
         ))}
       </div>
 
-      {/* Placeholder Content Areas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="h-80">
-          <CardHeader>
-            <CardTitle>Revenue Overview</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-56">
-            <p className="text-muted-foreground">Chart placeholder</p>
-          </CardContent>
-        </Card>
+      {/* Edit Mode Controls */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant={isEditMode ? "default" : "outline"}
+          size="sm"
+          onClick={() => setIsEditMode(!isEditMode)}
+          className="gap-2"
+        >
+          {isEditMode ? (
+            <>
+              <Check className="h-4 w-4" />
+              Done
+            </>
+          ) : (
+            <>
+              <Pencil className="h-4 w-4" />
+              Edit Dashboard
+            </>
+          )}
+        </Button>
 
-        <Card className="h-80">
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-56">
-            <p className="text-muted-foreground">Transactions list placeholder</p>
-          </CardContent>
-        </Card>
+        {isEditMode && availableToAdd.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Widget
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64">
+              {availableToAdd.map((widget) => (
+                <DropdownMenuItem
+                  key={widget.id}
+                  onClick={() => handleAddWidget(widget.type)}
+                  className="flex flex-col items-start gap-1 py-2"
+                >
+                  <span className="font-medium">{widget.title}</span>
+                  <span className="text-xs text-muted-foreground">{widget.description}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+
+      {/* Customizable Widget Grid */}
+      <div className={cn(
+        "grid grid-cols-1 lg:grid-cols-2 gap-6",
+        isEditMode && "ring-2 ring-dashed ring-primary/20 p-4 rounded-lg bg-primary/5"
+      )}>
+        {activeWidgets.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center h-40 text-muted-foreground">
+            <p>No widgets added yet.</p>
+            <p className="text-sm">Click "Add Widget" to get started.</p>
+          </div>
+        ) : (
+          activeWidgets.map((widgetType) => renderWidget(widgetType))
+        )}
       </div>
     </div>
   );
