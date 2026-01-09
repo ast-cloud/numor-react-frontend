@@ -3,12 +3,20 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
+const CHART_COLORS = {
+  chart1: "#f87171", // red
+  chart2: "#4ade80", // green  
+  chart3: "#60a5fa", // blue
+  chart4: "#facc15", // yellow
+  chart5: "#c084fc", // purple
+};
+
 const data = [
-  { name: "Office Supplies", value: 2400, color: "hsl(var(--chart-1))" },
-  { name: "Travel", value: 4567, color: "hsl(var(--chart-2))" },
-  { name: "Marketing", value: 1398, color: "hsl(var(--chart-3))" },
-  { name: "Utilities", value: 980, color: "hsl(var(--chart-4))" },
-  { name: "Software", value: 1890, color: "hsl(var(--chart-5))" },
+  { name: "Office Supplies", value: 2400, color: CHART_COLORS.chart1 },
+  { name: "Travel", value: 4567, color: CHART_COLORS.chart2 },
+  { name: "Marketing", value: 1398, color: CHART_COLORS.chart3 },
+  { name: "Utilities", value: 980, color: CHART_COLORS.chart4 },
+  { name: "Software", value: 1890, color: CHART_COLORS.chart5 },
 ];
 
 interface ExpensesByCategoryWidgetProps {
