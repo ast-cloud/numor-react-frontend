@@ -59,9 +59,10 @@ const PaymentStatusWidget = ({ onRemove, isEditMode }: PaymentStatusWidgetProps)
             />
             <Legend 
               wrapperStyle={{ fontSize: "12px" }}
-              formatter={(value, entry) => (
-                <span style={{ color: entry.color }}>{value}</span>
-              )}
+              formatter={(value, entry: any) => {
+                const item = data.find(d => d.name === value);
+                return <span style={{ color: item?.color || entry.color }}>{value}</span>;
+              }}
             />
           </PieChart>
         </ResponsiveContainer>
