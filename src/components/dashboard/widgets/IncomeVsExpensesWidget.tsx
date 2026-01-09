@@ -58,9 +58,13 @@ const IncomeVsExpensesWidget = ({ onRemove, isEditMode }: IncomeVsExpensesWidget
             />
             <Legend 
               wrapperStyle={{ fontSize: "12px" }}
-              formatter={(value, entry) => (
-                <span style={{ color: entry.color }} className="capitalize">{value}</span>
-              )}
+              formatter={(value, entry: any) => {
+                const colors: Record<string, string> = {
+                  income: "hsl(var(--chart-2))",
+                  expenses: "hsl(var(--chart-1))"
+                };
+                return <span style={{ color: colors[value] || entry.color }} className="capitalize">{value}</span>;
+              }}
             />
             <Bar dataKey="income" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
             <Bar dataKey="expenses" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
