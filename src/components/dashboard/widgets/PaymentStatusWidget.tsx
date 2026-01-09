@@ -3,11 +3,18 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
+const CHART_COLORS = {
+  paid: "#4ade80",    // green
+  pending: "#facc15", // yellow
+  overdue: "#f87171", // red
+  draft: "#c084fc",   // purple
+};
+
 const data = [
-  { name: "Paid", value: 45, color: "hsl(var(--chart-2))" },
-  { name: "Pending", value: 30, color: "hsl(var(--chart-4))" },
-  { name: "Overdue", value: 15, color: "hsl(var(--chart-1))" },
-  { name: "Draft", value: 10, color: "hsl(var(--chart-5))" },
+  { name: "Paid", value: 45, color: CHART_COLORS.paid },
+  { name: "Pending", value: 30, color: CHART_COLORS.pending },
+  { name: "Overdue", value: 15, color: CHART_COLORS.overdue },
+  { name: "Draft", value: 10, color: CHART_COLORS.draft },
 ];
 
 interface PaymentStatusWidgetProps {

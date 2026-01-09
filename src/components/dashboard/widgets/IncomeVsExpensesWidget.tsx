@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
+const CHART_COLORS = {
+  income: "#4ade80",   // green
+  expenses: "#f87171", // red
+};
+
 const data = [
   { month: "Jan", income: 15000, expenses: 8000 },
   { month: "Feb", income: 22000, expenses: 10000 },
@@ -58,16 +63,12 @@ const IncomeVsExpensesWidget = ({ onRemove, isEditMode }: IncomeVsExpensesWidget
             />
             <Legend 
               wrapperStyle={{ fontSize: "12px" }}
-              formatter={(value, entry: any) => {
-                const colors: Record<string, string> = {
-                  income: "hsl(var(--chart-2))",
-                  expenses: "hsl(var(--chart-1))"
-                };
-                return <span style={{ color: colors[value] || entry.color }} className="capitalize">{value}</span>;
+              formatter={(value) => {
+                return <span style={{ color: CHART_COLORS[value as keyof typeof CHART_COLORS] }} className="capitalize">{value}</span>;
               }}
             />
-            <Bar dataKey="income" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expenses" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="income" fill={CHART_COLORS.income} radius={[4, 4, 0, 0]} />
+            <Bar dataKey="expenses" fill={CHART_COLORS.expenses} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
