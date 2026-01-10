@@ -2,21 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-
-const data = [
-  { name: "Acme Corp", revenue: 25000 },
-  { name: "Tech Solutions", revenue: 18000 },
-  { name: "Global Inc", revenue: 15000 },
-  { name: "StartUp Co", revenue: 12000 },
-  { name: "Enterprise Ltd", revenue: 8000 },
-];
+import { TimeRangeConfig, getTopClientsData } from "./widgetData";
 
 interface TopClientsWidgetProps {
   onRemove: () => void;
   isEditMode: boolean;
+  timeRange: TimeRangeConfig;
 }
 
-const TopClientsWidget = ({ onRemove, isEditMode }: TopClientsWidgetProps) => {
+const TopClientsWidget = ({ onRemove, isEditMode, timeRange }: TopClientsWidgetProps) => {
+  const data = getTopClientsData(timeRange);
+
   return (
     <Card className="h-80 relative">
       {isEditMode && (

@@ -2,22 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-const data = [
-  { month: "Jan", revenue: 12000 },
-  { month: "Feb", revenue: 19000 },
-  { month: "Mar", revenue: 15000 },
-  { month: "Apr", revenue: 22000 },
-  { month: "May", revenue: 28000 },
-  { month: "Jun", revenue: 25000 },
-];
+import { TimeRangeConfig, getRevenueData } from "./widgetData";
 
 interface RevenueOverTimeWidgetProps {
   onRemove: () => void;
   isEditMode: boolean;
+  timeRange: TimeRangeConfig;
 }
 
-const RevenueOverTimeWidget = ({ onRemove, isEditMode }: RevenueOverTimeWidgetProps) => {
+const RevenueOverTimeWidget = ({ onRemove, isEditMode, timeRange }: RevenueOverTimeWidgetProps) => {
+  const data = getRevenueData(timeRange);
+
   return (
     <Card className="h-80 relative">
       {isEditMode && (
@@ -39,7 +34,7 @@ const RevenueOverTimeWidget = ({ onRemove, isEditMode }: RevenueOverTimeWidgetPr
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis 
-              dataKey="month" 
+              dataKey="period" 
               stroke="hsl(var(--muted-foreground))" 
               fontSize={12}
             />

@@ -2,27 +2,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { TimeRangeConfig, getIncomeVsExpensesData } from "./widgetData";
 
 const CHART_COLORS = {
   income: "#4ade80",   // green
   expenses: "#f87171", // red
 };
 
-const data = [
-  { month: "Jan", income: 15000, expenses: 8000 },
-  { month: "Feb", income: 22000, expenses: 10000 },
-  { month: "Mar", income: 18000, expenses: 9500 },
-  { month: "Apr", income: 25000, expenses: 12000 },
-  { month: "May", income: 30000, expenses: 14000 },
-  { month: "Jun", income: 28000, expenses: 11000 },
-];
-
 interface IncomeVsExpensesWidgetProps {
   onRemove: () => void;
   isEditMode: boolean;
+  timeRange: TimeRangeConfig;
 }
 
-const IncomeVsExpensesWidget = ({ onRemove, isEditMode }: IncomeVsExpensesWidgetProps) => {
+const IncomeVsExpensesWidget = ({ onRemove, isEditMode, timeRange }: IncomeVsExpensesWidgetProps) => {
+  const data = getIncomeVsExpensesData(timeRange);
+
   return (
     <Card className="h-80 relative">
       {isEditMode && (
@@ -44,7 +39,7 @@ const IncomeVsExpensesWidget = ({ onRemove, isEditMode }: IncomeVsExpensesWidget
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis 
-              dataKey="month" 
+              dataKey="period" 
               stroke="hsl(var(--muted-foreground))" 
               fontSize={12}
             />

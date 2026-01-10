@@ -2,27 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-
-const CHART_COLORS = {
-  paid: "#4ade80",    // green
-  pending: "#facc15", // yellow
-  overdue: "#f87171", // red
-  draft: "#c084fc",   // purple
-};
-
-const data = [
-  { name: "Paid", value: 45, color: CHART_COLORS.paid },
-  { name: "Pending", value: 30, color: CHART_COLORS.pending },
-  { name: "Overdue", value: 15, color: CHART_COLORS.overdue },
-  { name: "Draft", value: 10, color: CHART_COLORS.draft },
-];
+import { TimeRangeConfig, getPaymentStatusData } from "./widgetData";
 
 interface PaymentStatusWidgetProps {
   onRemove: () => void;
   isEditMode: boolean;
+  timeRange: TimeRangeConfig;
 }
 
-const PaymentStatusWidget = ({ onRemove, isEditMode }: PaymentStatusWidgetProps) => {
+const PaymentStatusWidget = ({ onRemove, isEditMode, timeRange }: PaymentStatusWidgetProps) => {
+  const data = getPaymentStatusData(timeRange);
+
   return (
     <Card className="h-80 relative">
       {isEditMode && (
