@@ -21,6 +21,7 @@ import {
   CashFlowWidget,
   TopClientsWidget,
   PaymentStatusWidget,
+  ExpensesOverTimeWidget,
   availableWidgets,
   WidgetType,
 } from "@/components/dashboard/widgets";
@@ -102,6 +103,8 @@ const DashboardHome = () => {
         return <TopClientsWidget key={type} {...props} />;
       case "payment-status":
         return <PaymentStatusWidget key={type} {...props} />;
+      case "expenses-over-time":
+        return <ExpensesOverTimeWidget key={type} {...props} />;
       default:
         return null;
     }
