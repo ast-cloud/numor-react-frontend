@@ -30,8 +30,9 @@ const RevenueOverTimeWidget = ({ onRemove, isEditMode }: RevenueOverTimeWidgetPr
           <X className="h-4 w-4" />
         </Button>
       )}
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-base">Revenue Over Time</CardTitle>
+        <p className="text-xs text-muted-foreground">Track your monthly revenue trends</p>
       </CardHeader>
       <CardContent className="h-56">
         <ResponsiveContainer width="100%" height="100%">

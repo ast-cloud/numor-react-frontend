@@ -35,8 +35,9 @@ const PaymentStatusWidget = ({ onRemove, isEditMode }: PaymentStatusWidgetProps)
           <X className="h-4 w-4" />
         </Button>
       )}
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-base">Invoice Status</CardTitle>
+        <p className="text-xs text-muted-foreground">Breakdown of your invoice payment states</p>
       </CardHeader>
       <CardContent className="h-56">
         <ResponsiveContainer width="100%" height="100%">
