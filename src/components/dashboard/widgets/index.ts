@@ -5,6 +5,7 @@ export { default as CashFlowWidget } from "./CashFlowWidget";
 export { default as TopClientsWidget } from "./TopClientsWidget";
 export { default as PaymentStatusWidget } from "./PaymentStatusWidget";
 export { default as ExpensesOverTimeWidget } from "./ExpensesOverTimeWidget";
+export type { TimeRangeConfig, TimeRangePreset } from "./widgetData";
 
 export type WidgetType = 
   | "expenses-by-category"

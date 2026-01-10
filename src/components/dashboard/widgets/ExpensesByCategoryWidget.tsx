@@ -2,29 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-
-const CHART_COLORS = {
-  chart1: "#f87171", // red
-  chart2: "#4ade80", // green  
-  chart3: "#60a5fa", // blue
-  chart4: "#facc15", // yellow
-  chart5: "#c084fc", // purple
-};
-
-const data = [
-  { name: "Office Supplies", value: 2400, color: CHART_COLORS.chart1 },
-  { name: "Travel", value: 4567, color: CHART_COLORS.chart2 },
-  { name: "Marketing", value: 1398, color: CHART_COLORS.chart3 },
-  { name: "Utilities", value: 980, color: CHART_COLORS.chart4 },
-  { name: "Software", value: 1890, color: CHART_COLORS.chart5 },
-];
+import { TimeRangeConfig, getExpensesByCategoryData } from "./widgetData";
 
 interface ExpensesByCategoryWidgetProps {
   onRemove: () => void;
   isEditMode: boolean;
+  timeRange: TimeRangeConfig;
 }
 
-const ExpensesByCategoryWidget = ({ onRemove, isEditMode }: ExpensesByCategoryWidgetProps) => {
+const ExpensesByCategoryWidget = ({ onRemove, isEditMode, timeRange }: ExpensesByCategoryWidgetProps) => {
+  const data = getExpensesByCategoryData(timeRange);
+
   return (
     <Card className="h-80 relative">
       {isEditMode && (
@@ -64,7 +52,7 @@ const ExpensesByCategoryWidget = ({ onRemove, isEditMode }: ExpensesByCategoryWi
                 borderRadius: "8px",
                 color: "hsl(var(--popover-foreground))",
               }}
-              formatter={(value: number) => [`$${value}`, "Amount"]}
+              formatter={(value: number) => [`$${value.toLocaleString()}`, "Amount"]}
             />
             <Legend 
               wrapperStyle={{ fontSize: "12px" }}

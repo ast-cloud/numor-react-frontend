@@ -24,6 +24,7 @@ import {
   ExpensesOverTimeWidget,
   availableWidgets,
   WidgetType,
+  TimeRangeConfig,
 } from "@/components/dashboard/widgets";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
@@ -84,10 +85,16 @@ const DashboardHome = () => {
     setActiveWidgets(activeWidgets.filter((w) => w !== widgetType));
   };
 
+  const timeRangeConfig: TimeRangeConfig = {
+    preset: timeRangePreset,
+    customRange: customDateRange,
+  };
+
   const renderWidget = (type: WidgetType) => {
     const props = {
       onRemove: () => handleRemoveWidget(type),
       isEditMode,
+      timeRange: timeRangeConfig,
     };
 
     switch (type) {
