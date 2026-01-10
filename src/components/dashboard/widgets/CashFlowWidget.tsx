@@ -59,8 +59,8 @@ const CashFlowWidget = ({ onRemove, isEditMode }: CashFlowWidgetProps) => {
             <Area 
               type="monotone" 
               dataKey="cashFlow" 
-              stroke="hsl(var(--chart-3))" 
-              fill="hsl(var(--chart-3) / 0.3)"
+              stroke="#06b6d4"
+              fill="rgba(6, 182, 212, 0.3)"
               strokeWidth={2}
             />
           </AreaChart>

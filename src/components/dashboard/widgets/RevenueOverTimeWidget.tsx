@@ -59,9 +59,9 @@ const RevenueOverTimeWidget = ({ onRemove, isEditMode }: RevenueOverTimeWidgetPr
             <Line 
               type="monotone" 
               dataKey="revenue" 
-              stroke="hsl(var(--primary))" 
+              stroke="#6366f1"
               strokeWidth={2}
-              dot={{ fill: "hsl(var(--primary))" }}
+              dot={{ fill: "#6366f1" }}
             />
           </LineChart>
         </ResponsiveContainer>

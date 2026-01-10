@@ -59,7 +59,7 @@ const TopClientsWidget = ({ onRemove, isEditMode }: TopClientsWidgetProps) => {
             />
             <Bar 
               dataKey="revenue" 
-              fill="hsl(var(--chart-4))" 
+              fill="#8b5cf6"
               radius={[0, 4, 4, 0]} 
             />
           </BarChart>
