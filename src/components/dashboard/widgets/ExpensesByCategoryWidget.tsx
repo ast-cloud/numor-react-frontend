@@ -37,8 +37,9 @@ const ExpensesByCategoryWidget = ({ onRemove, isEditMode }: ExpensesByCategoryWi
           <X className="h-4 w-4" />
         </Button>
       )}
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-base">Expenses by Category</CardTitle>
+        <p className="text-xs text-muted-foreground">See where your money is going</p>
       </CardHeader>
       <CardContent className="h-56">
         <ResponsiveContainer width="100%" height="100%">

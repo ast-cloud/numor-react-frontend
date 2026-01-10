@@ -29,8 +29,9 @@ const TopClientsWidget = ({ onRemove, isEditMode }: TopClientsWidgetProps) => {
           <X className="h-4 w-4" />
         </Button>
       )}
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-base">Top Clients by Revenue</CardTitle>
+        <p className="text-xs text-muted-foreground">Your highest-earning client relationships</p>
       </CardHeader>
       <CardContent className="h-56">
         <ResponsiveContainer width="100%" height="100%">

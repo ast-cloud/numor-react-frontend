@@ -30,8 +30,9 @@ const CashFlowWidget = ({ onRemove, isEditMode }: CashFlowWidgetProps) => {
           <X className="h-4 w-4" />
         </Button>
       )}
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-base">Cash Flow</CardTitle>
+        <p className="text-xs text-muted-foreground">Monitor your net cash movement over time</p>
       </CardHeader>
       <CardContent className="h-56">
         <ResponsiveContainer width="100%" height="100%">
