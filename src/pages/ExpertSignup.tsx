@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Mail, Lock, User, ArrowLeft, Briefcase, Award, Phone } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, Briefcase, Award, Phone, Upload, FileText, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ExpertSignup = () => {
@@ -24,6 +24,8 @@ const ExpertSignup = () => {
     bio: "",
     agreeToTerms: false,
   });
+  const [certificationFiles, setCertificationFiles] = useState<File[]>([]);
+  const [idProofFile, setIdProofFile] = useState<File | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +62,31 @@ const ExpertSignup = () => {
 
   const handleSelectChange = (field: string) => (value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCertificationUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      setCertificationFiles((prev) => [...prev, ...newFiles]);
+    }
+    e.target.value = "";
+  };
+
+  const removeCertification = (index: number) => {
+    setCertificationFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleIdProofUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIdProofFile(file);
+    }
+    e.target.value = "";
+  };
+
+  const removeIdProof = () => {
+    setIdProofFile(null);
   };
 
   return (
@@ -211,6 +238,100 @@ const ExpertSignup = () => {
                 rows={4}
                 required
               />
+            </div>
+          </div>
+
+          {/* Document Upload */}
+          <div className="space-y-4 pt-4 border-t border-border">
+            <h3 className="text-sm font-medium text-foreground">Document Verification</h3>
+            
+            {/* Certification Upload */}
+            <div className="space-y-2">
+              <Label>Professional Certifications</Label>
+              <p className="text-xs text-muted-foreground">
+                Upload your CA/CPA/CFA certificate and any other relevant credentials
+              </p>
+              <div className="border-2 border-dashed border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                <label htmlFor="certifications" className="cursor-pointer flex flex-col items-center gap-2">
+                  <Upload className="w-8 h-8 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Click to upload certifications</span>
+                  <span className="text-xs text-muted-foreground">(PDF, JPG, PNG - Max 5MB each)</span>
+                  <input
+                    id="certifications"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    multiple
+                    onChange={handleCertificationUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              {certificationFiles.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {certificationFiles.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-primary" />
+                        <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeCertification(index)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ID Proof Upload */}
+            <div className="space-y-2">
+              <Label>Government ID Proof</Label>
+              <p className="text-xs text-muted-foreground">
+                Upload a valid government-issued ID (Passport, Driver's License, Aadhar, etc.)
+              </p>
+              {!idProofFile ? (
+                <div className="border-2 border-dashed border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                  <label htmlFor="idProof" className="cursor-pointer flex flex-col items-center gap-2">
+                    <Upload className="w-8 h-8 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Click to upload ID proof</span>
+                    <span className="text-xs text-muted-foreground">(PDF, JPG, PNG - Max 5MB)</span>
+                    <input
+                      id="idProof"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleIdProofUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-primary" />
+                    <span className="text-sm truncate max-w-[200px]">{idProofFile.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({(idProofFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeIdProof}
+                    className="text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
