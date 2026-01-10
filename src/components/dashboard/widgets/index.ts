@@ -4,6 +4,7 @@ export { default as IncomeVsExpensesWidget } from "./IncomeVsExpensesWidget";
 export { default as CashFlowWidget } from "./CashFlowWidget";
 export { default as TopClientsWidget } from "./TopClientsWidget";
 export { default as PaymentStatusWidget } from "./PaymentStatusWidget";
+export { default as ExpensesOverTimeWidget } from "./ExpensesOverTimeWidget";
 
 export type WidgetType = 
   | "expenses-by-category"
@@ -11,7 +12,8 @@ export type WidgetType =
   | "income-vs-expenses"
   | "cash-flow"
   | "top-clients"
-  | "payment-status";
+  | "payment-status"
+  | "expenses-over-time";
 
 export interface WidgetConfig {
   id: string;
@@ -56,5 +58,11 @@ export const availableWidgets: WidgetConfig[] = [
     type: "payment-status",
     title: "Invoice Status",
     description: "Pie chart of invoice payment statuses",
+  },
+  {
+    id: "expenses-over-time",
+    type: "expenses-over-time",
+    title: "Expenses Over Time",
+    description: "Area chart showing expense trends",
   },
 ];
