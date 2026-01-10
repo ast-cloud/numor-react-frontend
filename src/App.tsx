@@ -13,6 +13,7 @@ import TermsOfService from "./pages/TermsOfService";
 import Security from "./pages/Security";
 import Compliance from "./pages/Compliance";
 import Pricing from "./pages/Pricing";
+import ForFinancialExperts from "./pages/ForFinancialExperts";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import Expenses from "./pages/Expenses";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/security" element={<Security />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/for-experts" element={<ForFinancialExperts />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
             <Route path="expenses" element={<Expenses />} />

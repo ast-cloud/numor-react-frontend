@@ -29,6 +29,9 @@ const Navbar = () => {
             <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </Link>
+            <Link to="/for-experts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              For Financial Experts
+            </Link>
           </div>
 
           {/* CTA Buttons */}
@@ -62,6 +65,9 @@ const Navbar = () => {
               </a>
               <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 Pricing
+              </Link>
+              <Link to="/for-experts" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
+                For Financial Experts
               </Link>
               <div className="flex flex-col gap-2 pt-3">
                 <Button variant="outline" size="sm" className="w-full" asChild>
