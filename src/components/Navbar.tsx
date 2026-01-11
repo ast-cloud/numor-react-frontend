@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -29,9 +29,35 @@ const Navbar = () => {
             <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </Link>
-            <Link to="/ca" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              For Financial Experts
-            </Link>
+            
+            {/* For Financial Experts Dropdown */}
+            <div className="relative group">
+              <Link 
+                to="/ca" 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                For Financial Experts
+                <ChevronDown className="w-3 h-3 transition-transform group-hover:rotate-180" />
+              </Link>
+              
+              {/* Dropdown Menu */}
+              <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                <div className="bg-background border border-border rounded-lg shadow-lg py-2 min-w-[160px] z-50">
+                  <Link 
+                    to="/login" 
+                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  >
+                    CA Login
+                  </Link>
+                  <Link 
+                    to="/expert-signup" 
+                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  >
+                    Register as CA
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* CTA Buttons */}
@@ -68,6 +94,12 @@ const Navbar = () => {
               </Link>
               <Link to="/ca" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 For Financial Experts
+              </Link>
+              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
+                → CA Login
+              </Link>
+              <Link to="/expert-signup" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
+                → Register as CA
               </Link>
               <div className="flex flex-col gap-2 pt-3">
                 <Button variant="outline" size="sm" className="w-full" asChild>
