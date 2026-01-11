@@ -27,7 +27,9 @@ const ExpertSignup = () => {
   const [certificationFiles, setCertificationFiles] = useState<File[]>([]);
   const [idProofFile, setIdProofFile] = useState<File | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -48,12 +50,31 @@ const ExpertSignup = () => {
       return;
     }
 
-    // For now, just show success and navigate
-    toast({
-      title: "Application Submitted",
-      description: "We'll review your application and get back to you soon.",
-    });
-    navigate("/ca");
+    setIsSubmitting(true);
+
+    try {
+      // TODO: Replace with actual API call
+      console.log("Submitting expert application:", {
+        formData,
+        certificationFiles: certificationFiles.map(f => ({ name: f.name, size: f.size, type: f.type })),
+        idProofFile: idProofFile ? { name: idProofFile.name, size: idProofFile.size, type: idProofFile.type } : null,
+      });
+
+      // Simulate API call - replace with actual implementation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // On success, navigate to success page
+      navigate("/expert-application-success");
+    } catch (error: any) {
+      // On failure, show error toast
+      toast({
+        title: "Submission Failed",
+        description: error?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -394,8 +415,8 @@ const ExpertSignup = () => {
             </Label>
           </div>
 
-          <Button type="submit" variant="hero" className="w-full">
-            Submit Application
+          <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit Application"}
           </Button>
         </form>
 
