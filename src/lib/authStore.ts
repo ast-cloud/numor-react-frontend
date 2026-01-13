@@ -23,12 +23,20 @@ const authStore: AuthStore = {
 
 export const registerUser = (user: Omit<User, 'roles'> & { roles?: UserRole[] }): { success: boolean; error?: string } => {
   const existingUser = authStore.users.find((u) => u.email === user.email);
+  const requestedRoles = user.roles || ["regular_user"];
+  
   if (existingUser) {
+    // If user exists and trying to register as CA, add "ca" role if not already present
+    if (requestedRoles.includes("ca") && !existingUser.roles.includes("ca")) {
+      existingUser.roles.push("ca");
+      return { success: true };
+    }
     return { success: false, error: "User with this email already exists" };
   }
+  
   authStore.users.push({
     ...user,
-    roles: user.roles || ["regular_user"],
+    roles: requestedRoles,
   });
   return { success: true };
 };
