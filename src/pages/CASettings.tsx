@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getCurrentUser } from "@/lib/authStore";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText } from "lucide-react";
+import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+interface UploadedDocument {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  uploadedAt: Date;
+}
 
 const CASettings = () => {
   const user = getCurrentUser();
@@ -15,6 +24,9 @@ const CASettings = () => {
   
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingProfessional, setIsEditingProfessional] = useState(false);
+  
+  const certificationInputRef = useRef<HTMLInputElement>(null);
+  const idProofInputRef = useRef<HTMLInputElement>(null);
   
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
@@ -31,6 +43,76 @@ const CASettings = () => {
     firmAddress: "",
     bio: "",
   });
+
+  const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
+  const [idProofDocuments, setIdProofDocuments] = useState<UploadedDocument[]>([]);
+
+  const handleFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>,
+    documentType: string
+  ) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    Array.from(files).forEach((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload PDF, JPG, or PNG files only.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast({
+          title: "File too large",
+          description: "Maximum file size is 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const newDocument: UploadedDocument = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        uploadedAt: new Date(),
+      };
+
+      setDocuments((prev) => [...prev, newDocument]);
+      
+      toast({
+        title: "Document uploaded",
+        description: `${file.name} has been uploaded successfully.`,
+      });
+    });
+
+    // Reset input
+    event.target.value = '';
+  };
+
+  const handleRemoveDocument = (
+    documentId: string,
+    setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>
+  ) => {
+    setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
+    toast({
+      title: "Document removed",
+      description: "The document has been removed.",
+    });
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
 
   const handleSaveProfile = () => {
     if (user) {
@@ -72,6 +154,98 @@ const CASettings = () => {
     });
     setIsEditingProfessional(false);
   };
+
+  const DocumentUploadCard = ({
+    title,
+    description,
+    icon: Icon,
+    documents,
+    setDocuments,
+    inputRef,
+    documentType,
+  }: {
+    title: string;
+    description: string;
+    icon: React.ElementType;
+    documents: UploadedDocument[];
+    setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>;
+    inputRef: React.RefObject<HTMLInputElement>;
+    documentType: string;
+  }) => (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Icon className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle className="text-xl font-semibold">{title}</CardTitle>
+            <CardDescription className="text-sm">{description}</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Upload Area */}
+        <div 
+          className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+          onClick={() => inputRef.current?.click()}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            className="hidden"
+            accept=".pdf,.jpg,.jpeg,.png"
+            multiple
+            onChange={(e) => handleFileUpload(e, setDocuments, documentType)}
+          />
+          <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+          <p className="text-sm font-medium text-foreground">Click to upload or drag and drop</p>
+          <p className="text-xs text-muted-foreground mt-1">PDF, JPG, or PNG (max 5MB)</p>
+        </div>
+
+        {/* Uploaded Documents List */}
+        {documents.length > 0 && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Uploaded Documents</Label>
+            <div className="space-y-2">
+              {documents.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-background rounded">
+                      <FileText className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium truncate max-w-[200px]">{doc.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Uploaded
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleRemoveDocument(doc.id, setDocuments)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="space-y-8">
@@ -354,6 +528,29 @@ const CASettings = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Document Upload Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <DocumentUploadCard
+          title="Certifications"
+          description="Upload your professional certificates (CA, CPA, etc.)"
+          icon={GraduationCap}
+          documents={certificationDocuments}
+          setDocuments={setCertificationDocuments}
+          inputRef={certificationInputRef}
+          documentType="certification"
+        />
+
+        <DocumentUploadCard
+          title="ID Proof"
+          description="Upload government-issued ID for verification"
+          icon={Shield}
+          documents={idProofDocuments}
+          setDocuments={setIdProofDocuments}
+          inputRef={idProofInputRef}
+          documentType="id_proof"
+        />
+      </div>
     </div>
   );
 };
