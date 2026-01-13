@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
-import { loginUser } from "@/lib/authStore";
+import { loginUser, hasRole } from "@/lib/authStore";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
@@ -23,7 +23,12 @@ const Login = () => {
         title: "Success",
         description: "Login successful!",
       });
-      navigate("/dashboard");
+      // Redirect based on role - CA users go to CA dashboard
+      if (hasRole("ca")) {
+        navigate("/dashboard/ca");
+      } else {
+        navigate("/dashboard");
+      }
     } else {
       toast({
         title: "Error",
