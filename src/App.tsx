@@ -22,6 +22,7 @@ import CADashboardHome from "./pages/CADashboardHome";
 import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import DashboardSettings from "./pages/DashboardSettings";
+import CASettings from "./pages/CASettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
             <Route path="ca" element={<CADashboardHome />} />
+            <Route path="ca/settings" element={<CASettings />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="income" element={<Income />} />
             <Route path="settings" element={<DashboardSettings />} />
