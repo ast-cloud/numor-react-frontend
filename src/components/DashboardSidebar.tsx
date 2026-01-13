@@ -1,19 +1,26 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu } from "lucide-react";
-import { logoutUser, getCurrentUser } from "@/lib/authStore";
+import { logoutUser, getCurrentUser, getActiveRole } from "@/lib/authStore";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-const navItems = [
+const regularNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Expenses", url: "/dashboard/expenses", icon: Receipt },
   { title: "Income", url: "/dashboard/income", icon: FileText },
 ];
 
+const caNavItems = [
+  { title: "Dashboard", url: "/dashboard/ca", icon: LayoutDashboard },
+];
+
 const DashboardSidebar = () => {
   const navigate = useNavigate();
   const user = getCurrentUser();
+  const activeRole = getActiveRole();
   const [collapsed, setCollapsed] = useState(false);
+  
+  const navItems = activeRole === "ca" ? caNavItems : regularNavItems;
 
   const handleLogout = () => {
     logoutUser();
