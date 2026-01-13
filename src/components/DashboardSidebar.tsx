@@ -89,7 +89,7 @@ const DashboardSidebar = () => {
       {/* Bottom Section: Settings & Logout */}
       <div className="p-4 border-t border-border space-y-1">
         <NavLink
-          to="/dashboard/settings"
+          to={activeRole === "ca" ? "/dashboard/ca/settings" : "/dashboard/settings"}
           className={({ isActive }) =>
             `flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive
