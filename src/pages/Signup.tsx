@@ -34,6 +34,7 @@ const Signup = () => {
       company: "",
       email: formData.email,
       password: formData.password,
+      roles: ["regular_user"],
     });
 
     if (result.success) {

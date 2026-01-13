@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft, Briefcase, Award, Phone, Upload, FileText, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { registerUser } from "@/lib/authStore";
 
 const ExpertSignup = () => {
   const navigate = useNavigate();
@@ -60,7 +61,20 @@ const ExpertSignup = () => {
         idProofFile: idProofFile ? { name: idProofFile.name, size: idProofFile.size, type: idProofFile.type } : null,
       });
 
-      // Simulate API call - replace with actual implementation
+      // Register user with both regular_user and ca roles
+      const result = registerUser({
+        name: formData.fullName,
+        company: "",
+        email: formData.email,
+        password: formData.password,
+        roles: ["regular_user", "ca"],
+      });
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Simulate additional API call for expert-specific data
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // On success, navigate to success page

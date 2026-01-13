@@ -18,6 +18,7 @@ import Pricing from "./pages/Pricing";
 import ForFinancialExperts from "./pages/ForFinancialExperts";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
+import CADashboardHome from "./pages/CADashboardHome";
 import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import DashboardSettings from "./pages/DashboardSettings";
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/ca" element={<ForFinancialExperts />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
+            <Route path="ca" element={<CADashboardHome />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="income" element={<Income />} />
             <Route path="settings" element={<DashboardSettings />} />
