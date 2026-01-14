@@ -35,10 +35,10 @@ const DashboardContent = () => {
       <div className="fixed top-4 right-4 flex items-center gap-2 z-50">
         {/* Profile Toggle - Only for CA users */}
         {isCA && (
-          <div className="flex items-center bg-muted rounded-full p-1">
+          <div className="flex items-center bg-muted rounded-full p-0.5">
             <button
               onClick={handleSwitchToRegular}
-              className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+              className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
                 activeRole === "regular_user"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -48,7 +48,7 @@ const DashboardContent = () => {
             </button>
             <button
               onClick={handleSwitchToCA}
-              className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+              className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
                 activeRole === "ca"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
