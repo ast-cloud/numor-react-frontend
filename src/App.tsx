@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ExpertSignup from "./pages/ExpertSignup";
-import ExpertApplicationSuccess from "./pages/ExpertApplicationSuccess";
+
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -38,7 +38,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/expert-signup" element={<ExpertSignup />} />
-          <Route path="/expert-application-success" element={<ExpertApplicationSuccess />} />
+          
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
