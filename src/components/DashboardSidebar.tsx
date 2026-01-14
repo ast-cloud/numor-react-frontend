@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu } from "lucide-react";
 import { logoutUser, getCurrentUser, getActiveRole } from "@/lib/authStore";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useSidebarState } from "@/hooks/use-sidebar-state";
 
 const regularNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -18,7 +18,7 @@ const DashboardSidebar = () => {
   const navigate = useNavigate();
   const user = getCurrentUser();
   const activeRole = getActiveRole();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggle } = useSidebarState();
   
   const navItems = activeRole === "ca" ? caNavItems : regularNavItems;
 
@@ -35,7 +35,7 @@ const DashboardSidebar = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggle}
           className={`${collapsed ? "mx-auto" : ""} text-muted-foreground hover:text-foreground`}
         >
           <Menu className="w-5 h-5" />
