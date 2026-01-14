@@ -28,7 +28,7 @@ const DashboardContent = () => {
       <div className="fixed top-0 left-0 h-screen z-40">
         <DashboardSidebar />
       </div>
-      <main className={`flex-1 min-w-0 overflow-x-hidden p-8 pt-14 transition-all duration-300 ${collapsed ? "ml-16" : "ml-64"}`}>
+      <main className={`flex-1 min-w-0 overflow-x-hidden p-8 pt-20 transition-all duration-300 ${collapsed ? "ml-16" : "ml-64"}`}>
         <Outlet />
       </main>
       {/* Top Right Controls */}
