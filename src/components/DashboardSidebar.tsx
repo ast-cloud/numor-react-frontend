@@ -68,7 +68,7 @@ const DashboardSidebar = () => {
             <li key={item.title}>
               <NavLink
                 to={item.url}
-                end={item.url === "/dashboard"}
+                end={item.url === "/dashboard" || item.url === "/dashboard/ca"}
                 className={({ isActive }) =>
                   `flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isActive
