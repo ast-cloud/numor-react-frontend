@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getCurrentUser } from "@/lib/authStore";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield } from "lucide-react";
+import { useCAProfile } from "@/hooks/use-ca-profile";
+import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface UploadedDocument {
@@ -21,6 +22,7 @@ interface UploadedDocument {
 const CASettings = () => {
   const user = getCurrentUser();
   const { toast } = useToast();
+  const { profileData: caProfileData, updateProfileData: updateCAProfile, isProfileComplete, submitForReview } = useCAProfile();
   
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingProfessional, setIsEditingProfessional] = useState(false);
@@ -31,21 +33,29 @@ const CASettings = () => {
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    phone: "",
+    phone: caProfileData.phone || "",
   });
 
   const [professionalData, setProfessionalData] = useState({
-    qualification: "",
-    membershipNumber: "",
-    experience: "",
-    specialization: "",
-    firmName: "",
+    qualification: caProfileData.qualification || "",
+    membershipNumber: caProfileData.membershipNumber || "",
+    experience: caProfileData.experience || "",
+    specialization: caProfileData.specialization || "",
+    firmName: caProfileData.firmName || "",
     firmAddress: "",
-    bio: "",
+    bio: caProfileData.bio || "",
   });
 
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
   const [idProofDocuments, setIdProofDocuments] = useState<UploadedDocument[]>([]);
+
+  // Update CA profile context when documents change
+  useEffect(() => {
+    updateCAProfile({
+      hasCertifications: certificationDocuments.length > 0,
+      hasIdProof: idProofDocuments.length > 0,
+    });
+  }, [certificationDocuments, idProofDocuments]);
 
   const handleFileUpload = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -118,6 +128,7 @@ const CASettings = () => {
     if (user) {
       user.name = profileData.name;
     }
+    updateCAProfile({ phone: profileData.phone });
     setIsEditingProfile(false);
     toast({
       title: "Profile saved",
@@ -129,12 +140,20 @@ const CASettings = () => {
     setProfileData({
       name: user?.name || "",
       email: user?.email || "",
-      phone: "",
+      phone: caProfileData.phone || "",
     });
     setIsEditingProfile(false);
   };
 
   const handleSaveProfessional = () => {
+    updateCAProfile({
+      qualification: professionalData.qualification,
+      membershipNumber: professionalData.membershipNumber,
+      experience: professionalData.experience,
+      specialization: professionalData.specialization,
+      firmName: professionalData.firmName,
+      bio: professionalData.bio,
+    });
     setIsEditingProfessional(false);
     toast({
       title: "Professional details saved",
@@ -144,15 +163,31 @@ const CASettings = () => {
 
   const handleCancelProfessional = () => {
     setProfessionalData({
-      qualification: "",
-      membershipNumber: "",
-      experience: "",
-      specialization: "",
-      firmName: "",
+      qualification: caProfileData.qualification || "",
+      membershipNumber: caProfileData.membershipNumber || "",
+      experience: caProfileData.experience || "",
+      specialization: caProfileData.specialization || "",
+      firmName: caProfileData.firmName || "",
       firmAddress: "",
-      bio: "",
+      bio: caProfileData.bio || "",
     });
     setIsEditingProfessional(false);
+  };
+
+  const handleSubmitForReview = () => {
+    if (!isProfileComplete()) {
+      toast({
+        title: "Profile incomplete",
+        description: "Please fill in all required fields and upload documents before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    submitForReview();
+    toast({
+      title: "Profile submitted",
+      description: "Your profile has been submitted for review. We'll notify you once verified.",
+    });
   };
 
   const DocumentUploadCard = ({
@@ -249,9 +284,27 @@ const CASettings = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">CA Profile Settings</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Manage your professional profile and credentials.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">CA Profile Settings</h1>
+          <p className="text-muted-foreground mt-2 text-lg">Manage your professional profile and credentials.</p>
+        </div>
+        {!caProfileData.isSubmitted && (
+          <Button 
+            onClick={handleSubmitForReview}
+            disabled={!isProfileComplete()}
+            className="flex items-center gap-2"
+          >
+            <Send className="w-4 h-4" />
+            Submit for Review
+          </Button>
+        )}
+        {caProfileData.isSubmitted && (
+          <Badge variant="secondary" className="text-sm py-1.5 px-3">
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Submitted for Review
+          </Badge>
+        )}
       </div>
 
       {/* Profile Information */}
