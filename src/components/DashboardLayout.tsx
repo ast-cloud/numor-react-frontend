@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Sun, Moon, ArrowLeftRight } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { hasRole, getActiveRole, setActiveRole } from "@/lib/authStore";
+import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
 
-const DashboardLayout = () => {
+const DashboardContent = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const isCA = hasRole("ca");
   const activeRole = getActiveRole();
+  const { collapsed } = useSidebarState();
 
   const handleSwitchProfile = () => {
     if (activeRole === "ca") {
@@ -23,12 +25,14 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen bg-background flex relative">
-      <DashboardSidebar />
-      <main className="flex-1 min-w-0 overflow-x-hidden p-8 pt-14">
+      <div className="fixed top-0 left-0 h-screen z-40">
+        <DashboardSidebar />
+      </div>
+      <main className={`flex-1 min-w-0 overflow-x-hidden p-8 pt-14 transition-all duration-300 ${collapsed ? "ml-16" : "ml-64"}`}>
         <Outlet />
       </main>
       {/* Top Right Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+      <div className="fixed top-4 right-4 flex items-center gap-2 z-50">
         {/* Profile Switcher - Only for CA users */}
         {isCA && (
           <Button
@@ -54,6 +58,14 @@ const DashboardLayout = () => {
         </Button>
       </div>
     </div>
+  );
+};
+
+const DashboardLayout = () => {
+  return (
+    <SidebarStateProvider>
+      <DashboardContent />
+    </SidebarStateProvider>
   );
 };
 
