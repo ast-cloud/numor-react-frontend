@@ -58,8 +58,12 @@ const ExpertSignup = () => {
         throw new Error(result.error);
       }
 
-      // On success, navigate to success page
-      navigate("/expert-application-success");
+      // On success, navigate to login page
+      navigate("/login");
+      toast({
+        title: "Account Created",
+        description: "Your account has been created successfully. Please sign in.",
+      });
     } catch (error: any) {
       toast({
         title: "Submission Failed",
