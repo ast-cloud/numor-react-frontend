@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import DashboardSidebar from "./DashboardSidebar";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon, ArrowLeftRight } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { hasRole, getActiveRole, setActiveRole } from "@/lib/authStore";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
@@ -13,14 +13,14 @@ const DashboardContent = () => {
   const activeRole = getActiveRole();
   const { collapsed } = useSidebarState();
 
-  const handleSwitchProfile = () => {
-    if (activeRole === "ca") {
-      setActiveRole("regular_user");
-      navigate("/dashboard");
-    } else {
-      setActiveRole("ca");
-      navigate("/dashboard/ca");
-    }
+  const handleSwitchToRegular = () => {
+    setActiveRole("regular_user");
+    navigate("/dashboard");
+  };
+
+  const handleSwitchToCA = () => {
+    setActiveRole("ca");
+    navigate("/dashboard/ca");
   };
 
   return (
@@ -33,19 +33,30 @@ const DashboardContent = () => {
       </main>
       {/* Top Right Controls */}
       <div className="fixed top-4 right-4 flex items-center gap-2 z-50">
-        {/* Profile Switcher - Only for CA users */}
+        {/* Profile Toggle - Only for CA users */}
         {isCA && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSwitchProfile}
-            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-          >
-            <ArrowLeftRight className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              Switch to {activeRole === "ca" ? "Regular User" : "CA"}
-            </span>
-          </Button>
+          <div className="flex items-center bg-muted rounded-full p-1">
+            <button
+              onClick={handleSwitchToRegular}
+              className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+                activeRole === "regular_user"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Regular
+            </button>
+            <button
+              onClick={handleSwitchToCA}
+              className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+                activeRole === "ca"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              CA
+            </button>
+          </div>
         )}
         {/* Dark Mode Toggle */}
         <Button
