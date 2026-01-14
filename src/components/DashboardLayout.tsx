@@ -5,6 +5,7 @@ import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { hasRole, getActiveRole, setActiveRole } from "@/lib/authStore";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
+import { CAProfileProvider } from "@/hooks/use-ca-profile";
 
 const DashboardContent = () => {
   const { theme, toggleTheme } = useTheme();
@@ -74,9 +75,11 @@ const DashboardContent = () => {
 
 const DashboardLayout = () => {
   return (
-    <SidebarStateProvider>
-      <DashboardContent />
-    </SidebarStateProvider>
+    <CAProfileProvider>
+      <SidebarStateProvider>
+        <DashboardContent />
+      </SidebarStateProvider>
+    </CAProfileProvider>
   );
 };
 
