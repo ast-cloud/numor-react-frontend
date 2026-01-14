@@ -58,8 +58,8 @@ const ExpertSignup = () => {
         throw new Error(result.error);
       }
 
-      // On success, navigate to success page
-      navigate("/expert-application-success");
+      // On success, navigate to CA dashboard
+      navigate("/dashboard/ca");
     } catch (error: any) {
       toast({
         title: "Submission Failed",
