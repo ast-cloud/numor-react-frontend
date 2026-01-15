@@ -343,12 +343,12 @@ const CAConnect = () => {
 
       {/* CA Detail Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
           {selectedCA && (
             <>
-              <DialogHeader>
-                <div className="flex items-start gap-4">
-                  <Avatar className="w-16 h-16">
+              <DialogHeader className="pb-2">
+                <div className="flex items-start gap-5">
+                  <Avatar className="w-18 h-18">
                     <AvatarImage src={selectedCA.avatar} />
                     <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
                       {selectedCA.name
@@ -359,21 +359,21 @@ const CAConnect = () => {
                   </Avatar>
                   <div className="flex-1">
                     <DialogTitle className="text-xl">{selectedCA.name}</DialogTitle>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-2">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       <span className="text-sm font-medium">{selectedCA.rating}</span>
                       <span className="text-xs text-muted-foreground">({selectedCA.reviewCount} reviews)</span>
                     </div>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
+                    <div className="flex items-center gap-5 mt-3 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
                         <Briefcase className="w-4 h-4" />
                         {selectedCA.experience} years
                       </span>
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1.5">
                         <MapPin className="w-4 h-4" />
                         {selectedCA.location}
                       </span>
-                      <span className="flex items-center gap-1 font-medium text-foreground">
+                      <span className="flex items-center gap-1.5 font-medium text-foreground">
                         <IndianRupee className="w-4 h-4" />
                         {selectedCA.hourlyRate}/hr
                       </span>
@@ -382,16 +382,16 @@ const CAConnect = () => {
                 </div>
               </DialogHeader>
 
-              <div className="space-y-4 mt-4">
+              <div className="space-y-6 mt-6">
                 {/* Bio */}
                 <div>
                   <h4 className="text-sm font-medium mb-2">About</h4>
-                  <p className="text-sm text-muted-foreground">{selectedCA.bio}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selectedCA.bio}</p>
                 </div>
 
                 {/* Specializations */}
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Specializations</h4>
+                  <h4 className="text-sm font-medium mb-3">Specializations</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedCA.specializations.map((spec) => (
                       <Badge key={spec} variant="secondary">
@@ -403,8 +403,8 @@ const CAConnect = () => {
 
                 {/* Date Selector */}
                 <div>
-                  <h4 className="text-sm font-medium mb-3">Select a Slot</h4>
-                  <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-medium mb-4">Select a Slot</h4>
+                  <div className="flex items-center gap-3">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -416,7 +416,7 @@ const CAConnect = () => {
                     </Button>
 
                     <div className="flex-1 overflow-hidden">
-                      <div className="flex gap-1">
+                      <div className="flex gap-2">
                         {dates.slice(selectedDateIndex, selectedDateIndex + 3).map((date, i) => {
                           const actualIndex = selectedDateIndex + i;
                           const slots = getSlotsForDate(selectedCA, date);
@@ -429,16 +429,16 @@ const CAConnect = () => {
                                 setSelectedDateIndex(actualIndex);
                                 setSelectedSlot(null);
                               }}
-                              className={`flex-1 text-center py-2 px-2 rounded-lg transition-colors ${
+                              className={`flex-1 text-center py-3 px-3 rounded-lg transition-colors ${
                                 isSelected
-                                  ? "border-b-2 border-primary"
-                                  : ""
+                                  ? "border-b-2 border-primary bg-muted/50"
+                                  : "hover:bg-muted/30"
                               }`}
                             >
                               <div className={`text-sm font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>
                                 {getDateLabel(date, actualIndex)}
                               </div>
-                              <div className={`text-xs mt-0.5 ${
+                              <div className={`text-xs mt-1 ${
                                 slots.length > 0 ? "text-cyan-500" : "text-muted-foreground"
                               }`}>
                                 {slots.length > 0 ? `${slots.length} Slots Available` : "No Slots Available"}
@@ -462,20 +462,20 @@ const CAConnect = () => {
                 </div>
 
                 {/* Time Slots */}
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {morning.length > 0 && (
                     <div>
-                      <h5 className="text-sm text-muted-foreground mb-2">
+                      <h5 className="text-sm text-muted-foreground mb-3">
                         Morning <span className="text-xs">({morning.length} slots)</span>
                       </h5>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {morning.map((slot) => (
                           <Button
                             key={slot}
                             variant={selectedSlot === slot ? "default" : "outline"}
                             size="sm"
                             onClick={() => setSelectedSlot(slot)}
-                            className="min-w-[90px]"
+                            className="min-w-[100px]"
                           >
                             {formatTime(slot)}
                           </Button>
@@ -486,17 +486,17 @@ const CAConnect = () => {
 
                   {afternoon.length > 0 && (
                     <div>
-                      <h5 className="text-sm text-muted-foreground mb-2">
+                      <h5 className="text-sm text-muted-foreground mb-3">
                         Afternoon <span className="text-xs">({afternoon.length} slots)</span>
                       </h5>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {afternoon.map((slot) => (
                           <Button
                             key={slot}
                             variant={selectedSlot === slot ? "default" : "outline"}
                             size="sm"
                             onClick={() => setSelectedSlot(slot)}
-                            className="min-w-[90px]"
+                            className="min-w-[100px]"
                           >
                             {formatTime(slot)}
                           </Button>
@@ -506,7 +506,7 @@ const CAConnect = () => {
                   )}
 
                   {currentSlots.length === 0 && (
-                    <div className="text-center py-6 text-muted-foreground">
+                    <div className="text-center py-8 text-muted-foreground">
                       No slots available for this date
                     </div>
                   )}
@@ -514,19 +514,20 @@ const CAConnect = () => {
 
                 {/* Booking Summary */}
                 {selectedSlot && (
-                  <div className="rounded-lg bg-muted p-4 space-y-2">
+                  <div className="rounded-lg bg-muted p-5 space-y-3">
                     <p className="text-sm font-medium">Booking Summary</p>
-                    <div className="text-sm text-muted-foreground space-y-1">
+                    <div className="text-sm text-muted-foreground space-y-1.5">
                       <p>Date: {format(dates[selectedDateIndex], "EEEE, MMMM d, yyyy")}</p>
                       <p>Time: {formatTime(selectedSlot)}</p>
                       <p>Duration: 1 hour</p>
-                      <p className="font-medium text-foreground">Total: ₹{selectedCA.hourlyRate}</p>
+                      <p className="font-medium text-foreground pt-1">Total: ₹{selectedCA.hourlyRate}</p>
                     </div>
                   </div>
                 )}
 
                 <Button
-                  className="w-full"
+                  className="w-full mt-2"
+                  size="lg"
                   disabled={!selectedSlot}
                   onClick={handleBooking}
                 >
