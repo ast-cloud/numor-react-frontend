@@ -348,9 +348,9 @@ const CAConnect = () => {
             <>
               <DialogHeader className="pb-2">
                 <div className="flex items-start gap-5">
-                  <Avatar className="w-18 h-18">
+                  <Avatar className="w-20 h-20">
                     <AvatarImage src={selectedCA.avatar} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
+                    <AvatarFallback className="bg-primary/10 text-primary text-2xl font-semibold">
                       {selectedCA.name
                         .split(" ")
                         .map((n) => n[0])
