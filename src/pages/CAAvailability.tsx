@@ -61,6 +61,30 @@ const timeToMinutes = (time: string): number => {
   return hours * 60 + minutes;
 };
 
+const minutesToTime = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+};
+
+const getMeetingStartTimes = (slot: TimeSlot): string[] => {
+  const startMinutes = timeToMinutes(slot.startTime);
+  const endMinutes = timeToMinutes(slot.endTime);
+  const duration = parseInt(slot.duration);
+  const buffer = parseInt(slot.buffer);
+  const interval = duration + buffer;
+  
+  const meetingTimes: string[] = [];
+  let currentTime = startMinutes;
+  
+  while (currentTime + duration <= endMinutes) {
+    meetingTimes.push(minutesToTime(currentTime));
+    currentTime += interval;
+  }
+  
+  return meetingTimes;
+};
+
 const getSlotDurationMinutes = (startTime: string, endTime: string): number => {
   return timeToMinutes(endTime) - timeToMinutes(startTime);
 };
@@ -352,6 +376,21 @@ const CAAvailability = () => {
                           </div>
                           {error && (
                             <p className="text-xs text-destructive pl-3">{error}</p>
+                          )}
+                          {!error && (
+                            <div className="flex flex-wrap gap-1.5 pl-3 pt-1">
+                              {getMeetingStartTimes(slot).map((time, i) => (
+                                <span
+                                  key={i}
+                                  className="px-2 py-0.5 text-xs rounded bg-muted/60 text-muted-foreground border border-border/50"
+                                >
+                                  {time}
+                                </span>
+                              ))}
+                              {getMeetingStartTimes(slot).length === 0 && (
+                                <span className="text-xs text-muted-foreground italic">No meetings fit in this slot</span>
+                              )}
+                            </div>
                           )}
                         </div>
                       );
