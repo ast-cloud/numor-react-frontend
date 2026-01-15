@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Star, Clock, IndianRupee, MapPin, Briefcase, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Search, Star, Clock, IndianRupee, MapPin, Briefcase, ChevronLeft, ChevronRight, Eye, Phone, Video } from "lucide-react";
 import { format, addDays, isSameDay } from "date-fns";
 
 interface Review {
@@ -175,6 +175,7 @@ const CAConnect = () => {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [windowStartIndex, setWindowStartIndex] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [selectedCallType, setSelectedCallType] = useState<"phone" | "video">("video");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -208,6 +209,7 @@ const CAConnect = () => {
     setSelectedDateIndex(0);
     setWindowStartIndex(0);
     setSelectedSlot(null);
+    setSelectedCallType("video");
     setShowConfirmation(false);
     setDialogOpen(true);
   };
@@ -256,7 +258,7 @@ const CAConnect = () => {
   const handleProceedToPayment = () => {
     if (selectedCA && selectedSlot) {
       const selectedDate = dates[selectedDateIndex];
-      console.log("Proceeding to payment:", { ca: selectedCA.name, date: selectedDate, slot: selectedSlot });
+      console.log("Proceeding to payment:", { ca: selectedCA.name, date: selectedDate, slot: selectedSlot, callType: selectedCallType });
       // TODO: Integrate with payment gateway
       setDialogOpen(false);
       setShowConfirmation(false);
@@ -438,7 +440,13 @@ const CAConnect = () => {
                     </div>
                     <div className="bg-muted/30 rounded-lg p-3">
                       <p className="text-xs text-muted-foreground mb-1">Consultation Type</p>
-                      <p className="font-medium">Video Call</p>
+                      <p className="font-medium flex items-center gap-2">
+                        {selectedCallType === "video" ? (
+                          <><Video className="w-4 h-4" /> Video Call</>
+                        ) : (
+                          <><Phone className="w-4 h-4" /> Phone Call</>
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -693,6 +701,35 @@ const CAConnect = () => {
                   )}
                 </div>
 
+                {/* Call Type Selector */}
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Consultation Type</h4>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setSelectedCallType("video")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border-2 transition-all ${
+                        selectedCallType === "video"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      <Video className="w-5 h-5" />
+                      <span className="font-medium">Video Call</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedCallType("phone")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border-2 transition-all ${
+                        selectedCallType === "phone"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      <Phone className="w-5 h-5" />
+                      <span className="font-medium">Phone Call</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Booking Summary */}
                 {selectedSlot && (
                   <div className="rounded-lg bg-muted p-5 space-y-3">
@@ -700,6 +737,9 @@ const CAConnect = () => {
                     <div className="text-sm text-muted-foreground space-y-1.5">
                       <p>Date: {format(dates[selectedDateIndex], "EEEE, MMMM d, yyyy")}</p>
                       <p>Time: {formatTime(selectedSlot)}</p>
+                      <p className="flex items-center gap-1">
+                        Type: {selectedCallType === "video" ? <><Video className="w-3.5 h-3.5" /> Video Call</> : <><Phone className="w-3.5 h-3.5" /> Phone Call</>}
+                      </p>
                       <p>Duration: 1 hour</p>
                       <p className="font-medium text-foreground pt-1">Total: ₹{selectedCA.hourlyRate}</p>
                     </div>
