@@ -276,6 +276,7 @@ const CAAvailability = () => {
         </div>
         <Button
           variant={ghostMode ? "default" : "outline"}
+          size="sm"
           onClick={() => {
             setGhostMode(!ghostMode);
             toast({
