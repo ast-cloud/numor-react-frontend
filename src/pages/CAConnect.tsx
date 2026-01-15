@@ -416,8 +416,8 @@ const CAConnect = () => {
                     </Button>
 
                     <div className="flex-1 overflow-hidden">
-                      <div className="flex gap-2">
-                        {dates.slice(selectedDateIndex, selectedDateIndex + 3).map((date, i) => {
+                      <div className="flex gap-1">
+                        {dates.slice(selectedDateIndex, selectedDateIndex + 5).map((date, i) => {
                           const actualIndex = selectedDateIndex + i;
                           const slots = getSlotsForDate(selectedCA, date);
                           const isSelected = actualIndex === selectedDateIndex;
@@ -429,19 +429,19 @@ const CAConnect = () => {
                                 setSelectedDateIndex(actualIndex);
                                 setSelectedSlot(null);
                               }}
-                              className={`flex-1 text-center py-3 px-3 rounded-lg transition-colors ${
+                              className={`flex-1 text-center py-2 px-1.5 rounded-md transition-colors ${
                                 isSelected
                                   ? "border-b-2 border-primary bg-muted/50"
                                   : "hover:bg-muted/30"
                               }`}
                             >
-                              <div className={`text-sm font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>
+                              <div className={`text-xs font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>
                                 {getDateLabel(date, actualIndex)}
                               </div>
-                              <div className={`text-xs mt-1 ${
+                              <div className={`text-[10px] mt-0.5 ${
                                 slots.length > 0 ? "text-cyan-500" : "text-muted-foreground"
                               }`}>
-                                {slots.length > 0 ? `${slots.length} Slots Available` : "No Slots Available"}
+                                {slots.length > 0 ? `${slots.length} Slots` : "No Slots"}
                               </div>
                             </button>
                           );
