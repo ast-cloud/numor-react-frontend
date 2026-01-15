@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu } from "lucide-react";
+import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, Calendar, CalendarCheck } from "lucide-react";
 import { logoutUser, getCurrentUser, getActiveRole } from "@/lib/authStore";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
@@ -12,6 +12,8 @@ const regularNavItems = [
 
 const caNavItems = [
   { title: "Dashboard", url: "/dashboard/ca", icon: LayoutDashboard },
+  { title: "Availability", url: "/dashboard/ca/availability", icon: Calendar },
+  { title: "Bookings", url: "/dashboard/ca/bookings", icon: CalendarCheck },
 ];
 
 const DashboardSidebar = () => {
