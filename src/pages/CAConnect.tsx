@@ -176,6 +176,7 @@ const CAConnect = () => {
   const [windowStartIndex, setWindowStartIndex] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Generate dates for the next 7 days
   const dates = useMemo(() => {
@@ -207,6 +208,7 @@ const CAConnect = () => {
     setSelectedDateIndex(0);
     setWindowStartIndex(0);
     setSelectedSlot(null);
+    setShowConfirmation(false);
     setDialogOpen(true);
   };
 
@@ -247,9 +249,17 @@ const CAConnect = () => {
 
   const handleBooking = () => {
     if (selectedCA && selectedSlot) {
+      setShowConfirmation(true);
+    }
+  };
+
+  const handleProceedToPayment = () => {
+    if (selectedCA && selectedSlot) {
       const selectedDate = dates[selectedDateIndex];
-      console.log("Booking:", { ca: selectedCA.name, date: selectedDate, slot: selectedSlot });
+      console.log("Proceeding to payment:", { ca: selectedCA.name, date: selectedDate, slot: selectedSlot });
+      // TODO: Integrate with payment gateway
       setDialogOpen(false);
+      setShowConfirmation(false);
     }
   };
 
@@ -377,9 +387,102 @@ const CAConnect = () => {
       </div>
 
       {/* CA Detail Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) setShowConfirmation(false);
+      }}>
         <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
-          {selectedCA && (
+          {selectedCA && showConfirmation ? (
+            <>
+              <DialogHeader className="pb-4">
+                <DialogTitle className="text-xl">Confirm Your Booking</DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* CA Details */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="w-16 h-16">
+                      <AvatarImage src={selectedCA.avatar} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
+                        {selectedCA.name.split(" ").map((n) => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold text-lg">{selectedCA.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm">{selectedCA.rating}</span>
+                        <span className="text-xs text-muted-foreground">({selectedCA.reviewCount} reviews)</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">{selectedCA.location}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Booking Details */}
+                <div className="space-y-4">
+                  <h4 className="font-medium">Booking Details</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Date</p>
+                      <p className="font-medium">{format(dates[selectedDateIndex], "EEEE, MMMM d, yyyy")}</p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Time</p>
+                      <p className="font-medium">{selectedSlot ? formatTime(selectedSlot) : ""}</p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Duration</p>
+                      <p className="font-medium">1 Hour</p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Consultation Type</p>
+                      <p className="font-medium">Video Call</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Summary */}
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-3">Payment Summary</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Consultation Fee (1 hr)</span>
+                      <span>₹{selectedCA.hourlyRate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Platform Fee</span>
+                      <span>₹0</span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-base pt-2 border-t">
+                      <span>Total Amount</span>
+                      <span className="text-primary">₹{selectedCA.hourlyRate}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowConfirmation(false)}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    size="lg"
+                    onClick={handleProceedToPayment}
+                  >
+                    <IndianRupee className="w-4 h-4 mr-2" />
+                    Proceed to Payment
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : selectedCA && (
             <>
               <DialogHeader className="pb-2">
                 <div className="flex items-start gap-5">
