@@ -9,6 +9,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Search, Star, Clock, IndianRupee, MapPin, Briefcase, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { format, addDays, isSameDay } from "date-fns";
 
+interface Review {
+  id: string;
+  clientName: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
+
 interface CA {
   id: string;
   name: string;
@@ -21,6 +29,7 @@ interface CA {
   location: string;
   bio: string;
   availableSlots: { [date: string]: string[] };
+  reviews: Review[];
 }
 
 // Generate mock slots for the next 7 days
@@ -54,6 +63,11 @@ const mockCAs: CA[] = [
     location: "Mumbai",
     bio: "Experienced CA with expertise in corporate taxation and GST compliance. Former Big 4 professional.",
     availableSlots: generateMockSlots(),
+    reviews: [
+      { id: "r1", clientName: "Amit S.", rating: 5, date: "2025-01-10", comment: "Excellent advice on GST compliance. Very thorough and professional." },
+      { id: "r2", clientName: "Neha K.", rating: 5, date: "2025-01-05", comment: "Helped me save significant tax through proper planning. Highly recommend!" },
+      { id: "r3", clientName: "Rahul M.", rating: 4, date: "2024-12-28", comment: "Good knowledge of corporate taxation. Responsive and helpful." },
+    ],
   },
   {
     id: "2",
@@ -66,6 +80,10 @@ const mockCAs: CA[] = [
     location: "Bangalore",
     bio: "Specialized in helping startups with financial planning, fundraising, and regulatory compliance.",
     availableSlots: generateMockSlots(),
+    reviews: [
+      { id: "r4", clientName: "Vikash T.", rating: 5, date: "2025-01-08", comment: "Great insights for my startup's financial structure. Very knowledgeable." },
+      { id: "r5", clientName: "Priya D.", rating: 5, date: "2024-12-20", comment: "Helped us navigate the funding process smoothly." },
+    ],
   },
   {
     id: "3",
@@ -78,6 +96,11 @@ const mockCAs: CA[] = [
     location: "Delhi",
     bio: "Senior CA with deep expertise in personal finance, tax optimization, and NRI taxation matters.",
     availableSlots: generateMockSlots(),
+    reviews: [
+      { id: "r6", clientName: "Suresh N.", rating: 5, date: "2025-01-12", comment: "Outstanding service! Helped me with complex NRI taxation issues." },
+      { id: "r7", clientName: "Meera J.", rating: 5, date: "2025-01-02", comment: "Very detailed and patient. Explained everything clearly." },
+      { id: "r8", clientName: "Arun P.", rating: 5, date: "2024-12-15", comment: "Best CA for investment advisory. Saved me lakhs in taxes!" },
+    ],
   },
   {
     id: "4",
@@ -90,6 +113,10 @@ const mockCAs: CA[] = [
     location: "Pune",
     bio: "Expert in international taxation and transfer pricing with experience in multinational corporations.",
     availableSlots: generateMockSlots(),
+    reviews: [
+      { id: "r9", clientName: "Deepak R.", rating: 5, date: "2025-01-06", comment: "Expert in transfer pricing. Very professional approach." },
+      { id: "r10", clientName: "Kavita S.", rating: 4, date: "2024-12-22", comment: "Good knowledge of international tax laws." },
+    ],
   },
   {
     id: "5",
@@ -102,6 +129,10 @@ const mockCAs: CA[] = [
     location: "Ahmedabad",
     bio: "Dedicated to helping small businesses and freelancers with their accounting and tax needs.",
     availableSlots: generateMockSlots(),
+    reviews: [
+      { id: "r11", clientName: "Ramesh B.", rating: 5, date: "2025-01-09", comment: "Perfect for small business needs. Very affordable and helpful." },
+      { id: "r12", clientName: "Sunita M.", rating: 4, date: "2024-12-30", comment: "Good support for GST filing. Quick responses." },
+    ],
   },
   {
     id: "6",
@@ -114,6 +145,11 @@ const mockCAs: CA[] = [
     location: "Hyderabad",
     bio: "Certified internal auditor with extensive experience in risk management and compliance.",
     availableSlots: generateMockSlots(),
+    reviews: [
+      { id: "r13", clientName: "Venkat K.", rating: 5, date: "2025-01-11", comment: "Thorough audit work. Identified key risk areas effectively." },
+      { id: "r14", clientName: "Lakshmi P.", rating: 5, date: "2024-12-25", comment: "Excellent internal controls advisory. Very systematic." },
+      { id: "r15", clientName: "Ravi T.", rating: 4, date: "2024-12-18", comment: "Professional and detailed. Good risk assessment." },
+    ],
   },
 ];
 
@@ -397,6 +433,43 @@ const CAConnect = () => {
                       <Badge key={spec} variant="secondary">
                         {spec}
                       </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reviews Section */}
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Recent Reviews</h4>
+                  <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2">
+                    {selectedCA.reviews.map((review) => (
+                      <div key={review.id} className="bg-muted/50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="w-7 h-7">
+                              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                {review.clientName.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">{review.clientName}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-3 h-3 ${
+                                  i < review.rating
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-muted-foreground"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{review.comment}</p>
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                          {format(new Date(review.date), "MMM d, yyyy")}
+                        </p>
+                      </div>
                     ))}
                   </div>
                 </div>
