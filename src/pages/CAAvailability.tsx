@@ -233,7 +233,7 @@ const CAAvailability = () => {
                             value={slot.buffer}
                             onValueChange={(value) => updateSlot(day, slot.id, "buffer", value)}
                           >
-                            <SelectTrigger className="w-[90px] h-8 text-xs">
+                            <SelectTrigger className="w-[85px] h-8 text-xs px-2">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
