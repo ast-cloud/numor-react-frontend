@@ -4,10 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { logoutUser, getCurrentUser, getAllUsers } from "@/lib/authStore";
+import { getPendingApplications } from "@/lib/caApplicationsStore";
 import { useToast } from "@/hooks/use-toast";
-import { Sun, Moon, Users, FileText, Settings, Shield, BarChart3, LogOut } from "lucide-react";
+import { Sun, Moon, Users, FileText, Settings, Shield, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import UserManagementTable from "@/components/admin/UserManagementTable";
+import CAApplicationsReview from "@/components/admin/CAApplicationsReview";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -19,6 +21,7 @@ const AdminDashboard = () => {
   const allUsers = getAllUsers();
   const regularUsers = allUsers.filter(u => u.roles.includes("regular_user") && !u.roles.includes("ca"));
   const caUsers = allUsers.filter(u => u.roles.includes("ca"));
+  const pendingCAApplications = getPendingApplications();
 
   const handleLogout = () => {
     logoutUser();
@@ -135,52 +138,44 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Other Management Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>CA Applications</CardTitle>
-              <CardDescription>Review and approve CA registration requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                  <div>
-                    <p className="font-medium">Pending Reviews</p>
-                    <p className="text-sm text-muted-foreground">Applications awaiting review</p>
-                  </div>
-                  <Button size="sm">Review</Button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <p className="font-medium">Recent Approvals</p>
-                    <p className="text-sm text-muted-foreground">View approval history</p>
-                  </div>
-                  <Button variant="outline" size="sm">View All</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* CA Applications Review Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              CA Applications
+              {pendingCAApplications.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-500/10 text-amber-600 rounded-full">
+                  {pendingCAApplications.length} pending
+                </span>
+              )}
+            </CardTitle>
+            <CardDescription>Review and approve CA registration requests</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CAApplicationsReview />
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>System Settings</CardTitle>
-              <CardDescription>Configure platform-wide settings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <Settings className="w-4 h-4" />
-                  General Settings
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <Shield className="w-4 h-4" />
-                  Security Settings
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* System Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>System Settings</CardTitle>
+            <CardDescription>Configure platform-wide settings</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <Button variant="outline" className="gap-2">
+                <Settings className="w-4 h-4" />
+                General Settings
+              </Button>
+              <Button variant="outline" className="gap-2">
+                <Shield className="w-4 h-4" />
+                Security Settings
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
