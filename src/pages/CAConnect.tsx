@@ -379,7 +379,7 @@ const CAConnect = () => {
                 </div>
               </div>
 
-              <Button variant="outline" className="w-full" onClick={() => handleOpenDialog(ca)}>
+              <Button variant="secondary" className="w-full" onClick={() => handleOpenDialog(ca)}>
                 <Eye className="w-4 h-4 mr-2" />
                 View
               </Button>
