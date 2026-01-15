@@ -129,10 +129,7 @@ const mockCAs: CA[] = [
     location: "Ahmedabad",
     bio: "Dedicated to helping small businesses and freelancers with their accounting and tax needs.",
     availableSlots: generateMockSlots(),
-    reviews: [
-      { id: "r11", clientName: "Ramesh B.", rating: 5, date: "2025-01-09", comment: "Perfect for small business needs. Very affordable and helpful." },
-      { id: "r12", clientName: "Sunita M.", rating: 4, date: "2024-12-30", comment: "Good support for GST filing. Quick responses." },
-    ],
+    reviews: [],
   },
   {
     id: "6",
