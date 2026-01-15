@@ -440,6 +440,11 @@ const CAConnect = () => {
                 {/* Reviews Section */}
                 <div>
                   <h4 className="text-sm font-medium mb-3">Recent Reviews</h4>
+                  {selectedCA.reviews.length === 0 ? (
+                    <div className="bg-muted/50 rounded-lg p-4 text-center">
+                      <p className="text-sm text-muted-foreground">No reviews yet</p>
+                    </div>
+                  ) : (
                   <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2">
                     {selectedCA.reviews.map((review) => (
                       <div key={review.id} className="bg-muted/50 rounded-lg p-3">
@@ -472,6 +477,7 @@ const CAConnect = () => {
                       </div>
                     ))}
                   </div>
+                  )}
                 </div>
 
                 {/* Date Selector */}
