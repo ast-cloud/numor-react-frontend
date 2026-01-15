@@ -173,6 +173,7 @@ const CAConnect = () => {
   const [sortBy, setSortBy] = useState("rating");
   const [selectedCA, setSelectedCA] = useState<CA | null>(null);
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
+  const [windowStartIndex, setWindowStartIndex] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -204,6 +205,7 @@ const CAConnect = () => {
   const handleOpenDialog = (ca: CA) => {
     setSelectedCA(ca);
     setSelectedDateIndex(0);
+    setWindowStartIndex(0);
     setSelectedSlot(null);
     setDialogOpen(true);
   };
@@ -485,16 +487,16 @@ const CAConnect = () => {
                       variant="ghost"
                       size="icon"
                       className="shrink-0"
-                      onClick={() => setSelectedDateIndex(Math.max(0, selectedDateIndex - 1))}
-                      disabled={selectedDateIndex === 0}
+                      onClick={() => setWindowStartIndex(Math.max(0, windowStartIndex - 1))}
+                      disabled={windowStartIndex === 0}
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </Button>
 
                     <div className="flex-1 overflow-hidden">
                       <div className="flex gap-1">
-                        {dates.slice(selectedDateIndex, selectedDateIndex + 5).map((date, i) => {
-                          const actualIndex = selectedDateIndex + i;
+                        {dates.slice(windowStartIndex, windowStartIndex + 5).map((date, i) => {
+                          const actualIndex = windowStartIndex + i;
                           const slots = getSlotsForDate(selectedCA, date);
                           const isSelected = actualIndex === selectedDateIndex;
 
@@ -529,8 +531,8 @@ const CAConnect = () => {
                       variant="ghost"
                       size="icon"
                       className="shrink-0"
-                      onClick={() => setSelectedDateIndex(Math.min(dates.length - 3, selectedDateIndex + 1))}
-                      disabled={selectedDateIndex >= dates.length - 3}
+                      onClick={() => setWindowStartIndex(Math.min(dates.length - 5, windowStartIndex + 1))}
+                      disabled={windowStartIndex >= dates.length - 5}
                     >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
