@@ -26,6 +26,7 @@ import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import DashboardSettings from "./pages/DashboardSettings";
 import CASettings from "./pages/CASettings";
+import CAConnect from "./pages/CAConnect";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="ca/settings" element={<CASettings />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="income" element={<Income />} />
+            <Route path="ca-connect" element={<CAConnect />} />
             <Route path="settings" element={<DashboardSettings />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
