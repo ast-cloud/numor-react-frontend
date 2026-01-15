@@ -1,16 +1,24 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
-import { logoutUser, getCurrentUser } from "@/lib/authStore";
+import { logoutUser, getCurrentUser, getAllUsers } from "@/lib/authStore";
 import { useToast } from "@/hooks/use-toast";
 import { Sun, Moon, Users, FileText, Settings, Shield, BarChart3, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
+import UserManagementTable from "@/components/admin/UserManagementTable";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const currentUser = getCurrentUser();
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  const allUsers = getAllUsers();
+  const regularUsers = allUsers.filter(u => u.roles.includes("regular_user") && !u.roles.includes("ca"));
+  const caUsers = allUsers.filter(u => u.roles.includes("ca"));
 
   const handleLogout = () => {
     logoutUser();
@@ -62,28 +70,28 @@ const AdminDashboard = () => {
               <Users className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
+              <div className="text-2xl font-bold">{allUsers.length}</div>
+              <p className="text-xs text-muted-foreground">{allUsers.filter(u => !u.isDisabled).length} active</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active CAs</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Regular Users</CardTitle>
+              <Users className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{regularUsers.length}</div>
+              <p className="text-xs text-muted-foreground">{regularUsers.filter(u => !u.isDisabled).length} active</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">CA Professionals</CardTitle>
               <FileText className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">56</div>
-              <p className="text-xs text-muted-foreground">+3 pending approval</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Revenue</CardTitle>
-              <BarChart3 className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">₹4.5L</div>
-              <p className="text-xs text-muted-foreground">+8% from last month</p>
+              <div className="text-2xl font-bold">{caUsers.length}</div>
+              <p className="text-xs text-muted-foreground">{caUsers.filter(u => !u.isDisabled).length} active</p>
             </CardContent>
           </Card>
           <Card>
@@ -98,33 +106,37 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Management Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Manage all registered users and their roles</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <p className="font-medium">Regular Users</p>
-                    <p className="text-sm text-muted-foreground">1,178 active accounts</p>
-                  </div>
-                  <Button variant="outline" size="sm">Manage</Button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <p className="font-medium">CA Users</p>
-                    <p className="text-sm text-muted-foreground">56 verified professionals</p>
-                  </div>
-                  <Button variant="outline" size="sm">Manage</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* User Management Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              User Management
+            </CardTitle>
+            <CardDescription>View, manage, and control all registered users</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="all" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="all">All Users ({allUsers.length})</TabsTrigger>
+                <TabsTrigger value="regular">Regular Users ({regularUsers.length})</TabsTrigger>
+                <TabsTrigger value="ca">CA Professionals ({caUsers.length})</TabsTrigger>
+              </TabsList>
+              <TabsContent value="all">
+                <UserManagementTable key={`all-${refreshKey}`} onRefresh={() => setRefreshKey(k => k + 1)} />
+              </TabsContent>
+              <TabsContent value="regular">
+                <UserManagementTable key={`regular-${refreshKey}`} filterRole="regular_user" onRefresh={() => setRefreshKey(k => k + 1)} />
+              </TabsContent>
+              <TabsContent value="ca">
+                <UserManagementTable key={`ca-${refreshKey}`} filterRole="ca" onRefresh={() => setRefreshKey(k => k + 1)} />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
 
+        {/* Other Management Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>CA Applications</CardTitle>
@@ -135,39 +147,16 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                   <div>
                     <p className="font-medium">Pending Reviews</p>
-                    <p className="text-sm text-muted-foreground">3 applications awaiting review</p>
+                    <p className="text-sm text-muted-foreground">Applications awaiting review</p>
                   </div>
                   <Button size="sm">Review</Button>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div>
                     <p className="font-medium">Recent Approvals</p>
-                    <p className="text-sm text-muted-foreground">5 approved this week</p>
+                    <p className="text-sm text-muted-foreground">View approval history</p>
                   </div>
                   <Button variant="outline" size="sm">View All</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Platform Analytics</CardTitle>
-              <CardDescription>View detailed platform usage statistics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Daily Active Users</span>
-                  <span className="font-medium">342</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Invoices Generated</span>
-                  <span className="font-medium">1,856</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">CA Consultations</span>
-                  <span className="font-medium">89</span>
                 </div>
               </div>
             </CardContent>
