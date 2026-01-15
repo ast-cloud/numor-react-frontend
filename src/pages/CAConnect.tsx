@@ -703,29 +703,29 @@ const CAConnect = () => {
 
                 {/* Call Type Selector */}
                 <div>
-                  <h4 className="text-sm font-medium mb-3">Consultation Type</h4>
-                  <div className="flex gap-3">
+                  <h4 className="text-sm font-medium mb-2">Consultation Type</h4>
+                  <div className="flex gap-2">
                     <button
                       onClick={() => setSelectedCallType("video")}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border-2 transition-all ${
+                      className={`flex items-center gap-1.5 py-1.5 px-3 rounded-md border text-sm transition-all ${
                         selectedCallType === "video"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border hover:border-muted-foreground/50"
                       }`}
                     >
-                      <Video className="w-5 h-5" />
-                      <span className="font-medium">Video Call</span>
+                      <Video className="w-4 h-4" />
+                      <span className="font-medium">Video</span>
                     </button>
                     <button
                       onClick={() => setSelectedCallType("phone")}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border-2 transition-all ${
+                      className={`flex items-center gap-1.5 py-1.5 px-3 rounded-md border text-sm transition-all ${
                         selectedCallType === "phone"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border hover:border-muted-foreground/50"
                       }`}
                     >
-                      <Phone className="w-5 h-5" />
-                      <span className="font-medium">Phone Call</span>
+                      <Phone className="w-4 h-4" />
+                      <span className="font-medium">Phone</span>
                     </button>
                   </div>
                 </div>
