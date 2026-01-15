@@ -56,6 +56,28 @@ const createDefaultSlot = (startTime: string, endTime: string): TimeSlot => ({
   buffer: "15",
 });
 
+const timeToMinutes = (time: string): number => {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+const getSlotDurationMinutes = (startTime: string, endTime: string): number => {
+  return timeToMinutes(endTime) - timeToMinutes(startTime);
+};
+
+const doSlotsOverlap = (slot1: TimeSlot, slot2: TimeSlot): boolean => {
+  const start1 = timeToMinutes(slot1.startTime);
+  const end1 = timeToMinutes(slot1.endTime);
+  const start2 = timeToMinutes(slot2.startTime);
+  const end2 = timeToMinutes(slot2.endTime);
+  return start1 < end2 && start2 < end1;
+};
+
+interface SlotError {
+  slotId: string;
+  message: string;
+}
+
 const CAAvailability = () => {
   const { toast } = useToast();
   const [availability, setAvailability] = useState<Record<string, DayAvailability>>({
@@ -68,12 +90,64 @@ const CAAvailability = () => {
     Sunday: { enabled: false, slots: [createDefaultSlot("10:00", "13:00")] },
   });
   const [hasChanges, setHasChanges] = useState(false);
+  const [slotErrors, setSlotErrors] = useState<Record<string, SlotError[]>>({});
+
+  const validateSlots = (day: string, slots: TimeSlot[]): SlotError[] => {
+    const errors: SlotError[] = [];
+    
+    slots.forEach((slot, index) => {
+      const startMinutes = timeToMinutes(slot.startTime);
+      const endMinutes = timeToMinutes(slot.endTime);
+      const slotDuration = endMinutes - startMinutes;
+      const requiredDuration = parseInt(slot.duration);
+
+      // Check if end time is after start time
+      if (endMinutes <= startMinutes) {
+        errors.push({ slotId: slot.id, message: "End time must be after start time" });
+      }
+      // Check if slot duration meets minimum requirement
+      else if (slotDuration < requiredDuration) {
+        errors.push({ slotId: slot.id, message: `Slot must be at least ${slot.duration} min (current: ${slotDuration} min)` });
+      }
+
+      // Check for overlaps with other slots
+      slots.forEach((otherSlot, otherIndex) => {
+        if (index < otherIndex && doSlotsOverlap(slot, otherSlot)) {
+          errors.push({ slotId: slot.id, message: "This slot overlaps with another slot" });
+        }
+      });
+    });
+
+    return errors;
+  };
+
+  const validateAllSlots = (newAvailability: Record<string, DayAvailability>) => {
+    const newErrors: Record<string, SlotError[]> = {};
+    days.forEach(day => {
+      if (newAvailability[day].enabled) {
+        const dayErrors = validateSlots(day, newAvailability[day].slots);
+        if (dayErrors.length > 0) {
+          newErrors[day] = dayErrors;
+        }
+      }
+    });
+    setSlotErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const getSlotError = (day: string, slotId: string): string | undefined => {
+    return slotErrors[day]?.find(e => e.slotId === slotId)?.message;
+  };
+
+  const hasValidationErrors = Object.keys(slotErrors).length > 0;
 
   const toggleDay = (day: string) => {
-    setAvailability(prev => ({
-      ...prev,
-      [day]: { ...prev[day], enabled: !prev[day].enabled }
-    }));
+    const newAvailability = {
+      ...availability,
+      [day]: { ...availability[day], enabled: !availability[day].enabled }
+    };
+    setAvailability(newAvailability);
+    validateAllSlots(newAvailability);
     setHasChanges(true);
   };
 
@@ -83,41 +157,55 @@ const CAAvailability = () => {
     const startIndex = timeSlots.indexOf(newStartTime);
     const newEndTime = timeSlots[Math.min(startIndex + 2, timeSlots.length - 1)] || "17:00";
     
-    setAvailability(prev => ({
-      ...prev,
+    const newAvailability = {
+      ...availability,
       [day]: {
-        ...prev[day],
-        slots: [...prev[day].slots, createDefaultSlot(newStartTime, newEndTime)]
+        ...availability[day],
+        slots: [...availability[day].slots, createDefaultSlot(newStartTime, newEndTime)]
       }
-    }));
+    };
+    setAvailability(newAvailability);
+    validateAllSlots(newAvailability);
     setHasChanges(true);
   };
 
   const removeTimeSlot = (day: string, slotId: string) => {
-    setAvailability(prev => ({
-      ...prev,
+    const newAvailability = {
+      ...availability,
       [day]: {
-        ...prev[day],
-        slots: prev[day].slots.filter(slot => slot.id !== slotId)
+        ...availability[day],
+        slots: availability[day].slots.filter(slot => slot.id !== slotId)
       }
-    }));
+    };
+    setAvailability(newAvailability);
+    validateAllSlots(newAvailability);
     setHasChanges(true);
   };
 
   const updateSlot = (day: string, slotId: string, field: keyof TimeSlot, value: string) => {
-    setAvailability(prev => ({
-      ...prev,
+    const newAvailability = {
+      ...availability,
       [day]: {
-        ...prev[day],
-        slots: prev[day].slots.map(slot =>
+        ...availability[day],
+        slots: availability[day].slots.map(slot =>
           slot.id === slotId ? { ...slot, [field]: value } : slot
         )
       }
-    }));
+    };
+    setAvailability(newAvailability);
+    validateAllSlots(newAvailability);
     setHasChanges(true);
   };
 
   const handleSave = () => {
+    if (hasValidationErrors) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in your time slots before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
     toast({
       title: "Availability Saved",
       description: "Your availability settings have been updated successfully.",
@@ -141,7 +229,7 @@ const CAAvailability = () => {
             </CardTitle>
             <CardDescription>Configure your available days, time slots, and session settings for each slot.</CardDescription>
           </div>
-          <Button onClick={handleSave} disabled={!hasChanges} className={!hasChanges ? "opacity-50" : ""}>
+          <Button onClick={handleSave} disabled={!hasChanges || hasValidationErrors} className={(!hasChanges || hasValidationErrors) ? "opacity-50" : ""}>
             <Save className="w-4 h-4 mr-2" />
             Save Availability
           </Button>
@@ -177,89 +265,97 @@ const CAAvailability = () => {
                   {availability[day].slots.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No time slots. Add one to set availability.</p>
                   ) : (
-                    availability[day].slots.map((slot, index) => (
-                      <div key={slot.id} className="flex flex-wrap items-center gap-2 p-3 bg-muted/50 rounded-md">
-                        <span className="text-xs font-medium text-muted-foreground w-14">Slot {index + 1}</span>
-                        
-                        {/* Time Range */}
-                        <div className="flex items-center gap-1">
-                          <Select
-                            value={slot.startTime}
-                            onValueChange={(value) => updateSlot(day, slot.id, "startTime", value)}
-                          >
-                            <SelectTrigger className="w-[80px] h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {timeSlots.map((time) => (
-                                <SelectItem key={time} value={time}>{time}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <span className="text-muted-foreground text-xs">–</span>
-                          <Select
-                            value={slot.endTime}
-                            onValueChange={(value) => updateSlot(day, slot.id, "endTime", value)}
-                          >
-                            <SelectTrigger className="w-[80px] h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {timeSlots.map((time) => (
-                                <SelectItem key={time} value={time}>{time}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                    availability[day].slots.map((slot, index) => {
+                      const error = getSlotError(day, slot.id);
+                      return (
+                        <div key={slot.id} className="space-y-1">
+                          <div className={`flex flex-wrap items-center gap-2 p-3 rounded-md ${error ? 'bg-destructive/10 border border-destructive/30' : 'bg-muted/50'}`}>
+                            <span className="text-xs font-medium text-muted-foreground w-14">Slot {index + 1}</span>
+                            
+                            {/* Time Range */}
+                            <div className="flex items-center gap-1">
+                              <Select
+                                value={slot.startTime}
+                                onValueChange={(value) => updateSlot(day, slot.id, "startTime", value)}
+                              >
+                                <SelectTrigger className={`w-[80px] h-8 text-xs ${error ? 'border-destructive' : ''}`}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {timeSlots.map((time) => (
+                                    <SelectItem key={time} value={time}>{time}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <span className="text-muted-foreground text-xs">–</span>
+                              <Select
+                                value={slot.endTime}
+                                onValueChange={(value) => updateSlot(day, slot.id, "endTime", value)}
+                              >
+                                <SelectTrigger className={`w-[80px] h-8 text-xs ${error ? 'border-destructive' : ''}`}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {timeSlots.map((time) => (
+                                    <SelectItem key={time} value={time}>{time}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <span className="text-muted-foreground text-xs">|</span>
+
+                            {/* Duration */}
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground">Duration:</span>
+                              <Select
+                                value={slot.duration}
+                                onValueChange={(value) => updateSlot(day, slot.id, "duration", value)}
+                              >
+                                <SelectTrigger className="w-[70px] h-8 text-xs px-2">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {durationOptions.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Buffer */}
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground">Buffer:</span>
+                              <Select
+                                value={slot.buffer}
+                                onValueChange={(value) => updateSlot(day, slot.id, "buffer", value)}
+                              >
+                                <SelectTrigger className="w-[85px] h-8 text-xs px-2">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {bufferOptions.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive ml-auto"
+                              onClick={() => removeTimeSlot(day, slot.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          {error && (
+                            <p className="text-xs text-destructive pl-3">{error}</p>
+                          )}
                         </div>
-
-                        <span className="text-muted-foreground text-xs">|</span>
-
-                        {/* Duration */}
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground">Duration:</span>
-                          <Select
-                            value={slot.duration}
-                            onValueChange={(value) => updateSlot(day, slot.id, "duration", value)}
-                          >
-                            <SelectTrigger className="w-[70px] h-8 text-xs px-2">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {durationOptions.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Buffer */}
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground">Buffer:</span>
-                          <Select
-                            value={slot.buffer}
-                            onValueChange={(value) => updateSlot(day, slot.id, "buffer", value)}
-                          >
-                            <SelectTrigger className="w-[85px] h-8 text-xs px-2">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {bufferOptions.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive ml-auto"
-                          onClick={() => removeTimeSlot(day, slot.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               ) : (
