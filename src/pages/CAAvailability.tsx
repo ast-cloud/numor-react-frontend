@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Save, Plus, Trash2, Phone, Video } from "lucide-react";
+import { Calendar, Save, Plus, Trash2, Phone, Video, Ghost } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays } from "date-fns";
 
@@ -144,6 +144,7 @@ const CAAvailability = () => {
   });
   const [hasChanges, setHasChanges] = useState(false);
   const [slotErrors, setSlotErrors] = useState<Record<string, SlotError[]>>({});
+  const [ghostMode, setGhostMode] = useState(false);
 
   const validateSlots = (day: string, slots: TimeSlot[]): SlotError[] => {
     const errors: SlotError[] = [];
@@ -268,10 +269,38 @@ const CAAvailability = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Availability</h1>
-        <p className="text-muted-foreground mt-1">Set your available hours for client consultations</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground">Availability</h1>
+          <p className="text-muted-foreground mt-1">Set your available hours for client consultations</p>
+        </div>
+        <Button
+          variant={ghostMode ? "default" : "outline"}
+          onClick={() => {
+            setGhostMode(!ghostMode);
+            toast({
+              title: ghostMode ? "Ghost Mode Disabled" : "Ghost Mode Enabled",
+              description: ghostMode 
+                ? "You are now visible and available for bookings." 
+                : "You are now hidden from clients. No new bookings can be made.",
+            });
+          }}
+          className={ghostMode ? "bg-muted-foreground hover:bg-muted-foreground/90" : ""}
+        >
+          <Ghost className="w-4 h-4 mr-2" />
+          {ghostMode ? "Ghost Mode On" : "Ghost Mode"}
+        </Button>
       </div>
+
+      {ghostMode && (
+        <div className="bg-muted-foreground/10 border border-muted-foreground/30 rounded-lg p-4 flex items-center gap-3">
+          <Ghost className="w-5 h-5 text-muted-foreground" />
+          <div>
+            <p className="font-medium text-foreground">Ghost Mode is Active</p>
+            <p className="text-sm text-muted-foreground">You are temporarily unavailable for bookings. Clients cannot see your profile or book appointments.</p>
+          </div>
+        </div>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
