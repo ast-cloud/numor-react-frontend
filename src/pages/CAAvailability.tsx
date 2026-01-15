@@ -67,12 +67,14 @@ const CAAvailability = () => {
     Saturday: { enabled: false, slots: [createDefaultSlot("10:00", "13:00")] },
     Sunday: { enabled: false, slots: [createDefaultSlot("10:00", "13:00")] },
   });
+  const [hasChanges, setHasChanges] = useState(false);
 
   const toggleDay = (day: string) => {
     setAvailability(prev => ({
       ...prev,
       [day]: { ...prev[day], enabled: !prev[day].enabled }
     }));
+    setHasChanges(true);
   };
 
   const addTimeSlot = (day: string) => {
@@ -88,6 +90,7 @@ const CAAvailability = () => {
         slots: [...prev[day].slots, createDefaultSlot(newStartTime, newEndTime)]
       }
     }));
+    setHasChanges(true);
   };
 
   const removeTimeSlot = (day: string, slotId: string) => {
@@ -98,6 +101,7 @@ const CAAvailability = () => {
         slots: prev[day].slots.filter(slot => slot.id !== slotId)
       }
     }));
+    setHasChanges(true);
   };
 
   const updateSlot = (day: string, slotId: string, field: keyof TimeSlot, value: string) => {
@@ -110,6 +114,7 @@ const CAAvailability = () => {
         )
       }
     }));
+    setHasChanges(true);
   };
 
   const handleSave = () => {
@@ -117,6 +122,7 @@ const CAAvailability = () => {
       title: "Availability Saved",
       description: "Your availability settings have been updated successfully.",
     });
+    setHasChanges(false);
   };
 
   return (
@@ -135,7 +141,7 @@ const CAAvailability = () => {
             </CardTitle>
             <CardDescription>Configure your available days, time slots, and session settings for each slot.</CardDescription>
           </div>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={!hasChanges} className={!hasChanges ? "opacity-50" : ""}>
             <Save className="w-4 h-4 mr-2" />
             Save Availability
           </Button>
