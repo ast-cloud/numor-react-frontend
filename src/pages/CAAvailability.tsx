@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Save, Plus, Trash2, Clock } from "lucide-react";
+import { Calendar, Save, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import TimelinePreview from "@/components/dashboard/TimelinePreview";
 
 const timeSlots = [
   "06:00", "06:30", "07:00", "07:30", "08:00", "08:30",
@@ -235,31 +234,7 @@ const CAAvailability = () => {
             Save Availability
           </Button>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Timeline Overview */}
-          <div className="p-4 rounded-lg border border-border bg-muted/20">
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Weekly Overview</span>
-            </div>
-            <div className="space-y-3">
-              {days.map((day) => (
-                <div key={`timeline-${day}`} className="flex items-center gap-3">
-                  <span className={`w-12 text-xs font-medium ${availability[day].enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {day.slice(0, 3)}
-                  </span>
-                  <div className="flex-1">
-                    <TimelinePreview 
-                      slots={availability[day].slots} 
-                      enabled={availability[day].enabled} 
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Day configurations */}
+        <CardContent className="space-y-4">
           {days.map((day) => (
             <div key={day} className="p-4 rounded-lg border border-border space-y-3">
               <div className="flex items-center justify-between">
