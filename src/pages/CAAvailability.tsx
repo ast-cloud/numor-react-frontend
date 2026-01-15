@@ -9,9 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format, addDays } from "date-fns";
 
 const callTypeOptions = [
-  { value: "both", label: "Phone & Video" },
-  { value: "phone", label: "Phone Only" },
-  { value: "video", label: "Video Only" },
+  { value: "phone", label: "Phone" },
+  { value: "video", label: "Video" },
 ];
 
 const timeSlots = [
@@ -58,7 +57,7 @@ interface TimeSlot {
   endTime: string;
   duration: string;
   buffer: string;
-  callType: "phone" | "video" | "both";
+  callType: "phone" | "video";
 }
 
 interface DayAvailability {
@@ -74,7 +73,7 @@ const createDefaultSlot = (startTime: string, endTime: string): TimeSlot => ({
   endTime,
   duration: "30",
   buffer: "15",
-  callType: "both",
+  callType: "video",
 });
 
 const timeToMinutes = (time: string): number => {
