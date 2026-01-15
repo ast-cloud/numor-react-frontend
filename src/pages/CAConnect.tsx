@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Calendar } from "@/components/ui/calendar";
-import { Search, Star, Clock, IndianRupee, MapPin, Briefcase, CalendarDays } from "lucide-react";
+import { Search, Star, Clock, IndianRupee, MapPin, Briefcase, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { format, addDays, isSameDay } from "date-fns";
 
 interface CA {
   id: string;
@@ -20,8 +20,27 @@ interface CA {
   hourlyRate: number;
   location: string;
   bio: string;
-  availableSlots: string[];
+  availableSlots: { [date: string]: string[] };
 }
+
+// Generate mock slots for the next 7 days
+const generateMockSlots = () => {
+  const slots: { [date: string]: string[] } = {};
+  const today = new Date();
+  
+  for (let i = 0; i < 7; i++) {
+    const date = addDays(today, i);
+    const dateKey = format(date, "yyyy-MM-dd");
+    
+    // Random availability for each day
+    const allSlots = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"];
+    const numSlots = Math.floor(Math.random() * 8) + 1;
+    const shuffled = allSlots.sort(() => 0.5 - Math.random());
+    slots[dateKey] = shuffled.slice(0, numSlots).sort();
+  }
+  
+  return slots;
+};
 
 const mockCAs: CA[] = [
   {
@@ -34,7 +53,7 @@ const mockCAs: CA[] = [
     hourlyRate: 1500,
     location: "Mumbai",
     bio: "Experienced CA with expertise in corporate taxation and GST compliance. Former Big 4 professional.",
-    availableSlots: ["10:00", "11:00", "14:00", "15:00", "16:00"],
+    availableSlots: generateMockSlots(),
   },
   {
     id: "2",
@@ -46,7 +65,7 @@ const mockCAs: CA[] = [
     hourlyRate: 1200,
     location: "Bangalore",
     bio: "Specialized in helping startups with financial planning, fundraising, and regulatory compliance.",
-    availableSlots: ["09:00", "10:00", "11:00", "15:00"],
+    availableSlots: generateMockSlots(),
   },
   {
     id: "3",
@@ -58,7 +77,7 @@ const mockCAs: CA[] = [
     hourlyRate: 2000,
     location: "Delhi",
     bio: "Senior CA with deep expertise in personal finance, tax optimization, and NRI taxation matters.",
-    availableSlots: ["10:00", "11:00", "12:00", "14:00"],
+    availableSlots: generateMockSlots(),
   },
   {
     id: "4",
@@ -70,7 +89,7 @@ const mockCAs: CA[] = [
     hourlyRate: 1800,
     location: "Pune",
     bio: "Expert in international taxation and transfer pricing with experience in multinational corporations.",
-    availableSlots: ["09:00", "10:00", "14:00", "15:00", "16:00"],
+    availableSlots: generateMockSlots(),
   },
   {
     id: "5",
@@ -82,7 +101,7 @@ const mockCAs: CA[] = [
     hourlyRate: 800,
     location: "Ahmedabad",
     bio: "Dedicated to helping small businesses and freelancers with their accounting and tax needs.",
-    availableSlots: ["10:00", "11:00", "12:00", "15:00", "16:00", "17:00"],
+    availableSlots: generateMockSlots(),
   },
   {
     id: "6",
@@ -94,7 +113,7 @@ const mockCAs: CA[] = [
     hourlyRate: 1400,
     location: "Hyderabad",
     bio: "Certified internal auditor with extensive experience in risk management and compliance.",
-    availableSlots: ["09:00", "10:00", "11:00", "14:00", "15:00"],
+    availableSlots: generateMockSlots(),
   },
 ];
 
@@ -120,8 +139,15 @@ const CAConnect = () => {
   const [selectedSpecialization, setSelectedSpecialization] = useState("All Specializations");
   const [sortBy, setSortBy] = useState("rating");
   const [selectedCA, setSelectedCA] = useState<CA | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Generate dates for the next 7 days
+  const dates = useMemo(() => {
+    const today = new Date();
+    return Array.from({ length: 7 }, (_, i) => addDays(today, i));
+  }, []);
 
   const filteredCAs = mockCAs
     .filter((ca) => {
@@ -142,12 +168,58 @@ const CAConnect = () => {
       return 0;
     });
 
+  const handleOpenDialog = (ca: CA) => {
+    setSelectedCA(ca);
+    setSelectedDateIndex(0);
+    setSelectedSlot(null);
+    setDialogOpen(true);
+  };
+
+  const getSlotsForDate = (ca: CA, date: Date) => {
+    const dateKey = format(date, "yyyy-MM-dd");
+    return ca.availableSlots[dateKey] || [];
+  };
+
+  const categorizeSlots = (slots: string[]) => {
+    const morning: string[] = [];
+    const afternoon: string[] = [];
+
+    slots.forEach((slot) => {
+      const hour = parseInt(slot.split(":")[0]);
+      if (hour < 12) {
+        morning.push(slot);
+      } else {
+        afternoon.push(slot);
+      }
+    });
+
+    return { morning, afternoon };
+  };
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const getDateLabel = (date: Date, index: number) => {
+    if (index === 0) return "Today";
+    if (index === 1) return "Tomorrow";
+    return format(date, "EEE, d MMM");
+  };
+
   const handleBooking = () => {
-    if (selectedCA && selectedDate && selectedSlot) {
-      // Here you would integrate with your booking system
+    if (selectedCA && selectedSlot) {
+      const selectedDate = dates[selectedDateIndex];
       console.log("Booking:", { ca: selectedCA.name, date: selectedDate, slot: selectedSlot });
+      setDialogOpen(false);
     }
   };
+
+  const currentSlots = selectedCA ? getSlotsForDate(selectedCA, dates[selectedDateIndex]) : [];
+  const { morning, afternoon } = categorizeSlots(currentSlots);
 
   return (
     <div className="space-y-6">
@@ -252,7 +324,7 @@ const CAConnect = () => {
                 </div>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Clock className="w-4 h-4" />
-                  <span>{ca.availableSlots.length} slots today</span>
+                  <span>{getSlotsForDate(ca, new Date()).length} slots today</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-medium text-foreground">
                   <IndianRupee className="w-4 h-4" />
@@ -260,78 +332,211 @@ const CAConnect = () => {
                 </div>
               </div>
 
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="w-full" onClick={() => setSelectedCA(ca)}>
-                    <CalendarDays className="w-4 h-4 mr-2" />
-                    Book Consultation
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]">
-                  <DialogHeader>
-                    <DialogTitle>Book Consultation with {ca.name}</DialogTitle>
-                    <DialogDescription>
-                      Select a date and time slot for your consultation
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="flex justify-center">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date) => {
-                          setSelectedDate(date);
-                          setSelectedSlot(null);
-                        }}
-                        disabled={(date) => date < new Date() || date.getDay() === 0}
-                        className="rounded-md border"
-                      />
-                    </div>
-
-                    {selectedDate && (
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium">Available Time Slots</p>
-                        <div className="flex flex-wrap gap-2">
-                          {ca.availableSlots.map((slot) => (
-                            <Button
-                              key={slot}
-                              variant={selectedSlot === slot ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setSelectedSlot(slot)}
-                            >
-                              {slot}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedDate && selectedSlot && (
-                      <div className="rounded-lg bg-muted p-4 space-y-2">
-                        <p className="text-sm font-medium">Booking Summary</p>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p>Date: {selectedDate.toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
-                          <p>Time: {selectedSlot}</p>
-                          <p>Duration: 1 hour</p>
-                          <p className="font-medium text-foreground">Total: ₹{ca.hourlyRate}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    <Button
-                      className="w-full"
-                      disabled={!selectedDate || !selectedSlot}
-                      onClick={handleBooking}
-                    >
-                      Confirm Booking
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button className="w-full" onClick={() => handleOpenDialog(ca)}>
+                <Eye className="w-4 h-4 mr-2" />
+                View
+              </Button>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* CA Detail Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          {selectedCA && (
+            <>
+              <DialogHeader>
+                <div className="flex items-start gap-4">
+                  <Avatar className="w-16 h-16">
+                    <AvatarImage src={selectedCA.avatar} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
+                      {selectedCA.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <DialogTitle className="text-xl">{selectedCA.name}</DialogTitle>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm font-medium">{selectedCA.rating}</span>
+                      <span className="text-xs text-muted-foreground">({selectedCA.reviewCount} reviews)</span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Briefcase className="w-4 h-4" />
+                        {selectedCA.experience} years
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {selectedCA.location}
+                      </span>
+                      <span className="flex items-center gap-1 font-medium text-foreground">
+                        <IndianRupee className="w-4 h-4" />
+                        {selectedCA.hourlyRate}/hr
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-4 mt-4">
+                {/* Bio */}
+                <div>
+                  <h4 className="text-sm font-medium mb-2">About</h4>
+                  <p className="text-sm text-muted-foreground">{selectedCA.bio}</p>
+                </div>
+
+                {/* Specializations */}
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Specializations</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCA.specializations.map((spec) => (
+                      <Badge key={spec} variant="secondary">
+                        {spec}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Date Selector */}
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Select a Slot</h4>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => setSelectedDateIndex(Math.max(0, selectedDateIndex - 1))}
+                      disabled={selectedDateIndex === 0}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+
+                    <div className="flex-1 overflow-hidden">
+                      <div className="flex gap-1">
+                        {dates.slice(selectedDateIndex, selectedDateIndex + 3).map((date, i) => {
+                          const actualIndex = selectedDateIndex + i;
+                          const slots = getSlotsForDate(selectedCA, date);
+                          const isSelected = actualIndex === selectedDateIndex;
+
+                          return (
+                            <button
+                              key={actualIndex}
+                              onClick={() => {
+                                setSelectedDateIndex(actualIndex);
+                                setSelectedSlot(null);
+                              }}
+                              className={`flex-1 text-center py-2 px-2 rounded-lg transition-colors ${
+                                isSelected
+                                  ? "border-b-2 border-primary"
+                                  : ""
+                              }`}
+                            >
+                              <div className={`text-sm font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>
+                                {getDateLabel(date, actualIndex)}
+                              </div>
+                              <div className={`text-xs mt-0.5 ${
+                                slots.length > 0 ? "text-cyan-500" : "text-muted-foreground"
+                              }`}>
+                                {slots.length > 0 ? `${slots.length} Slots Available` : "No Slots Available"}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => setSelectedDateIndex(Math.min(dates.length - 3, selectedDateIndex + 1))}
+                      disabled={selectedDateIndex >= dates.length - 3}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Time Slots */}
+                <div className="space-y-4">
+                  {morning.length > 0 && (
+                    <div>
+                      <h5 className="text-sm text-muted-foreground mb-2">
+                        Morning <span className="text-xs">({morning.length} slots)</span>
+                      </h5>
+                      <div className="flex flex-wrap gap-2">
+                        {morning.map((slot) => (
+                          <Button
+                            key={slot}
+                            variant={selectedSlot === slot ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedSlot(slot)}
+                            className="min-w-[90px]"
+                          >
+                            {formatTime(slot)}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {afternoon.length > 0 && (
+                    <div>
+                      <h5 className="text-sm text-muted-foreground mb-2">
+                        Afternoon <span className="text-xs">({afternoon.length} slots)</span>
+                      </h5>
+                      <div className="flex flex-wrap gap-2">
+                        {afternoon.map((slot) => (
+                          <Button
+                            key={slot}
+                            variant={selectedSlot === slot ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedSlot(slot)}
+                            className="min-w-[90px]"
+                          >
+                            {formatTime(slot)}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {currentSlots.length === 0 && (
+                    <div className="text-center py-6 text-muted-foreground">
+                      No slots available for this date
+                    </div>
+                  )}
+                </div>
+
+                {/* Booking Summary */}
+                {selectedSlot && (
+                  <div className="rounded-lg bg-muted p-4 space-y-2">
+                    <p className="text-sm font-medium">Booking Summary</p>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>Date: {format(dates[selectedDateIndex], "EEEE, MMMM d, yyyy")}</p>
+                      <p>Time: {formatTime(selectedSlot)}</p>
+                      <p>Duration: 1 hour</p>
+                      <p className="font-medium text-foreground">Total: ₹{selectedCA.hourlyRate}</p>
+                    </div>
+                  </div>
+                )}
+
+                <Button
+                  className="w-full"
+                  disabled={!selectedSlot}
+                  onClick={handleBooking}
+                >
+                  Confirm Booking
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {filteredCAs.length === 0 && (
         <Card>
