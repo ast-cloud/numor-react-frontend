@@ -19,6 +19,7 @@ import ForFinancialExperts from "./pages/ForFinancialExperts";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import CADashboardHome from "./pages/CADashboardHome";
+import AdminDashboard from "./pages/AdminDashboard";
 import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import DashboardSettings from "./pages/DashboardSettings";
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/ca" element={<ForFinancialExperts />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
             <Route path="ca" element={<CADashboardHome />} />

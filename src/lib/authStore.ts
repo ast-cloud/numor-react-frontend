@@ -16,7 +16,15 @@ interface AuthStore {
 }
 
 const authStore: AuthStore = {
-  users: [],
+  users: [
+    {
+      name: "Admin",
+      company: "Numor",
+      email: "admin@numor.com",
+      password: "admin",
+      roles: ["admin"],
+    },
+  ],
   currentUser: null,
   activeRole: null,
 };

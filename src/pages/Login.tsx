@@ -23,8 +23,10 @@ const Login = () => {
         title: "Success",
         description: "Login successful!",
       });
-      // Redirect based on role - CA users go to CA dashboard
-      if (hasRole("ca")) {
+      // Redirect based on role
+      if (hasRole("admin")) {
+        navigate("/admin");
+      } else if (hasRole("ca")) {
         navigate("/dashboard/ca");
       } else {
         navigate("/dashboard");
