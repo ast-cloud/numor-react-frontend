@@ -4,9 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Save, Plus, Trash2 } from "lucide-react";
+import { Calendar, Save, Plus, Trash2, Phone, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays } from "date-fns";
+
+const callTypeOptions = [
+  { value: "both", label: "Phone & Video" },
+  { value: "phone", label: "Phone Only" },
+  { value: "video", label: "Video Only" },
+];
 
 const timeSlots = [
   "06:00", "06:30", "07:00", "07:30", "08:00", "08:30",
@@ -52,6 +58,7 @@ interface TimeSlot {
   endTime: string;
   duration: string;
   buffer: string;
+  callType: "phone" | "video" | "both";
 }
 
 interface DayAvailability {
@@ -67,6 +74,7 @@ const createDefaultSlot = (startTime: string, endTime: string): TimeSlot => ({
   endTime,
   duration: "30",
   buffer: "15",
+  callType: "both",
 });
 
 const timeToMinutes = (time: string): number => {
@@ -386,6 +394,27 @@ const CAAvailability = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {bufferOptions.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Call Type */}
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Phone className="w-3 h-3" />
+                                <Video className="w-3 h-3" />
+                              </span>
+                              <Select
+                                value={slot.callType}
+                                onValueChange={(value) => updateSlot(day.key, slot.id, "callType", value)}
+                              >
+                                <SelectTrigger className="w-[110px] h-8 text-xs px-2">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {callTypeOptions.map((opt) => (
                                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                                   ))}
                                 </SelectContent>
