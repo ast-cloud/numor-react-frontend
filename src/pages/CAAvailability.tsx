@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Save, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { format, addDays } from "date-fns";
 
 const timeSlots = [
   "06:00", "06:30", "07:00", "07:30", "08:00", "08:30",
@@ -15,7 +16,19 @@ const timeSlots = [
   "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"
 ];
 
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+// Generate upcoming 7 days starting from today
+const generateUpcomingWeek = () => {
+  const today = new Date();
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = addDays(today, i);
+    return {
+      key: format(date, "yyyy-MM-dd"),
+      dayName: format(date, "EEEE"),
+      displayDate: format(date, "MMM d"),
+      isToday: i === 0,
+    };
+  });
+};
 
 const durationOptions = [
   { value: "15", label: "15 min" },
@@ -104,14 +117,23 @@ interface SlotError {
 
 const CAAvailability = () => {
   const { toast } = useToast();
-  const [availability, setAvailability] = useState<Record<string, DayAvailability>>({
-    Monday: { enabled: true, slots: [createDefaultSlot("09:00", "12:00"), createDefaultSlot("13:00", "17:00")] },
-    Tuesday: { enabled: true, slots: [createDefaultSlot("09:00", "12:00"), createDefaultSlot("13:00", "17:00")] },
-    Wednesday: { enabled: true, slots: [createDefaultSlot("09:00", "12:00"), createDefaultSlot("13:00", "17:00")] },
-    Thursday: { enabled: true, slots: [createDefaultSlot("09:00", "12:00"), createDefaultSlot("13:00", "17:00")] },
-    Friday: { enabled: true, slots: [createDefaultSlot("09:00", "12:00"), createDefaultSlot("13:00", "17:00")] },
-    Saturday: { enabled: false, slots: [createDefaultSlot("10:00", "13:00")] },
-    Sunday: { enabled: false, slots: [createDefaultSlot("10:00", "13:00")] },
+  
+  // Generate upcoming week days
+  const upcomingWeek = useMemo(() => generateUpcomingWeek(), []);
+  
+  // Initialize availability based on upcoming week
+  const [availability, setAvailability] = useState<Record<string, DayAvailability>>(() => {
+    const initial: Record<string, DayAvailability> = {};
+    upcomingWeek.forEach((day) => {
+      const isWeekend = day.dayName === "Saturday" || day.dayName === "Sunday";
+      initial[day.key] = {
+        enabled: !isWeekend,
+        slots: isWeekend 
+          ? [createDefaultSlot("10:00", "13:00")]
+          : [createDefaultSlot("09:00", "12:00"), createDefaultSlot("13:00", "17:00")]
+      };
+    });
+    return initial;
   });
   const [hasChanges, setHasChanges] = useState(false);
   const [slotErrors, setSlotErrors] = useState<Record<string, SlotError[]>>({});
@@ -147,11 +169,11 @@ const CAAvailability = () => {
 
   const validateAllSlots = (newAvailability: Record<string, DayAvailability>) => {
     const newErrors: Record<string, SlotError[]> = {};
-    days.forEach(day => {
-      if (newAvailability[day].enabled) {
-        const dayErrors = validateSlots(day, newAvailability[day].slots);
+    upcomingWeek.forEach(day => {
+      if (newAvailability[day.key]?.enabled) {
+        const dayErrors = validateSlots(day.key, newAvailability[day.key].slots);
         if (dayErrors.length > 0) {
-          newErrors[day] = dayErrors;
+          newErrors[day.key] = dayErrors;
         }
       }
     });
@@ -249,9 +271,9 @@ const CAAvailability = () => {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Weekly Schedule
+              Upcoming Week Schedule
             </CardTitle>
-            <CardDescription>Configure your available days, time slots, and session settings for each slot.</CardDescription>
+            <CardDescription>Configure your availability for the next 7 days starting from today.</CardDescription>
           </div>
           <Button onClick={handleSave} disabled={!hasChanges || hasValidationErrors} className={(!hasChanges || hasValidationErrors) ? "opacity-50" : ""}>
             <Save className="w-4 h-4 mr-2" />
@@ -259,23 +281,28 @@ const CAAvailability = () => {
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {days.map((day) => (
-            <div key={day} className="p-4 rounded-lg border border-border space-y-3">
+          {upcomingWeek.map((day) => (
+            <div key={day.key} className="p-4 rounded-lg border border-border space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Switch
-                    checked={availability[day].enabled}
-                    onCheckedChange={() => toggleDay(day)}
+                    checked={availability[day.key]?.enabled ?? false}
+                    onCheckedChange={() => toggleDay(day.key)}
                   />
-                  <Label className={`font-medium ${availability[day].enabled ? "text-foreground" : "text-muted-foreground"}`}>
-                    {day}
-                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Label className={`font-medium ${availability[day.key]?.enabled ? "text-foreground" : "text-muted-foreground"}`}>
+                      {day.dayName}
+                    </Label>
+                    <span className={`text-sm ${day.isToday ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                      ({day.displayDate}{day.isToday ? " - Today" : ""})
+                    </span>
+                  </div>
                 </div>
-                {availability[day].enabled && (
+                {availability[day.key]?.enabled && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => addTimeSlot(day)}
+                    onClick={() => addTimeSlot(day.key)}
                     className="gap-1"
                   >
                     <Plus className="w-4 h-4" />
@@ -284,13 +311,13 @@ const CAAvailability = () => {
                 )}
               </div>
               
-              {availability[day].enabled ? (
+              {availability[day.key]?.enabled ? (
                 <div className="space-y-3 pl-10">
-                  {availability[day].slots.length === 0 ? (
+                  {availability[day.key].slots.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No time slots. Add one to set availability.</p>
                   ) : (
-                    availability[day].slots.map((slot, index) => {
-                      const error = getSlotError(day, slot.id);
+                    availability[day.key].slots.map((slot, index) => {
+                      const error = getSlotError(day.key, slot.id);
                       return (
                         <div key={slot.id} className="space-y-1">
                           <div className={`flex flex-wrap items-center gap-2 p-3 rounded-md ${error ? 'bg-destructive/10 border border-destructive/30' : 'bg-muted/50'}`}>
@@ -300,7 +327,7 @@ const CAAvailability = () => {
                             <div className="flex items-center gap-1">
                               <Select
                                 value={slot.startTime}
-                                onValueChange={(value) => updateSlot(day, slot.id, "startTime", value)}
+                                onValueChange={(value) => updateSlot(day.key, slot.id, "startTime", value)}
                               >
                                 <SelectTrigger className={`w-[80px] h-8 text-xs ${error ? 'border-destructive' : ''}`}>
                                   <SelectValue />
@@ -314,7 +341,7 @@ const CAAvailability = () => {
                               <span className="text-muted-foreground text-xs">–</span>
                               <Select
                                 value={slot.endTime}
-                                onValueChange={(value) => updateSlot(day, slot.id, "endTime", value)}
+                                onValueChange={(value) => updateSlot(day.key, slot.id, "endTime", value)}
                               >
                                 <SelectTrigger className={`w-[80px] h-8 text-xs ${error ? 'border-destructive' : ''}`}>
                                   <SelectValue />
@@ -334,7 +361,7 @@ const CAAvailability = () => {
                               <span className="text-xs text-muted-foreground">Duration:</span>
                               <Select
                                 value={slot.duration}
-                                onValueChange={(value) => updateSlot(day, slot.id, "duration", value)}
+                                onValueChange={(value) => updateSlot(day.key, slot.id, "duration", value)}
                               >
                                 <SelectTrigger className="w-[70px] h-8 text-xs px-2">
                                   <SelectValue />
@@ -352,7 +379,7 @@ const CAAvailability = () => {
                               <span className="text-xs text-muted-foreground">Buffer:</span>
                               <Select
                                 value={slot.buffer}
-                                onValueChange={(value) => updateSlot(day, slot.id, "buffer", value)}
+                                onValueChange={(value) => updateSlot(day.key, slot.id, "buffer", value)}
                               >
                                 <SelectTrigger className="w-[85px] h-8 text-xs px-2">
                                   <SelectValue />
@@ -369,7 +396,7 @@ const CAAvailability = () => {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-muted-foreground hover:text-destructive ml-auto"
-                              onClick={() => removeTimeSlot(day, slot.id)}
+                              onClick={() => removeTimeSlot(day.key, slot.id)}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
