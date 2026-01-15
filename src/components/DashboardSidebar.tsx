@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, Calendar, CalendarCheck } from "lucide-react";
+import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, Calendar, CalendarCheck, Users } from "lucide-react";
 import { logoutUser, getCurrentUser, getActiveRole } from "@/lib/authStore";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
@@ -8,6 +8,7 @@ const regularNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Expenses", url: "/dashboard/expenses", icon: Receipt },
   { title: "Income", url: "/dashboard/income", icon: FileText },
+  { title: "CA Connect", url: "/dashboard/ca-connect", icon: Users },
 ];
 
 const caNavItems = [
