@@ -317,7 +317,7 @@ const Income = () => {
           <p className="text-muted-foreground mt-1">Track and manage your income.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" title="Manage Clients" onClick={() => navigate("/dashboard/clients")}>
+          <Button variant="outline" size="icon" title="Manage Clients" onClick={() => navigate("/dashboard/income/clients")}>
             <Users className="h-4 w-4" />
           </Button>
           <CreateInvoiceDialog />
