@@ -61,7 +61,7 @@ const App = () => (
             <Route path="ca/settings" element={<CASettings />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="income" element={<Income />} />
-            <Route path="clients" element={<Clients />} />
+            <Route path="income/clients" element={<Clients />} />
             <Route path="ca-connect" element={<CAConnect />} />
             <Route path="settings" element={<DashboardSettings />} />
           </Route>

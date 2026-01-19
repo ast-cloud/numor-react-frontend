@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, Calendar, CalendarCheck, Users } from "lucide-react";
 import { logoutUser, getCurrentUser, getActiveRole } from "@/lib/authStore";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ const caNavItems = [
 
 const DashboardSidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = getCurrentUser();
   const activeRole = getActiveRole();
   const { collapsed, toggle } = useSidebarState();
@@ -67,25 +68,29 @@ const DashboardSidebar = () => {
       {/* Navigation */}
       <nav className="flex-1 p-4">
         <ul className="space-y-1">
-          {navItems.map((item) => (
-            <li key={item.title}>
-              <NavLink
-                to={item.url}
-                end={item.url === "/dashboard" || item.url === "/dashboard/ca"}
-                className={({ isActive }) =>
-                  `flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+          {navItems.map((item) => {
+            const isExactMatch = item.url === "/dashboard" || item.url === "/dashboard/ca";
+            const isActive = isExactMatch 
+              ? location.pathname === item.url 
+              : location.pathname.startsWith(item.url);
+            
+            return (
+              <li key={item.title}>
+                <NavLink
+                  to={item.url}
+                  className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`
-                }
-                title={collapsed ? item.title : undefined}
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {!collapsed && item.title}
-              </NavLink>
-            </li>
-          ))}
+                  }`}
+                  title={collapsed ? item.title : undefined}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {!collapsed && item.title}
+                </NavLink>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
