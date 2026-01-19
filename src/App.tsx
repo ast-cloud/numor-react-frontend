@@ -24,6 +24,7 @@ import CABookings from "./pages/CABookings";
 import AdminDashboard from "./pages/AdminDashboard";
 import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
+import Clients from "./pages/Clients";
 import DashboardSettings from "./pages/DashboardSettings";
 import CASettings from "./pages/CASettings";
 import CAConnect from "./pages/CAConnect";
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="ca/settings" element={<CASettings />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="income" element={<Income />} />
+            <Route path="clients" element={<Clients />} />
             <Route path="ca-connect" element={<CAConnect />} />
             <Route path="settings" element={<DashboardSettings />} />
           </Route>
