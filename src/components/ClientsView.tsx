@@ -65,15 +65,15 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
 
   return (
     <div className="space-y-6">
+      <Button variant="ghost" size="sm" onClick={onBack} className="mb-2">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
+      
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-display font-bold text-foreground">Clients</h1>
-            <p className="text-muted-foreground mt-1">Manage your client information for invoices.</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground">Clients</h1>
+          <p className="text-muted-foreground mt-1">Manage your client information for invoices.</p>
         </div>
         <Button variant="outline" size="sm" onClick={handleAddClient}>
           <Plus className="w-4 h-4 mr-2" />
