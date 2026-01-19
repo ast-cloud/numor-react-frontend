@@ -7,11 +7,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle } from "lucide-react";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users } from "lucide-react";
 import { format, parse, startOfDay, endOfDay, startOfWeek, startOfMonth, startOfQuarter, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
+import ManageClientsDialog from "@/components/ManageClientsDialog";
 import { useToast } from "@/hooks/use-toast";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
@@ -314,7 +315,16 @@ const Income = () => {
           <h1 className="text-3xl font-display font-bold text-foreground">Invoices</h1>
           <p className="text-muted-foreground mt-1">Track and manage your income.</p>
         </div>
-        <CreateInvoiceDialog />
+        <div className="flex items-center gap-2">
+          <ManageClientsDialog 
+            trigger={
+              <Button variant="outline" size="icon" title="Manage Clients">
+                <Users className="h-4 w-4" />
+              </Button>
+            }
+          />
+          <CreateInvoiceDialog />
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
