@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,6 @@ import { format, parse, startOfDay, endOfDay, startOfWeek, startOfMonth, startOf
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
-import ClientsView from "@/components/ClientsView";
 import { useToast } from "@/hooks/use-toast";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
@@ -135,6 +135,7 @@ const InvoiceRow = ({
 };
 
 const Income = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("all");
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
@@ -144,12 +145,7 @@ const Income = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
-  const [showClientsView, setShowClientsView] = useState(false);
   const { toast } = useToast();
-
-  if (showClientsView) {
-    return <ClientsView onBack={() => setShowClientsView(false)} />;
-  }
 
   const handleInvoiceClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -321,7 +317,7 @@ const Income = () => {
           <p className="text-muted-foreground mt-1">Track and manage your income.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" title="Manage Clients" onClick={() => setShowClientsView(true)}>
+          <Button variant="outline" size="icon" title="Manage Clients" onClick={() => navigate("/dashboard/clients")}>
             <Users className="h-4 w-4" />
           </Button>
           <CreateInvoiceDialog />
