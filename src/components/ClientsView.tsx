@@ -103,9 +103,8 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
                         Save
                       </Button>
                     ) : (
-                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setEditingClientId(client.id)}>
-                        <Pencil className="w-3 h-3 mr-1.5" />
-                        Edit
+                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingClientId(client.id)}>
+                        <Pencil className="w-3 h-3" />
                       </Button>
                     )}
                     <Button
