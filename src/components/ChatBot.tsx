@@ -91,7 +91,7 @@ const ChatBot = () => {
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
-          <div className="fixed bottom-6 right-6 z-50 w-[340px] h-[480px] bg-card rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border/50 origin-bottom-right transition-transform duration-100 scale-100">
+          <div className="fixed bottom-6 right-6 z-50 w-[340px] h-[480px] bg-card rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border/50 origin-bottom-right animate-[bounce-in_0.2s_ease-out]">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border-b border-border/50">
             <div className="flex items-center gap-2">
