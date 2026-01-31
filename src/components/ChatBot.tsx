@@ -160,6 +160,15 @@ const ChatBot = () => {
               </Button>
             </div>
           </div>
+
+          {/* Toggle button at same position as floating button */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="absolute -bottom-0 -right-0 translate-x-0 translate-y-0 w-12 h-12 rounded-full bg-secondary text-foreground shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl hover:bg-secondary/80"
+            aria-label="Close chat assistant"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
         </>
       )}
