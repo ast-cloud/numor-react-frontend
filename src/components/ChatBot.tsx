@@ -119,8 +119,8 @@ const ChatBot = () => {
                 className={cn(
                   "max-w-[85%] px-3 py-2 rounded-2xl text-sm",
                   message.role === "user"
-                    ? "ml-auto bg-foreground text-background rounded-br-md"
-                    : "bg-muted/50 text-foreground rounded-bl-md"
+                    ? "ml-auto bg-muted text-foreground rounded-br-md"
+                    : "bg-secondary/50 text-muted-foreground rounded-bl-md"
                 )}
               >
                 {message.content}
