@@ -15,7 +15,6 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showLabel, setShowLabel] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -35,13 +34,6 @@ const ChatBot = () => {
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLabel(false);
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -80,12 +72,10 @@ const ChatBot = () => {
     <>
       {/* Floating Button */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-2">
-          {showLabel && (
-            <div className="animate-[fade-slide-up_0.5s_ease-out_0.5s_both] bg-card text-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-md border border-border/50 whitespace-nowrap">
-              Ask me ✨
-            </div>
-          )}
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
+          <div className="animate-[fade-slide_0.5s_ease-out_0.5s_both] bg-card text-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-md border border-border/50 whitespace-nowrap">
+            Ask me ✨
+          </div>
           <button
             onClick={() => setIsOpen(true)}
             className="w-12 h-12 rounded-full bg-secondary text-foreground shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl hover:bg-secondary/80"
