@@ -72,8 +72,8 @@ const ChatBot = () => {
     <>
       {/* Floating Button */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
-          <div className="animate-[fade-slide_0.5s_ease-out_0.5s_both] bg-card text-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-md border border-border/50 whitespace-nowrap">
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 animate-[fade-slide_0.5s_ease-out_0.5s_both] bg-card text-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-md border border-border/50 whitespace-nowrap">
             Ask me ✨
           </div>
           <button
