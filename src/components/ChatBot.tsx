@@ -71,20 +71,16 @@ const ChatBot = () => {
   return (
     <>
       {/* Floating Button */}
-      {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50">
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 animate-[fade-slide_0.5s_ease-out_0.5s_both] bg-card text-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-md border border-border/50 whitespace-nowrap">
-            Ask me ✨
-          </div>
-          <button
-            onClick={() => setIsOpen(true)}
-            className="w-12 h-12 rounded-full bg-secondary text-foreground shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl hover:bg-secondary/80"
-            aria-label="Open chat assistant"
-          >
-            <MessageCircle className="w-5 h-5" />
-          </button>
-        </div>
-      )}
+      <button
+        onClick={() => setIsOpen(true)}
+        className={cn(
+          "fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-secondary text-foreground shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl hover:bg-secondary/80",
+          isOpen && "hidden"
+        )}
+        aria-label="Open chat assistant"
+      >
+        <MessageCircle className="w-5 h-5" />
+      </button>
 
       {/* Chat Popup */}
       {isOpen && (
