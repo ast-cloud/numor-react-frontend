@@ -206,21 +206,6 @@
   }
 }
 
-@keyframes bounce-in {
-  0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.08);
-  }
-  75% {
-    transform: scale(0.96);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
 @keyframes draw-line {
   from {
     stroke-dashoffset: 1000;
