@@ -64,59 +64,67 @@ const ChatBot = () => {
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl",
+          "fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-secondary text-foreground shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl hover:bg-secondary/80",
           isOpen && "hidden"
         )}
         aria-label="Open chat assistant"
       >
-        <MessageCircle className="w-6 h-6" />
+        <MessageCircle className="w-5 h-5" />
       </button>
 
       {/* Chat Popup */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] h-[500px] bg-background rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border">
+        <div className="fixed bottom-6 right-6 z-50 w-[340px] h-[480px] bg-card rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border/50">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
+          <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border-b border-border/50">
             <div className="flex items-center gap-2">
-              <MessageCircle className="w-5 h-5" />
-              <span className="font-medium">Assistant</span>
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <MessageCircle className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <span className="font-medium text-sm text-foreground">Assistant</span>
+                <p className="text-xs text-muted-foreground">Ask me anything</p>
+              </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 rounded-full hover:bg-primary-foreground/20 transition-colors"
+              className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               aria-label="Close chat"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 && (
-              <div className="text-center text-muted-foreground text-sm mt-8">
-                <p>Hi there! 👋</p>
-                <p className="mt-1">How can I help you today?</p>
+              <div className="text-center text-muted-foreground text-sm mt-12">
+                <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
+                  <MessageCircle className="w-6 h-6" />
+                </div>
+                <p className="font-medium text-foreground">Hi there! 👋</p>
+                <p className="mt-1 text-xs">How can I help you today?</p>
               </div>
             )}
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={cn(
-                  "max-w-[80%] px-3 py-2 rounded-xl text-sm",
+                  "max-w-[85%] px-3 py-2 rounded-2xl text-sm",
                   message.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
+                    ? "ml-auto bg-foreground text-background rounded-br-md"
+                    : "bg-muted/50 text-foreground rounded-bl-md"
                 )}
               >
                 {message.content}
               </div>
             ))}
             {isLoading && (
-              <div className="max-w-[80%] px-3 py-2 rounded-xl text-sm bg-muted text-foreground">
-                <span className="flex gap-1">
-                  <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="max-w-[85%] px-3 py-2 rounded-2xl rounded-bl-md text-sm bg-muted/50 text-foreground">
+                <span className="flex gap-1 py-1">
+                  <span className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </span>
               </div>
             )}
@@ -124,20 +132,22 @@ const ChatBot = () => {
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t border-border">
+          <div className="p-3 border-t border-border/50 bg-secondary/30">
             <div className="flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a message..."
-                className="flex-1"
+                className="flex-1 bg-background/50 border-border/50 text-sm"
                 disabled={isLoading}
               />
               <Button
                 size="icon"
+                variant="ghost"
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
+                className="hover:bg-primary/10 text-primary disabled:text-muted-foreground"
               >
                 <Send className="w-4 h-4" />
               </Button>
