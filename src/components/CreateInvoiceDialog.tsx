@@ -57,6 +57,42 @@ interface InvoiceFormData {
   notes: string;
 }
 
+// Country-to-currency/tax defaults mapping
+const countryDefaults: Record<string, { currency: string; taxType: string }> = {
+  "India": { currency: "INR", taxType: "GST" },
+  "UAE": { currency: "AED", taxType: "VAT" },
+  "US": { currency: "USD", taxType: "Sales Tax" },
+  "UK": { currency: "GBP", taxType: "VAT" },
+  // EU Countries (27)
+  "Austria": { currency: "EUR", taxType: "VAT" },
+  "Belgium": { currency: "EUR", taxType: "VAT" },
+  "Bulgaria": { currency: "EUR", taxType: "VAT" },
+  "Croatia": { currency: "EUR", taxType: "VAT" },
+  "Cyprus": { currency: "EUR", taxType: "VAT" },
+  "Czech Republic": { currency: "EUR", taxType: "VAT" },
+  "Denmark": { currency: "EUR", taxType: "VAT" },
+  "Estonia": { currency: "EUR", taxType: "VAT" },
+  "Finland": { currency: "EUR", taxType: "VAT" },
+  "France": { currency: "EUR", taxType: "VAT" },
+  "Germany": { currency: "EUR", taxType: "VAT" },
+  "Greece": { currency: "EUR", taxType: "VAT" },
+  "Hungary": { currency: "EUR", taxType: "VAT" },
+  "Ireland": { currency: "EUR", taxType: "VAT" },
+  "Italy": { currency: "EUR", taxType: "VAT" },
+  "Latvia": { currency: "EUR", taxType: "VAT" },
+  "Lithuania": { currency: "EUR", taxType: "VAT" },
+  "Luxembourg": { currency: "EUR", taxType: "VAT" },
+  "Malta": { currency: "EUR", taxType: "VAT" },
+  "Netherlands": { currency: "EUR", taxType: "VAT" },
+  "Poland": { currency: "EUR", taxType: "VAT" },
+  "Portugal": { currency: "EUR", taxType: "VAT" },
+  "Romania": { currency: "EUR", taxType: "VAT" },
+  "Slovakia": { currency: "EUR", taxType: "VAT" },
+  "Slovenia": { currency: "EUR", taxType: "VAT" },
+  "Spain": { currency: "EUR", taxType: "VAT" },
+  "Sweden": { currency: "EUR", taxType: "VAT" },
+};
+
 // Dummy seller data (would come from user settings)
 const defaultSellerInfo: SellerInfo = {
   logo: "",
@@ -75,7 +111,7 @@ const initialFormData: InvoiceFormData = {
   invoiceNumber: "",
   invoiceDate: new Date(),
   dueDate: undefined,
-  currency: "USD",
+  currency: "AED",
   taxType: "VAT",
   seller: { ...defaultSellerInfo },
   clientName: "",
@@ -104,10 +140,21 @@ const CreateInvoiceDialog = () => {
   };
 
   const handleSellerChange = (field: keyof SellerInfo, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      seller: { ...prev.seller, [field]: value },
-    }));
+    setFormData((prev) => {
+      const updatedSeller = { ...prev.seller, [field]: value };
+      
+      // If country changed, update currency and tax type
+      if (field === "country" && countryDefaults[value]) {
+        return {
+          ...prev,
+          seller: updatedSeller,
+          currency: countryDefaults[value].currency,
+          taxType: countryDefaults[value].taxType,
+        };
+      }
+      
+      return { ...prev, seller: updatedSeller };
+    });
   };
 
   const handleLineItemChange = (id: string, field: keyof LineItem, value: string | number) => {
