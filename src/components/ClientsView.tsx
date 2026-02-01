@@ -2,13 +2,18 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Users, User, Mail, Phone, MapPin, Plus, Pencil, Save, Trash2, ArrowLeft } from "lucide-react";
 
 export interface Client {
   id: string;
   name: string;
-  address: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
   email: string;
   phone: string;
 }
@@ -26,7 +31,11 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
     const newClient: Client = {
       id: crypto.randomUUID(),
       name: "",
-      address: "",
+      streetAddress: "",
+      city: "",
+      state: "",
+      zip: "",
+      country: "",
       email: "",
       phone: "",
     };
@@ -178,23 +187,124 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-xs">
-                      <MapPin className="w-3 h-3 text-muted-foreground" />
-                      Address
-                    </Label>
-                    {editingClientId === client.id ? (
-                      <Input
-                        value={client.address}
-                        onChange={(e) => handleUpdateClient(client.id, "address", e.target.value)}
-                        placeholder="Client address"
-                        className="h-8 text-sm"
-                      />
-                    ) : (
-                      <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
-                        {client.address || "Not set"}
-                      </p>
-                    )}
+                  {/* Client Address Subgroup */}
+                  <div className="md:col-span-2 space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <MapPin className="w-4 h-4" />
+                      Client Address
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2 md:col-span-2">
+                        <Label className="text-xs">Street Address</Label>
+                        {editingClientId === client.id ? (
+                          <Input
+                            value={client.streetAddress}
+                            onChange={(e) => handleUpdateClient(client.id, "streetAddress", e.target.value)}
+                            placeholder="e.g. 123 Business Street, Suite 100"
+                            className="h-8 text-sm"
+                          />
+                        ) : (
+                          <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                            {client.streetAddress || "Not set"}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">City</Label>
+                        {editingClientId === client.id ? (
+                          <Input
+                            value={client.city}
+                            onChange={(e) => handleUpdateClient(client.id, "city", e.target.value)}
+                            placeholder="e.g. Dubai"
+                            className="h-8 text-sm"
+                          />
+                        ) : (
+                          <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                            {client.city || "Not set"}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">State / Province</Label>
+                        {editingClientId === client.id ? (
+                          <Input
+                            value={client.state}
+                            onChange={(e) => handleUpdateClient(client.id, "state", e.target.value)}
+                            placeholder="e.g. Dubai"
+                            className="h-8 text-sm"
+                          />
+                        ) : (
+                          <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                            {client.state || "Not set"}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">ZIP / Postal Code</Label>
+                        {editingClientId === client.id ? (
+                          <Input
+                            value={client.zip}
+                            onChange={(e) => handleUpdateClient(client.id, "zip", e.target.value)}
+                            placeholder="e.g. 00000"
+                            className="h-8 text-sm"
+                          />
+                        ) : (
+                          <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                            {client.zip || "Not set"}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Country</Label>
+                        {editingClientId === client.id ? (
+                          <Select
+                            value={client.country}
+                            onValueChange={(value) => handleUpdateClient(client.id, "country", value)}
+                          >
+                            <SelectTrigger className="h-8 text-sm">
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="India">India</SelectItem>
+                              <SelectItem value="UAE">UAE</SelectItem>
+                              <SelectItem value="US">United States</SelectItem>
+                              <SelectItem value="UK">United Kingdom</SelectItem>
+                              <SelectItem value="Austria">Austria</SelectItem>
+                              <SelectItem value="Belgium">Belgium</SelectItem>
+                              <SelectItem value="Bulgaria">Bulgaria</SelectItem>
+                              <SelectItem value="Croatia">Croatia</SelectItem>
+                              <SelectItem value="Cyprus">Cyprus</SelectItem>
+                              <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                              <SelectItem value="Denmark">Denmark</SelectItem>
+                              <SelectItem value="Estonia">Estonia</SelectItem>
+                              <SelectItem value="Finland">Finland</SelectItem>
+                              <SelectItem value="France">France</SelectItem>
+                              <SelectItem value="Germany">Germany</SelectItem>
+                              <SelectItem value="Greece">Greece</SelectItem>
+                              <SelectItem value="Hungary">Hungary</SelectItem>
+                              <SelectItem value="Ireland">Ireland</SelectItem>
+                              <SelectItem value="Italy">Italy</SelectItem>
+                              <SelectItem value="Latvia">Latvia</SelectItem>
+                              <SelectItem value="Lithuania">Lithuania</SelectItem>
+                              <SelectItem value="Luxembourg">Luxembourg</SelectItem>
+                              <SelectItem value="Malta">Malta</SelectItem>
+                              <SelectItem value="Netherlands">Netherlands</SelectItem>
+                              <SelectItem value="Poland">Poland</SelectItem>
+                              <SelectItem value="Portugal">Portugal</SelectItem>
+                              <SelectItem value="Romania">Romania</SelectItem>
+                              <SelectItem value="Slovakia">Slovakia</SelectItem>
+                              <SelectItem value="Slovenia">Slovenia</SelectItem>
+                              <SelectItem value="Spain">Spain</SelectItem>
+                              <SelectItem value="Sweden">Sweden</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                            {client.country || "Not set"}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
