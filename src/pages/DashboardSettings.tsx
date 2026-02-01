@@ -393,96 +393,103 @@ const DashboardSettings = () => {
               )}
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="streetAddress" className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-muted-foreground" />
-                Street Address
-              </Label>
-              {isEditingCompany ? (
-                <Input
-                  id="streetAddress"
-                  value={companyData.streetAddress}
-                  onChange={(e) => setCompanyData({ ...companyData, streetAddress: e.target.value })}
-                  placeholder="Enter street address"
-                />
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {companyData.streetAddress || "Not set"}
-                </p>
-              )}
-            </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              {isEditingCompany ? (
-                <Input
-                  id="city"
-                  value={companyData.city}
-                  onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
-                  placeholder="Enter city"
-                />
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {companyData.city || "Not set"}
-                </p>
-              )}
+          {/* Address Subgroup */}
+          <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <MapPin className="w-4 h-4" />
+              Business Address
             </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="streetAddress">Street Address</Label>
+                {isEditingCompany ? (
+                  <Input
+                    id="streetAddress"
+                    value={companyData.streetAddress}
+                    onChange={(e) => setCompanyData({ ...companyData, streetAddress: e.target.value })}
+                    placeholder="Enter street address"
+                  />
+                ) : (
+                  <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                    {companyData.streetAddress || "Not set"}
+                  </p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="state">State / Province</Label>
-              {isEditingCompany ? (
-                <Input
-                  id="state"
-                  value={companyData.state}
-                  onChange={(e) => setCompanyData({ ...companyData, state: e.target.value })}
-                  placeholder="Enter state"
-                />
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {companyData.state || "Not set"}
-                </p>
-              )}
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                {isEditingCompany ? (
+                  <Input
+                    id="city"
+                    value={companyData.city}
+                    onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
+                    placeholder="Enter city"
+                  />
+                ) : (
+                  <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                    {companyData.city || "Not set"}
+                  </p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="zip">ZIP / Postal Code</Label>
-              {isEditingCompany ? (
-                <Input
-                  id="zip"
-                  value={companyData.zip}
-                  onChange={(e) => setCompanyData({ ...companyData, zip: e.target.value })}
-                  placeholder="Enter ZIP code"
-                />
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {companyData.zip || "Not set"}
-                </p>
-              )}
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State / Province</Label>
+                {isEditingCompany ? (
+                  <Input
+                    id="state"
+                    value={companyData.state}
+                    onChange={(e) => setCompanyData({ ...companyData, state: e.target.value })}
+                    placeholder="Enter state"
+                  />
+                ) : (
+                  <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                    {companyData.state || "Not set"}
+                  </p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
-              {isEditingCompany ? (
-                <Select
-                  value={companyData.country}
-                  onValueChange={(value) => setCompanyData({ ...companyData, country: value })}
-                >
-                  <SelectTrigger id="country">
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTRIES.map((country) => (
-                      <SelectItem key={country} value={country}>
-                        {country}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {companyData.country || "Not set"}
-                </p>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="zip">ZIP / Postal Code</Label>
+                {isEditingCompany ? (
+                  <Input
+                    id="zip"
+                    value={companyData.zip}
+                    onChange={(e) => setCompanyData({ ...companyData, zip: e.target.value })}
+                    placeholder="Enter ZIP code"
+                  />
+                ) : (
+                  <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                    {companyData.zip || "Not set"}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country">Country</Label>
+                {isEditingCompany ? (
+                  <Select
+                    value={companyData.country}
+                    onValueChange={(value) => setCompanyData({ ...companyData, country: value })}
+                  >
+                    <SelectTrigger id="country">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                    {companyData.country || "Not set"}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
