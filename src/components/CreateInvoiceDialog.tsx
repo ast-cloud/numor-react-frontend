@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import InvoicePreview from "@/components/InvoicePreview";
+import { INDIAN_STATES } from "@/lib/constants";
 
 interface LineItem {
   id: string;
@@ -498,12 +499,30 @@ const CreateInvoiceDialog = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="sellerState">State / Province</Label>
-                        <Input
-                          id="sellerState"
-                          placeholder="e.g. Dubai"
-                          value={formData.seller.state}
-                          onChange={(e) => handleSellerChange("state", e.target.value)}
-                        />
+                        {formData.seller.country === "India" ? (
+                          <Select
+                            value={formData.seller.state}
+                            onValueChange={(value) => handleSellerChange("state", value)}
+                          >
+                            <SelectTrigger id="sellerState">
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {INDIAN_STATES.map((state) => (
+                                <SelectItem key={state} value={state}>
+                                  {state}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            id="sellerState"
+                            placeholder="e.g. Dubai"
+                            value={formData.seller.state}
+                            onChange={(e) => handleSellerChange("state", e.target.value)}
+                          />
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="sellerZip">ZIP / Postal Code</Label>
@@ -603,12 +622,30 @@ const CreateInvoiceDialog = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="clientState">State / Province</Label>
-                    <Input
-                      id="clientState"
-                      placeholder="e.g. Dubai"
-                      value={formData.clientState}
-                      onChange={(e) => handleInputChange("clientState", e.target.value)}
-                    />
+                    {formData.clientCountry === "India" ? (
+                      <Select
+                        value={formData.clientState}
+                        onValueChange={(value) => handleInputChange("clientState", value)}
+                      >
+                        <SelectTrigger id="clientState">
+                          <SelectValue placeholder="Select state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INDIAN_STATES.map((state) => (
+                            <SelectItem key={state} value={state}>
+                              {state}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        id="clientState"
+                        placeholder="e.g. Dubai"
+                        value={formData.clientState}
+                        onChange={(e) => handleInputChange("clientState", e.target.value)}
+                      />
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="clientZip">ZIP / Postal Code</Label>
