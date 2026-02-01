@@ -30,7 +30,11 @@ interface InvoiceFormData {
   currency: string;
   seller: SellerInfo;
   clientName: string;
-  clientAddress: string;
+  clientStreetAddress: string;
+  clientCity: string;
+  clientState: string;
+  clientZip: string;
+  clientCountry: string;
   lineItems: LineItem[];
   bankName: string;
   iban: string;
@@ -326,7 +330,7 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
         <div className="flex-1 space-y-0.5 text-xs">
           <p className="text-slate-500 font-medium text-[10px]">Bill To</p>
           <p className="font-bold text-xs">{formData.clientName || 'Client Name'}</p>
-          <p className="whitespace-pre-line">{formData.clientAddress || 'Client Address'}</p>
+          <p className="whitespace-pre-line">{[formData.clientStreetAddress, formData.clientCity, formData.clientState, formData.clientZip, formData.clientCountry].filter(Boolean).join(', ') || 'Client Address'}</p>
         </div>
       </div>
 

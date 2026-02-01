@@ -43,7 +43,11 @@ interface InvoiceFormData {
   currency: string;
   seller: SellerInfo;
   clientName: string;
-  clientAddress: string;
+  clientStreetAddress: string;
+  clientCity: string;
+  clientState: string;
+  clientZip: string;
+  clientCountry: string;
   lineItems: LineItem[];
   bankName: string;
   iban: string;
@@ -73,7 +77,11 @@ const initialFormData: InvoiceFormData = {
   currency: "USD",
   seller: { ...defaultSellerInfo },
   clientName: "",
-  clientAddress: "",
+  clientStreetAddress: "",
+  clientCity: "",
+  clientState: "",
+  clientZip: "",
+  clientCountry: "",
   lineItems: [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
   bankName: "",
   iban: "",
@@ -472,15 +480,94 @@ const CreateInvoiceDialog = () => {
                   onChange={(e) => handleInputChange("clientName", e.target.value)}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientAddress">Client Address</Label>
-                <Textarea
-                  id="clientAddress"
-                  placeholder="e.g. Al Quoz 2, Dubai, UAE"
-                  value={formData.clientAddress}
-                  onChange={(e) => handleInputChange("clientAddress", e.target.value)}
-                  rows={2}
-                />
+              {/* Client Address Subgroup */}
+              <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <MapPin className="w-4 h-4" />
+                  Client Address
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="clientStreetAddress">Street Address</Label>
+                    <Input
+                      id="clientStreetAddress"
+                      placeholder="e.g. 123 Business Street, Suite 100"
+                      value={formData.clientStreetAddress}
+                      onChange={(e) => handleInputChange("clientStreetAddress", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientCity">City</Label>
+                    <Input
+                      id="clientCity"
+                      placeholder="e.g. Dubai"
+                      value={formData.clientCity}
+                      onChange={(e) => handleInputChange("clientCity", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientState">State / Province</Label>
+                    <Input
+                      id="clientState"
+                      placeholder="e.g. Dubai"
+                      value={formData.clientState}
+                      onChange={(e) => handleInputChange("clientState", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientZip">ZIP / Postal Code</Label>
+                    <Input
+                      id="clientZip"
+                      placeholder="e.g. 00000"
+                      value={formData.clientZip}
+                      onChange={(e) => handleInputChange("clientZip", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientCountry">Country</Label>
+                    <Select 
+                      value={formData.clientCountry} 
+                      onValueChange={(value) => handleInputChange("clientCountry", value)}
+                    >
+                      <SelectTrigger id="clientCountry">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="India">India</SelectItem>
+                        <SelectItem value="UAE">UAE</SelectItem>
+                        <SelectItem value="US">United States</SelectItem>
+                        <SelectItem value="UK">United Kingdom</SelectItem>
+                        <SelectItem value="Austria">Austria</SelectItem>
+                        <SelectItem value="Belgium">Belgium</SelectItem>
+                        <SelectItem value="Bulgaria">Bulgaria</SelectItem>
+                        <SelectItem value="Croatia">Croatia</SelectItem>
+                        <SelectItem value="Cyprus">Cyprus</SelectItem>
+                        <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                        <SelectItem value="Denmark">Denmark</SelectItem>
+                        <SelectItem value="Estonia">Estonia</SelectItem>
+                        <SelectItem value="Finland">Finland</SelectItem>
+                        <SelectItem value="France">France</SelectItem>
+                        <SelectItem value="Germany">Germany</SelectItem>
+                        <SelectItem value="Greece">Greece</SelectItem>
+                        <SelectItem value="Hungary">Hungary</SelectItem>
+                        <SelectItem value="Ireland">Ireland</SelectItem>
+                        <SelectItem value="Italy">Italy</SelectItem>
+                        <SelectItem value="Latvia">Latvia</SelectItem>
+                        <SelectItem value="Lithuania">Lithuania</SelectItem>
+                        <SelectItem value="Luxembourg">Luxembourg</SelectItem>
+                        <SelectItem value="Malta">Malta</SelectItem>
+                        <SelectItem value="Netherlands">Netherlands</SelectItem>
+                        <SelectItem value="Poland">Poland</SelectItem>
+                        <SelectItem value="Portugal">Portugal</SelectItem>
+                        <SelectItem value="Romania">Romania</SelectItem>
+                        <SelectItem value="Slovakia">Slovakia</SelectItem>
+                        <SelectItem value="Slovenia">Slovenia</SelectItem>
+                        <SelectItem value="Spain">Spain</SelectItem>
+                        <SelectItem value="Sweden">Sweden</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             </div>
 
