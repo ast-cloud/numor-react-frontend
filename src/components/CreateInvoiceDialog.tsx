@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, CalendarIcon, Trash2, Upload, ArrowLeft } from "lucide-react";
+import { Plus, CalendarIcon, Trash2, Upload, ArrowLeft, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,11 @@ interface LineItem {
 interface SellerInfo {
   logo: string;
   name: string;
-  address: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
   taxId: string;
   email: string;
   phone: string;
@@ -52,7 +56,11 @@ interface InvoiceFormData {
 const defaultSellerInfo: SellerInfo = {
   logo: "",
   name: "Acme Corporation LLC",
-  address: "123 Business Street, Suite 100, Dubai, UAE",
+  streetAddress: "123 Business Street, Suite 100",
+  city: "Dubai",
+  state: "",
+  zip: "",
+  country: "UAE",
   taxId: "TRN-100234567890003",
   email: "billing@acmecorp.com",
   phone: "+971 4 123 4567",
@@ -359,15 +367,94 @@ const CreateInvoiceDialog = () => {
                       onChange={(e) => handleSellerChange("phone", e.target.value)}
                     />
                   </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="sellerAddress">Address</Label>
-                    <Textarea
-                      id="sellerAddress"
-                      placeholder="e.g. 123 Business Street, Suite 100, Dubai, UAE"
-                      value={formData.seller.address}
-                      onChange={(e) => handleSellerChange("address", e.target.value)}
-                      rows={2}
-                    />
+                  {/* Business Address Subgroup */}
+                  <div className="md:col-span-2 space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <MapPin className="w-4 h-4" />
+                      Business Address
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="sellerStreetAddress">Street Address</Label>
+                        <Input
+                          id="sellerStreetAddress"
+                          placeholder="e.g. 123 Business Street, Suite 100"
+                          value={formData.seller.streetAddress}
+                          onChange={(e) => handleSellerChange("streetAddress", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sellerCity">City</Label>
+                        <Input
+                          id="sellerCity"
+                          placeholder="e.g. Dubai"
+                          value={formData.seller.city}
+                          onChange={(e) => handleSellerChange("city", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sellerState">State / Province</Label>
+                        <Input
+                          id="sellerState"
+                          placeholder="e.g. Dubai"
+                          value={formData.seller.state}
+                          onChange={(e) => handleSellerChange("state", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sellerZip">ZIP / Postal Code</Label>
+                        <Input
+                          id="sellerZip"
+                          placeholder="e.g. 00000"
+                          value={formData.seller.zip}
+                          onChange={(e) => handleSellerChange("zip", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sellerCountry">Country</Label>
+                        <Select 
+                          value={formData.seller.country} 
+                          onValueChange={(value) => handleSellerChange("country", value)}
+                        >
+                          <SelectTrigger id="sellerCountry">
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="India">India</SelectItem>
+                            <SelectItem value="UAE">UAE</SelectItem>
+                            <SelectItem value="US">United States</SelectItem>
+                            <SelectItem value="UK">United Kingdom</SelectItem>
+                            <SelectItem value="Austria">Austria</SelectItem>
+                            <SelectItem value="Belgium">Belgium</SelectItem>
+                            <SelectItem value="Bulgaria">Bulgaria</SelectItem>
+                            <SelectItem value="Croatia">Croatia</SelectItem>
+                            <SelectItem value="Cyprus">Cyprus</SelectItem>
+                            <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                            <SelectItem value="Denmark">Denmark</SelectItem>
+                            <SelectItem value="Estonia">Estonia</SelectItem>
+                            <SelectItem value="Finland">Finland</SelectItem>
+                            <SelectItem value="France">France</SelectItem>
+                            <SelectItem value="Germany">Germany</SelectItem>
+                            <SelectItem value="Greece">Greece</SelectItem>
+                            <SelectItem value="Hungary">Hungary</SelectItem>
+                            <SelectItem value="Ireland">Ireland</SelectItem>
+                            <SelectItem value="Italy">Italy</SelectItem>
+                            <SelectItem value="Latvia">Latvia</SelectItem>
+                            <SelectItem value="Lithuania">Lithuania</SelectItem>
+                            <SelectItem value="Luxembourg">Luxembourg</SelectItem>
+                            <SelectItem value="Malta">Malta</SelectItem>
+                            <SelectItem value="Netherlands">Netherlands</SelectItem>
+                            <SelectItem value="Poland">Poland</SelectItem>
+                            <SelectItem value="Portugal">Portugal</SelectItem>
+                            <SelectItem value="Romania">Romania</SelectItem>
+                            <SelectItem value="Slovakia">Slovakia</SelectItem>
+                            <SelectItem value="Slovenia">Slovenia</SelectItem>
+                            <SelectItem value="Spain">Spain</SelectItem>
+                            <SelectItem value="Sweden">Sweden</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
