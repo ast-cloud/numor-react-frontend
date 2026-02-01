@@ -3,11 +3,44 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getCurrentUser } from "@/lib/authStore";
 import { useToast } from "@/hooks/use-toast";
 import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2 } from "lucide-react";
 
+const COUNTRIES = [
+  "India",
+  "UAE",
+  "United States",
+  "United Kingdom",
+  "Austria",
+  "Belgium",
+  "Bulgaria",
+  "Croatia",
+  "Cyprus",
+  "Czech Republic",
+  "Denmark",
+  "Estonia",
+  "Finland",
+  "France",
+  "Germany",
+  "Greece",
+  "Hungary",
+  "Ireland",
+  "Italy",
+  "Latvia",
+  "Lithuania",
+  "Luxembourg",
+  "Malta",
+  "Netherlands",
+  "Poland",
+  "Portugal",
+  "Romania",
+  "Slovakia",
+  "Slovenia",
+  "Spain",
+  "Sweden",
+];
 
 const DashboardSettings = () => {
   const user = getCurrentUser();
@@ -26,7 +59,11 @@ const DashboardSettings = () => {
 
   const [companyData, setCompanyData] = useState({
     companyName: user?.company || "",
-    address: "",
+    streetAddress: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
     taxId: "",
     email: "",
     phone: "",
@@ -101,7 +138,11 @@ const DashboardSettings = () => {
   const handleCancelCompany = () => {
     setCompanyData({
       companyName: user?.company || "",
-      address: "",
+      streetAddress: "",
+      city: "",
+      state: "",
+      zip: "",
+      country: "",
       taxId: "",
       email: "",
       phone: "",
@@ -353,21 +394,93 @@ const DashboardSettings = () => {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="address" className="flex items-center gap-2">
+              <Label htmlFor="streetAddress" className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-muted-foreground" />
-                Address
+                Street Address
               </Label>
               {isEditingCompany ? (
-                <Textarea
-                  id="address"
-                  value={companyData.address}
-                  onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
-                  placeholder="Enter company address"
-                  rows={3}
+                <Input
+                  id="streetAddress"
+                  value={companyData.streetAddress}
+                  onChange={(e) => setCompanyData({ ...companyData, streetAddress: e.target.value })}
+                  placeholder="Enter street address"
                 />
               ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md min-h-[60px] whitespace-pre-wrap">
-                  {companyData.address || "Not set"}
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {companyData.streetAddress || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              {isEditingCompany ? (
+                <Input
+                  id="city"
+                  value={companyData.city}
+                  onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
+                  placeholder="Enter city"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {companyData.city || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="state">State / Province</Label>
+              {isEditingCompany ? (
+                <Input
+                  id="state"
+                  value={companyData.state}
+                  onChange={(e) => setCompanyData({ ...companyData, state: e.target.value })}
+                  placeholder="Enter state"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {companyData.state || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="zip">ZIP / Postal Code</Label>
+              {isEditingCompany ? (
+                <Input
+                  id="zip"
+                  value={companyData.zip}
+                  onChange={(e) => setCompanyData({ ...companyData, zip: e.target.value })}
+                  placeholder="Enter ZIP code"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {companyData.zip || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="country">Country</Label>
+              {isEditingCompany ? (
+                <Select
+                  value={companyData.country}
+                  onValueChange={(value) => setCompanyData({ ...companyData, country: value })}
+                >
+                  <SelectTrigger id="country">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map((country) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {companyData.country || "Not set"}
                 </p>
               )}
             </div>
