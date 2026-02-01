@@ -41,6 +41,7 @@ interface InvoiceFormData {
   invoiceDate: Date | undefined;
   dueDate: Date | undefined;
   currency: string;
+  taxType: string;
   seller: SellerInfo;
   clientName: string;
   clientStreetAddress: string;
@@ -75,6 +76,7 @@ const initialFormData: InvoiceFormData = {
   invoiceDate: new Date(),
   dueDate: undefined,
   currency: "USD",
+  taxType: "VAT",
   seller: { ...defaultSellerInfo },
   clientName: "",
   clientStreetAddress: "",
@@ -290,20 +292,36 @@ const CreateInvoiceDialog = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Currency</Label>
-              <Select value={formData.currency} onValueChange={(value) => handleInputChange("currency", value)}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Select currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                  <SelectItem value="AED">AED</SelectItem>
-                  <SelectItem value="INR">INR</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex gap-4">
+              <div className="space-y-2">
+                <Label>Currency</Label>
+                <Select value={formData.currency} onValueChange={(value) => handleInputChange("currency", value)}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                    <SelectItem value="AED">AED</SelectItem>
+                    <SelectItem value="INR">INR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Tax Type</Label>
+                <Select value={formData.taxType} onValueChange={(value) => handleInputChange("taxType", value)}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Select tax type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="VAT">VAT</SelectItem>
+                    <SelectItem value="GST">GST</SelectItem>
+                    <SelectItem value="Sales Tax">Sales Tax</SelectItem>
+                    <SelectItem value="None">None</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Seller Info */}
