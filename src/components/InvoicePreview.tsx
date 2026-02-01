@@ -216,6 +216,10 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
     </tr>
   );
 
+  const isIndiaToIndia = formData.seller.country === "India" && formData.clientCountry === "India";
+  const isSameState = isIndiaToIndia && formData.seller.state === formData.clientState;
+  const isDifferentStateIndia = isIndiaToIndia && formData.seller.state !== formData.clientState;
+
   const TotalsSection = () => (
     <div className="flex justify-end mt-3">
       <div className="w-52 text-xs">
@@ -223,10 +227,30 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
           <span className="text-slate-500">Subtotal</span>
           <span className="font-medium">{formatCurrency(calculateSubtotal())}</span>
         </div>
-        <div className="flex justify-between py-1 border-b border-slate-200">
-          <span className="text-slate-500">{formData.taxType || 'Tax'} ({averageTaxPercent()}%)</span>
-          <span className="font-medium">{formatCurrency(calculateTotalTax())}</span>
-        </div>
+        {isIndiaToIndia ? (
+          isSameState ? (
+            <>
+              <div className="flex justify-between py-1 border-b border-slate-200">
+                <span className="text-slate-500">CGST ({averageTaxPercent() / 2}%)</span>
+                <span className="font-medium">{formatCurrency(calculateTotalTax() / 2)}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-slate-200">
+                <span className="text-slate-500">SGST ({averageTaxPercent() / 2}%)</span>
+                <span className="font-medium">{formatCurrency(calculateTotalTax() / 2)}</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between py-1 border-b border-slate-200">
+              <span className="text-slate-500">IGST ({averageTaxPercent()}%)</span>
+              <span className="font-medium">{formatCurrency(calculateTotalTax())}</span>
+            </div>
+          )
+        ) : (
+          <div className="flex justify-between py-1 border-b border-slate-200">
+            <span className="text-slate-500">{formData.taxType || 'Tax'} ({averageTaxPercent()}%)</span>
+            <span className="font-medium">{formatCurrency(calculateTotalTax())}</span>
+          </div>
+        )}
         <div className="flex justify-between py-1.5 bg-slate-100 px-2 mt-1 rounded">
           <span className="font-bold">Total</span>
           <span className="font-bold text-amber-600">{formData.currency} {formatCurrency(calculateTotal())}</span>
