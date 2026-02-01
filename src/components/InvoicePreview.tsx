@@ -220,6 +220,14 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
   const isSameState = isIndiaToIndia && formData.seller.state === formData.clientState;
   const isDifferentStateIndia = isIndiaToIndia && formData.seller.state !== formData.clientState;
 
+  const hasUniformTaxPercent = () => {
+    if (formData.lineItems.length === 0) return true;
+    const firstTax = formData.lineItems[0].taxPercent;
+    return formData.lineItems.every(item => item.taxPercent === firstTax);
+  };
+
+  const uniformTaxPercent = hasUniformTaxPercent() ? formData.lineItems[0]?.taxPercent ?? 0 : null;
+
   const TotalsSection = () => (
     <div className="flex justify-end mt-3">
       <div className="w-52 text-xs">
@@ -231,23 +239,23 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
           isSameState ? (
             <>
               <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500">CGST ({averageTaxPercent() / 2}%)</span>
+                <span className="text-slate-500">CGST{uniformTaxPercent !== null ? ` (${uniformTaxPercent / 2}%)` : ''}</span>
                 <span className="font-medium">{formatCurrency(calculateTotalTax() / 2)}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500">SGST ({averageTaxPercent() / 2}%)</span>
+                <span className="text-slate-500">SGST{uniformTaxPercent !== null ? ` (${uniformTaxPercent / 2}%)` : ''}</span>
                 <span className="font-medium">{formatCurrency(calculateTotalTax() / 2)}</span>
               </div>
             </>
           ) : (
             <div className="flex justify-between py-1 border-b border-slate-200">
-              <span className="text-slate-500">IGST ({averageTaxPercent()}%)</span>
+              <span className="text-slate-500">IGST{uniformTaxPercent !== null ? ` (${uniformTaxPercent}%)` : ''}</span>
               <span className="font-medium">{formatCurrency(calculateTotalTax())}</span>
             </div>
           )
         ) : (
           <div className="flex justify-between py-1 border-b border-slate-200">
-            <span className="text-slate-500">{formData.taxType || 'Tax'} ({averageTaxPercent()}%)</span>
+            <span className="text-slate-500">{formData.taxType || 'Tax'}{uniformTaxPercent !== null ? ` (${uniformTaxPercent}%)` : ''}</span>
             <span className="font-medium">{formatCurrency(calculateTotalTax())}</span>
           </div>
         )}
