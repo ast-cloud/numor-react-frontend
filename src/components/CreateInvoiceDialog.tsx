@@ -145,15 +145,46 @@ const CreateInvoiceDialog = () => {
       
       // If country changed, update currency and tax type
       if (field === "country" && countryDefaults[value]) {
+        // Check if client country differs - zero-rate taxes if cross-border
+        const isCrossBorder = prev.clientCountry && prev.clientCountry !== value;
+        const updatedLineItems = isCrossBorder 
+          ? prev.lineItems.map(item => ({ ...item, taxPercent: 0 }))
+          : prev.lineItems;
+        
         return {
           ...prev,
           seller: updatedSeller,
           currency: countryDefaults[value].currency,
           taxType: countryDefaults[value].taxType,
+          lineItems: updatedLineItems,
         };
       }
       
+      // Check if changing to/from cross-border scenario
+      if (field === "country") {
+        const isCrossBorder = prev.clientCountry && prev.clientCountry !== value;
+        const updatedLineItems = isCrossBorder 
+          ? prev.lineItems.map(item => ({ ...item, taxPercent: 0 }))
+          : prev.lineItems;
+        return { ...prev, seller: updatedSeller, lineItems: updatedLineItems };
+      }
+      
       return { ...prev, seller: updatedSeller };
+    });
+  };
+
+  const handleClientCountryChange = (value: string) => {
+    setFormData((prev) => {
+      const isCrossBorder = prev.seller.country && prev.seller.country !== value;
+      const updatedLineItems = isCrossBorder 
+        ? prev.lineItems.map(item => ({ ...item, taxPercent: 0 }))
+        : prev.lineItems;
+      
+      return {
+        ...prev,
+        clientCountry: value,
+        lineItems: updatedLineItems,
+      };
     });
   };
 
@@ -592,7 +623,7 @@ const CreateInvoiceDialog = () => {
                     <Label htmlFor="clientCountry">Country</Label>
                     <Select 
                       value={formData.clientCountry} 
-                      onValueChange={(value) => handleInputChange("clientCountry", value)}
+                      onValueChange={handleClientCountryChange}
                     >
                       <SelectTrigger id="clientCountry">
                         <SelectValue placeholder="Select country" />

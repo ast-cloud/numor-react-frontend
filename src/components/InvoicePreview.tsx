@@ -235,11 +235,19 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
     </div>
   );
 
+  const isCrossBorder = formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
+
   const FooterSection = () => (
     <>
       <p className="text-xs italic text-slate-600 mt-3 mb-3">
         Amount in words: <span className="not-italic">{numberToWords(calculateTotal())}</span>
       </p>
+
+      {isCrossBorder && (
+        <p className="text-xs text-slate-700 bg-amber-50 border border-amber-200 rounded px-3 py-2 mb-3">
+          Zero-rated export of services. Subject to reverse charge in the country of receipt.
+        </p>
+      )}
 
       <div className="flex gap-4 mb-4">
         <div className="flex-1 space-y-1 text-xs">
