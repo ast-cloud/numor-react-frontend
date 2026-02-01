@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getCurrentUser } from "@/lib/authStore";
 import { useToast } from "@/hooks/use-toast";
 import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2 } from "lucide-react";
+import { INDIAN_STATES } from "@/lib/constants";
 
 const COUNTRIES = [
   "India",
@@ -437,12 +438,30 @@ const DashboardSettings = () => {
               <div className="space-y-2">
                 <Label htmlFor="state">State / Province</Label>
                 {isEditingCompany ? (
-                  <Input
-                    id="state"
-                    value={companyData.state}
-                    onChange={(e) => setCompanyData({ ...companyData, state: e.target.value })}
-                    placeholder="Enter state"
-                  />
+                  companyData.country === "India" ? (
+                    <Select
+                      value={companyData.state}
+                      onValueChange={(value) => setCompanyData({ ...companyData, state: value })}
+                    >
+                      <SelectTrigger id="state">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDIAN_STATES.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="state"
+                      value={companyData.state}
+                      onChange={(e) => setCompanyData({ ...companyData, state: e.target.value })}
+                      placeholder="Enter state"
+                    />
+                  )
                 ) : (
                   <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
                     {companyData.state || "Not set"}

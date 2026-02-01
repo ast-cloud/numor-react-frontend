@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Users, User, Mail, Phone, MapPin, Plus, Pencil, Save, Trash2, ArrowLeft } from "lucide-react";
+import { INDIAN_STATES } from "@/lib/constants";
 
 export interface Client {
   id: string;
@@ -227,12 +228,30 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
                       <div className="space-y-2">
                         <Label className="text-xs">State / Province</Label>
                         {editingClientId === client.id ? (
-                          <Input
-                            value={client.state}
-                            onChange={(e) => handleUpdateClient(client.id, "state", e.target.value)}
-                            placeholder="e.g. Dubai"
-                            className="h-8 text-sm"
-                          />
+                          client.country === "India" ? (
+                            <Select
+                              value={client.state}
+                              onValueChange={(value) => handleUpdateClient(client.id, "state", value)}
+                            >
+                              <SelectTrigger className="h-8 text-sm">
+                                <SelectValue placeholder="Select state" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {INDIAN_STATES.map((state) => (
+                                  <SelectItem key={state} value={state}>
+                                    {state}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              value={client.state}
+                              onChange={(e) => handleUpdateClient(client.id, "state", e.target.value)}
+                              placeholder="e.g. Dubai"
+                              className="h-8 text-sm"
+                            />
+                          )
                         ) : (
                           <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
                             {client.state || "Not set"}
