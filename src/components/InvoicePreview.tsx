@@ -13,7 +13,11 @@ interface LineItem {
 interface SellerInfo {
   logo: string;
   name: string;
-  address: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
   taxId: string;
   email: string;
   phone: string;
@@ -292,7 +296,7 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
         <div className="space-y-0.5 text-xs">
           <p className="text-slate-500 font-medium text-[10px]">Seller (From)</p>
           <p className="font-bold text-xs">{formData.seller.name || 'Company Name'}</p>
-          <p className="whitespace-pre-line">{formData.seller.address || 'Address'}</p>
+          <p className="whitespace-pre-line">{[formData.seller.streetAddress, formData.seller.city, formData.seller.state, formData.seller.zip, formData.seller.country].filter(Boolean).join(', ') || 'Address'}</p>
           <p>VAT: {formData.seller.taxId || 'Tax ID'}</p>
           <p>{formData.seller.email || 'email@example.com'}</p>
           <p>{formData.seller.phone || '+00 000 000 000'}</p>
