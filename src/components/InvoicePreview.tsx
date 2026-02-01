@@ -111,6 +111,12 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
     return Math.round(totalTaxPercent / formData.lineItems.length);
   };
 
+  const allTaxPercentsSame = () => {
+    if (formData.lineItems.length === 0) return true;
+    const firstPercent = formData.lineItems[0].taxPercent;
+    return formData.lineItems.every(item => item.taxPercent === firstPercent);
+  };
+
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
@@ -224,7 +230,9 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
           <span className="font-medium">{formatCurrency(calculateSubtotal())}</span>
         </div>
         <div className="flex justify-between py-1 border-b border-slate-200">
-          <span className="text-slate-500">{formData.taxType || 'Tax'} ({averageTaxPercent()}%)</span>
+          <span className="text-slate-500">
+            {formData.taxType || 'Tax'}{allTaxPercentsSame() ? ` (${averageTaxPercent()}%)` : ''}
+          </span>
           <span className="font-medium">{formatCurrency(calculateTotalTax())}</span>
         </div>
         <div className="flex justify-between py-1.5 bg-slate-100 px-2 mt-1 rounded">
