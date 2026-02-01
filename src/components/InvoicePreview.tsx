@@ -28,6 +28,7 @@ interface InvoiceFormData {
   invoiceDate: Date | undefined;
   dueDate: Date | undefined;
   currency: string;
+  taxType: string;
   seller: SellerInfo;
   clientName: string;
   clientStreetAddress: string;
@@ -223,7 +224,7 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
           <span className="font-medium">{formatCurrency(calculateSubtotal())}</span>
         </div>
         <div className="flex justify-between py-1 border-b border-slate-200">
-          <span className="text-slate-500">Tax ({averageTaxPercent()}%)</span>
+          <span className="text-slate-500">{formData.taxType || 'Tax'} ({averageTaxPercent()}%)</span>
           <span className="font-medium">{formatCurrency(calculateTotalTax())}</span>
         </div>
         <div className="flex justify-between py-1.5 bg-slate-100 px-2 mt-1 rounded">
