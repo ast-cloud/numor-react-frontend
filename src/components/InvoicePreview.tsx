@@ -219,6 +219,16 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
   const isIndiaToIndia = formData.seller.country === "India" && formData.clientCountry === "India";
   const isSameState = isIndiaToIndia && formData.seller.state === formData.clientState;
   const isDifferentStateIndia = isIndiaToIndia && formData.seller.state !== formData.clientState;
+  
+  // Union Territories that use UTGST instead of SGST
+  const utgstTerritories = [
+    "Lakshadweep",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Ladakh",
+    "Chandigarh",
+    "Andaman and Nicobar Islands"
+  ];
+  const isUTGSTTerritory = isSameState && utgstTerritories.includes(formData.seller.state);
 
   const hasUniformTaxPercent = () => {
     if (formData.lineItems.length === 0) return true;
@@ -243,7 +253,7 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
                 <span className="font-medium">{formatCurrency(calculateTotalTax() / 2)}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500">SGST{uniformTaxPercent !== null ? ` (${uniformTaxPercent / 2}%)` : ''}</span>
+                <span className="text-slate-500">{isUTGSTTerritory ? 'UTGST' : 'SGST'}{uniformTaxPercent !== null ? ` (${uniformTaxPercent / 2}%)` : ''}</span>
                 <span className="font-medium">{formatCurrency(calculateTotalTax() / 2)}</span>
               </div>
             </>
