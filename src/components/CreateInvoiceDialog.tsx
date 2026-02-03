@@ -307,16 +307,7 @@ const CreateInvoiceDialog = () => {
             </DialogHeader>
             <div className="space-y-6 pb-6">
             {/* Invoice Details */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="invoiceNumber">Invoice No.</Label>
-                <Input
-                  id="invoiceNumber"
-                  placeholder="INV-2026-0001"
-                  value={formData.invoiceNumber}
-                  onChange={(e) => handleInputChange("invoiceNumber", e.target.value)}
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Invoice Date</Label>
                 <Popover open={invoiceDateOpen} onOpenChange={setInvoiceDateOpen}>

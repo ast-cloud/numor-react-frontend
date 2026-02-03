@@ -359,7 +359,7 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
         <div className="text-xs space-y-0.5">
           <div className="grid grid-cols-2 gap-x-2">
             <span className="text-slate-500 font-medium text-[10px]">Invoice No:</span>
-            <span className="font-semibold">{formData.invoiceNumber || 'INV-0000'}</span>
+            <span className="font-semibold">{formData.invoiceNumber || 'Auto-generated'}</span>
           </div>
           <div className="grid grid-cols-2 gap-x-2">
             <span className="text-slate-500 font-medium text-[10px]">Invoice Date:</span>
