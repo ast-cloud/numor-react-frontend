@@ -94,6 +94,30 @@ const countryDefaults: Record<string, { currency: string; taxType: string }> = {
   "Sweden": { currency: "EUR", taxType: "VAT" },
 };
 
+// Tax percentage options by country
+const taxPercentOptions: Record<string, number[]> = {
+  "UAE": [0, 5],
+  "India": [0, 5, 18, 28],
+  "UK": [0, 5, 20],
+};
+
+// EU countries that should have free input for tax %
+const euCountries = [
+  "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic",
+  "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary",
+  "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta",
+  "Netherlands", "Poland", "Portugal", "Romania", "Slovakia", "Slovenia",
+  "Spain", "Sweden"
+];
+
+const hasTaxDropdown = (country: string): boolean => {
+  return country in taxPercentOptions;
+};
+
+const getTaxOptions = (country: string): number[] => {
+  return taxPercentOptions[country] || [];
+};
+
 // Dummy seller data (would come from user settings)
 const defaultSellerInfo: SellerInfo = {
   logo: "",
@@ -769,13 +793,29 @@ const CreateInvoiceDialog = () => {
                       />
                     </div>
                     <div className="col-span-1">
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={item.taxPercent}
-                        onChange={(e) => handleLineItemChange(item.id, "taxPercent", parseFloat(e.target.value) || 0)}
-                      />
+                      {hasTaxDropdown(formData.seller.country) ? (
+                        <Select 
+                          value={String(item.taxPercent)} 
+                          onValueChange={(value) => handleLineItemChange(item.id, "taxPercent", parseFloat(value))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getTaxOptions(formData.seller.country).map((tax) => (
+                              <SelectItem key={tax} value={String(tax)}>{tax}%</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={item.taxPercent}
+                          onChange={(e) => handleLineItemChange(item.id, "taxPercent", parseFloat(e.target.value) || 0)}
+                        />
+                      )}
                     </div>
                     <div className="col-span-1 text-right font-medium">
                       {calculateLineTotal(item).toFixed(2)}
