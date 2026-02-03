@@ -26,7 +26,7 @@ function CalendarDayButton({
       className={cn(
         buttonVariants({ variant: "ghost" }),
         "h-9 w-9 p-0 font-normal",
-        modifiers.today && "bg-accent text-accent-foreground",
+        modifiers.today && !modifiers.selected && "bg-accent text-accent-foreground",
         modifiers.selected &&
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         modifiers.outside && "text-muted-foreground opacity-50",
