@@ -96,7 +96,7 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
             range_start: cn("rounded-l-md", defaultClassNames.range_start),
             range_middle: cn("rounded-none", defaultClassNames.range_middle),
             range_end: cn("rounded-r-md", defaultClassNames.range_end),
-            today: cn("", defaultClassNames.today),
+            today: cn("bg-transparent", classNames?.today),
             outside: cn("", defaultClassNames.outside),
             disabled: cn("", defaultClassNames.disabled),
             hidden: cn("invisible", defaultClassNames.hidden),
