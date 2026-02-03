@@ -798,12 +798,12 @@ const CreateInvoiceDialog = () => {
                           value={String(item.taxPercent)} 
                           onValueChange={(value) => handleLineItemChange(item.id, "taxPercent", parseFloat(value))}
                         >
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full h-10 px-2 text-sm">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent align="end" className="min-w-[70px]">
                             {getTaxOptions(formData.seller.country).map((tax) => (
-                              <SelectItem key={tax} value={String(tax)}>{tax}%</SelectItem>
+                              <SelectItem key={tax} value={String(tax)} className="text-sm">{tax}%</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
