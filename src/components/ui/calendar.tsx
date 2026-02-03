@@ -36,7 +36,6 @@ function CalendarDayButton({
           "bg-accent text-accent-foreground rounded-none",
         modifiers.range_start && "rounded-r-none",
         modifiers.range_end && "rounded-l-none",
-        defaultClassNames.day_button,
         className
       )}
       {...props}
@@ -96,7 +95,8 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
             range_start: cn("rounded-l-md", defaultClassNames.range_start),
             range_middle: cn("rounded-none", defaultClassNames.range_middle),
             range_end: cn("rounded-r-md", defaultClassNames.range_end),
-            today: cn("bg-transparent", classNames?.today),
+            today: "",
+            selected: "",
             outside: cn("", defaultClassNames.outside),
             disabled: cn("", defaultClassNames.disabled),
             hidden: cn("invisible", defaultClassNames.hidden),
