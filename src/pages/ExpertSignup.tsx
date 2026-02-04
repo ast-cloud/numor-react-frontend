@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { registerUser } from "@/lib/authStore";
+import { register } from "@/lib/api/auth";
 
 const ExpertSignup = () => {
   const navigate = useNavigate();
@@ -45,20 +45,12 @@ const ExpertSignup = () => {
     setIsSubmitting(true);
 
     try {
-      // Register user with both regular_user and ca roles
-      const result = registerUser({
-        name: formData.fullName,
-        company: "",
-        email: formData.email,
-        password: formData.password,
-        roles: ["regular_user", "ca"],
-      });
+      const result = await register(formData.fullName, formData.email, formData.password, "CA_USER");
 
-      if (!result.success) {
+      if (result.error) {
         throw new Error(result.error);
       }
 
-      // On success, navigate to login page
       navigate("/login");
       toast({
         title: "Account Created",

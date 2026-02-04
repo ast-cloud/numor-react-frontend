@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
-import { registerUser } from "@/lib/authStore";
+import { register } from "@/lib/api/auth";
 import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
@@ -17,7 +17,9 @@ const Signup = () => {
     confirmPassword: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -29,26 +31,28 @@ const Signup = () => {
       return;
     }
 
-    const result = registerUser({
-      name: formData.name,
-      company: "",
-      email: formData.email,
-      password: formData.password,
-      roles: ["regular_user"],
-    });
+    setIsSubmitting(true);
 
-    if (result.success) {
+    try {
+      const result = await register(formData.name, formData.email, formData.password, "SME_USER");
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
       toast({
         title: "Success",
         description: "Account created successfully! Please login.",
       });
       navigate("/login");
-    } else {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: result.error,
+        description: error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -163,8 +167,8 @@ const Signup = () => {
               </Link>
             </p>
 
-            <Button type="submit" variant="hero" className="w-full">
-              Create account
+            <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </form>
 
