@@ -56,17 +56,21 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/ca" element={<ForFinancialExperts />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<DashboardHome />} />
-            <Route path="ca" element={<CADashboardHome />} />
-            <Route path="ca/availability" element={<CAAvailability />} />
-            <Route path="ca/bookings" element={<CABookings />} />
-            <Route path="ca/settings" element={<CASettings />} />
+          {/* SME Routes */}
+          <Route path="/sme" element={<DashboardLayout />}>
+            <Route path="dashboard" element={<DashboardHome />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="income" element={<Income />} />
             <Route path="income/clients" element={<Clients />} />
             <Route path="ca-connect" element={<CAConnect />} />
             <Route path="settings" element={<DashboardSettings />} />
+          </Route>
+          {/* CA Routes */}
+          <Route path="/ca" element={<DashboardLayout />}>
+            <Route path="dashboard" element={<CADashboardHome />} />
+            <Route path="availability" element={<CAAvailability />} />
+            <Route path="bookings" element={<CABookings />} />
+            <Route path="settings" element={<CASettings />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

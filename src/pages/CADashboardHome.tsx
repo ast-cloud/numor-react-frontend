@@ -39,7 +39,7 @@ const CADashboardHome = () => {
               variant="outline" 
               size="sm" 
               className="mt-3 text-amber-600 border-amber-500/30 hover:bg-amber-500/10"
-              onClick={() => navigate("/dashboard/ca/settings")}
+              onClick={() => navigate("/ca/settings")}
             >
               {isProfileComplete() ? "Submit for Review" : "Complete Profile"}
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -157,15 +157,15 @@ const CADashboardHome = () => {
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/ca/bookings")}>
+          <Button variant="outline" size="sm" onClick={() => navigate("/ca/bookings")}>
             <Calendar className="w-4 h-4 mr-2" />
             View Bookings
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/ca/availability")}>
+          <Button variant="outline" size="sm" onClick={() => navigate("/ca/availability")}>
             <Clock className="w-4 h-4 mr-2" />
             Manage Availability
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/ca/settings")}>
+          <Button variant="outline" size="sm" onClick={() => navigate("/ca/settings")}>
             <Users className="w-4 h-4 mr-2" />
             Edit Profile
           </Button>
