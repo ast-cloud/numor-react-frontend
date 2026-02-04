@@ -8,7 +8,7 @@ import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { register } from "@/lib/api/auth";
 
-const ExpertSignup = () => {
+const CASignup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -205,4 +205,4 @@ const ExpertSignup = () => {
   );
 };
 
-export default ExpertSignup;
+export default CASignup;

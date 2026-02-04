@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle, Clock, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const ExpertApplicationSuccess = () => {
+const CAApplicationSuccess = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full text-center">
@@ -23,7 +23,7 @@ const ExpertApplicationSuccess = () => {
         {/* Status Card */}
         <div className="bg-muted/30 border border-border rounded-lg p-4 mb-8">
           <div className="flex items-center gap-3 text-left">
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+            <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-foreground">Application Submitted</p>
               <p className="text-xs text-muted-foreground">You'll receive an email once your profile is approved</p>
@@ -50,4 +50,4 @@ const ExpertApplicationSuccess = () => {
   );
 };
 
-export default ExpertApplicationSuccess;
+export default CAApplicationSuccess;
