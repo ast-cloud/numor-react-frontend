@@ -66,7 +66,7 @@ const ForFinancialExperts = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="hero" size="lg" asChild>
-                <Link to="/expert-signup">
+                <Link to="/ca-signup">
                   Apply as an Expert
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -172,7 +172,7 @@ const ForFinancialExperts = () => {
             Take the first step towards growing your practice. Apply today and start connecting with clients who need your expertise.
           </p>
           <Button variant="hero" size="lg" asChild>
-            <Link to="/expert-signup">
+            <Link to="/ca-signup">
               Apply Now
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
