@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 
 const regularNavItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Expenses", url: "/dashboard/expenses", icon: Receipt },
-  { title: "Income", url: "/dashboard/income", icon: FileText },
-  { title: "CA Connect", url: "/dashboard/ca-connect", icon: Users },
+  { title: "Dashboard", url: "/sme/dashboard", icon: LayoutDashboard },
+  { title: "Expenses", url: "/sme/expenses", icon: Receipt },
+  { title: "Income", url: "/sme/income", icon: FileText },
+  { title: "CA Connect", url: "/sme/ca-connect", icon: Users },
 ];
 
 const caNavItems = [
-  { title: "Dashboard", url: "/dashboard/ca", icon: LayoutDashboard },
-  { title: "Availability", url: "/dashboard/ca/availability", icon: Calendar },
-  { title: "Bookings", url: "/dashboard/ca/bookings", icon: CalendarCheck },
+  { title: "Dashboard", url: "/ca/dashboard", icon: LayoutDashboard },
+  { title: "Availability", url: "/ca/availability", icon: Calendar },
+  { title: "Bookings", url: "/ca/bookings", icon: CalendarCheck },
 ];
 
 const DashboardSidebar = () => {
@@ -69,7 +69,7 @@ const DashboardSidebar = () => {
       <nav className="flex-1 p-4">
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isExactMatch = item.url === "/dashboard" || item.url === "/dashboard/ca";
+            const isExactMatch = item.url === "/sme/dashboard" || item.url === "/ca/dashboard";
             const isActive = isExactMatch 
               ? location.pathname === item.url 
               : location.pathname.startsWith(item.url);
@@ -97,7 +97,7 @@ const DashboardSidebar = () => {
       {/* Bottom Section: Settings & Logout */}
       <div className="p-4 border-t border-border space-y-1">
         <NavLink
-          to={activeRole === "ca" ? "/dashboard/ca/settings" : "/dashboard/settings"}
+          to={activeRole === "ca" ? "/ca/settings" : "/sme/settings"}
           className={({ isActive }) =>
             `flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive

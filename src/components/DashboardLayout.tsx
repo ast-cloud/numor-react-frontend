@@ -16,12 +16,12 @@ const DashboardContent = () => {
 
   const handleSwitchToRegular = () => {
     setActiveRole("regular_user");
-    navigate("/dashboard");
+    navigate("/sme/dashboard");
   };
 
   const handleSwitchToCA = () => {
     setActiveRole("ca");
-    navigate("/dashboard/ca");
+    navigate("/ca/dashboard");
   };
 
   return (
