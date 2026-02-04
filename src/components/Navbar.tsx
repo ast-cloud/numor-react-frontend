@@ -50,7 +50,7 @@ const Navbar = () => {
                     CA Dashboard
                   </Link>
                   <Link 
-                    to="/expert-signup" 
+                    to="/ca-signup" 
                     className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     Register as CA
@@ -98,7 +98,7 @@ const Navbar = () => {
               <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
                 → CA Dashboard
               </Link>
-              <Link to="/expert-signup" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
+              <Link to="/ca-signup" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
                 → Register as CA
               </Link>
               <div className="flex flex-col gap-2 pt-3">
