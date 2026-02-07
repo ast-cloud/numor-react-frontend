@@ -23,7 +23,7 @@ const Sidebar = () => {
   const { user, activeRole, logout } = useAuth();
   const { collapsed, toggle } = useSidebarState();
 
-  const navItems = activeRole === "ca" ? caNavItems : regularNavItems;
+  const navItems = activeRole === "CA_USER" ? caNavItems : regularNavItems;
 
   const handleLogout = () => {
     logout();
@@ -96,7 +96,7 @@ const Sidebar = () => {
       {/* Bottom Section: Settings & Logout */}
       <div className="p-4 border-t border-border space-y-1">
         <NavLink
-          to={activeRole === "ca" ? "/ca/settings" : "/sme/settings"}
+          to={activeRole === "CA_USER" ? "/ca/settings" : "/sme/settings"}
           className={({ isActive }) =>
             `flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isActive

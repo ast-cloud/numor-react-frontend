@@ -11,16 +11,16 @@ const DashboardContent = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { hasRole, activeRole, setActiveRole } = useAuth();
-  const isCA = hasRole("ca");
+  const isCA = hasRole("CA_USER");
   const { collapsed } = useSidebarState();
 
   const handleSwitchToRegular = () => {
-    setActiveRole("regular_user");
+    setActiveRole("SME_USER");
     navigate("/sme/dashboard");
   };
 
   const handleSwitchToCA = () => {
-    setActiveRole("ca");
+    setActiveRole("CA_USER");
     navigate("/ca/dashboard");
   };
 
@@ -40,7 +40,7 @@ const DashboardContent = () => {
             <button
               onClick={handleSwitchToRegular}
               className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
-                activeRole === "regular_user"
+                activeRole === "SME_USER"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
@@ -50,7 +50,7 @@ const DashboardContent = () => {
             <button
               onClick={handleSwitchToCA}
               className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
-                activeRole === "ca"
+                activeRole === "CA_USER"
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}

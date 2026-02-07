@@ -27,9 +27,9 @@ const Login = () => {
         description: "Login successful!",
       });
       // Redirect based on active role
-      if (result.activeRole === "admin") {
+      if (result.activeRole === "ADMIN") {
         navigate("/admin");
-      } else if (result.activeRole === "ca") {
+      } else if (result.activeRole === "CA_USER") {
         navigate("/ca/dashboard");
       } else {
         navigate("/sme/dashboard");
