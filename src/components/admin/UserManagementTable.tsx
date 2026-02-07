@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { User, UserRole, getAllUsers, toggleUserDisabled, updateUserRoles, deleteUser } from "@/lib/authStore";
+import { useState, useEffect } from "react";
+import { User, UserRole } from "@/lib/authStore";
+import { fetchAllUsers, toggleUserDisabledApi, updateUserRolesApi, deleteUserApi } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,15 +40,29 @@ interface UserManagementTableProps {
 
 const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps) => {
   const { toast } = useToast();
-  const [users, setUsers] = useState<User[]>(getAllUsers());
+  const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<UserRole[]>([]);
 
+  const loadUsers = async () => {
+    try {
+      const data = await fetchAllUsers();
+      const userList = Array.isArray(data) ? data : data.data || [];
+      setUsers(userList.filter((u: User) => !u.roles.includes("admin")));
+    } catch {
+      setUsers([]);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
   const refreshUsers = () => {
-    setUsers(getAllUsers());
+    loadUsers();
     onRefresh?.();
   };
 
@@ -55,27 +70,27 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
     ? users.filter(u => u.roles.includes(filterRole))
     : users;
 
-  const handleToggleDisabled = (user: User) => {
-    const result = toggleUserDisabled(user.email);
-    if (result.success) {
+  const handleToggleDisabled = async (user: User) => {
+    try {
+      await toggleUserDisabledApi(user.email);
       toast({
         title: user.isDisabled ? "User Enabled" : "User Disabled",
         description: `${user.name} has been ${user.isDisabled ? "enabled" : "disabled"}.`,
       });
       refreshUsers();
-    } else {
+    } catch {
       toast({
         title: "Error",
-        description: result.error,
+        description: "Failed to update user status.",
         variant: "destructive",
       });
     }
   };
 
-  const handleDeleteUser = () => {
+  const handleDeleteUser = async () => {
     if (!selectedUser) return;
-    const result = deleteUser(selectedUser.email);
-    if (result.success) {
+    try {
+      await deleteUserApi(selectedUser.email);
       toast({
         title: "User Deleted",
         description: `${selectedUser.name} has been removed from the system.`,
@@ -83,19 +98,19 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
       setDeleteDialogOpen(false);
       setSelectedUser(null);
       refreshUsers();
-    } else {
+    } catch {
       toast({
         title: "Error",
-        description: result.error,
+        description: "Failed to delete user.",
         variant: "destructive",
       });
     }
   };
 
-  const handleUpdateRoles = () => {
+  const handleUpdateRoles = async () => {
     if (!selectedUser) return;
-    const result = updateUserRoles(selectedUser.email, selectedRoles);
-    if (result.success) {
+    try {
+      await updateUserRolesApi(selectedUser.email, selectedRoles);
       toast({
         title: "Roles Updated",
         description: `${selectedUser.name}'s roles have been updated.`,
@@ -103,10 +118,10 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
       setRoleDialogOpen(false);
       setSelectedUser(null);
       refreshUsers();
-    } else {
+    } catch {
       toast({
         title: "Error",
-        description: result.error,
+        description: "Failed to update roles.",
         variant: "destructive",
       });
     }
@@ -141,6 +156,15 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
       case "admin": return "destructive";
       case "ca": return "default";
       default: return "secondary";
+    }
+  };
+
+  const formatDate = (date?: string) => {
+    if (!date) return "—";
+    try {
+      return new Date(date).toLocaleDateString();
+    } catch {
+      return "—";
     }
   };
 
@@ -200,7 +224,7 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground text-sm">
-                {user.createdAt?.toLocaleDateString() || "—"}
+                {formatDate(user.createdAt)}
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-1">
@@ -288,7 +312,7 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Joined</p>
-                  <p className="font-medium">{selectedUser.createdAt?.toLocaleDateString() || "—"}</p>
+                  <p className="font-medium">{formatDate(selectedUser.createdAt)}</p>
                 </div>
               </div>
             </div>

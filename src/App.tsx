@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import ChatBot from "@/components/ChatBot";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/use-auth";
 import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -41,42 +42,44 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/ca-signup" element={<CASignup />} />
-          <Route path="/ca-application-success" element={<CAApplicationSuccess />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/security" element={<Security />} />
-          <Route path="/compliance" element={<Compliance />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/ca" element={<ForFinancialExperts />} />
-          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-          {/* SME Routes */}
-          <Route path="/sme" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-            <Route path="dashboard" element={<DashboardHome />} />
-            <Route path="expenses" element={<Expenses />} />
-            <Route path="income" element={<Income />} />
-            <Route path="income/clients" element={<Clients />} />
-            <Route path="ca-connect" element={<CAConnect />} />
-            <Route path="settings" element={<DashboardSettings />} />
-          </Route>
-          {/* CA Routes */}
-          <Route path="/ca" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-            <Route path="dashboard" element={<CADashboardHome />} />
-            <Route path="availability" element={<CAAvailability />} />
-            <Route path="bookings" element={<CABookings />} />
-            <Route path="settings" element={<CASettings />} />
-          </Route>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <ChatBot />
+        <AuthProvider>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/ca-signup" element={<CASignup />} />
+            <Route path="/ca-application-success" element={<CAApplicationSuccess />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/security" element={<Security />} />
+            <Route path="/compliance" element={<Compliance />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/ca" element={<ForFinancialExperts />} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            {/* SME Routes */}
+            <Route path="/sme" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+              <Route path="dashboard" element={<DashboardHome />} />
+              <Route path="expenses" element={<Expenses />} />
+              <Route path="income" element={<Income />} />
+              <Route path="income/clients" element={<Clients />} />
+              <Route path="ca-connect" element={<CAConnect />} />
+              <Route path="settings" element={<DashboardSettings />} />
+            </Route>
+            {/* CA Routes */}
+            <Route path="/ca" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+              <Route path="dashboard" element={<CADashboardHome />} />
+              <Route path="availability" element={<CAAvailability />} />
+              <Route path="bookings" element={<CABookings />} />
+              <Route path="settings" element={<CASettings />} />
+            </Route>
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <ChatBot />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

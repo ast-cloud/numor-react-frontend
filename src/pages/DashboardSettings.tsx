@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getCurrentUser } from "@/lib/authStore";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2 } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/constants";
@@ -44,7 +44,7 @@ const COUNTRIES = [
 ];
 
 const DashboardSettings = () => {
-  const user = getCurrentUser();
+  const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -106,9 +106,7 @@ const DashboardSettings = () => {
   };
 
   const handleSaveProfile = () => {
-    if (user) {
-      user.name = profileData.name;
-    }
+    // TODO: Call profile update API when available
     setIsEditingProfile(false);
     toast({
       title: "Profile saved",
@@ -126,9 +124,7 @@ const DashboardSettings = () => {
   };
 
   const handleSaveCompany = () => {
-    if (user) {
-      user.company = companyData.companyName;
-    }
+    // TODO: Call company update API when available
     setIsEditingCompany(false);
     toast({
       title: "Company details saved",

@@ -1,30 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
-import { logoutUser, getCurrentUser, getAllUsers } from "@/lib/authStore";
+import { useAuth } from "@/hooks/use-auth";
+import { fetchAllUsers } from "@/lib/api/admin";
 import { getPendingApplications } from "@/lib/caApplicationsStore";
 import { useToast } from "@/hooks/use-toast";
 import { Sun, Moon, Users, FileText, Settings, Shield, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import UserManagementTable from "@/components/admin/UserManagementTable";
 import CAApplicationsReview from "@/components/admin/CAApplicationsReview";
+import type { User } from "@/lib/authStore";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
-  const currentUser = getCurrentUser();
+  const { user: currentUser, logout } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
-  
-  const allUsers = getAllUsers();
-  const regularUsers = allUsers.filter(u => u.roles.includes("regular_user") && !u.roles.includes("ca"));
-  const caUsers = allUsers.filter(u => u.roles.includes("ca"));
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const pendingCAApplications = getPendingApplications();
 
+  useEffect(() => {
+    fetchAllUsers()
+      .then((data) => {
+        const users = Array.isArray(data) ? data : data.data || [];
+        setAllUsers(users);
+      })
+      .catch(() => setAllUsers([]));
+  }, [refreshKey]);
+
+  const regularUsers = allUsers.filter(u => u.roles.includes("regular_user") && !u.roles.includes("ca"));
+  const caUsers = allUsers.filter(u => u.roles.includes("ca"));
+
   const handleLogout = () => {
-    logoutUser();
+    logout();
     toast({
       title: "Logged out",
       description: "You have been logged out successfully.",

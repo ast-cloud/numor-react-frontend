@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getCurrentUser } from "@/lib/authStore";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useCAProfile } from "@/hooks/use-ca-profile";
 import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send } from "lucide-react";
@@ -20,7 +20,7 @@ interface UploadedDocument {
 }
 
 const CASettings = () => {
-  const user = getCurrentUser();
+  const { user } = useAuth();
   const { toast } = useToast();
   const { profileData: caProfileData, updateProfileData: updateCAProfile, isProfileComplete, submitForReview } = useCAProfile();
   
@@ -125,9 +125,7 @@ const CASettings = () => {
   };
 
   const handleSaveProfile = () => {
-    if (user) {
-      user.name = profileData.name;
-    }
+    // TODO: Call profile update API when available
     updateCAProfile({ phone: profileData.phone });
     setIsEditingProfile(false);
     toast({
