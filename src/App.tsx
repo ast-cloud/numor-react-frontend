@@ -31,6 +31,7 @@ import DashboardSettings from "./pages/DashboardSettings";
 import CASettings from "./pages/CASettings";
 import CAConnect from "./pages/CAConnect";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -55,9 +56,9 @@ const App = () => (
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/ca" element={<ForFinancialExperts />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           {/* SME Routes */}
-          <Route path="/sme" element={<DashboardLayout />}>
+          <Route path="/sme" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route path="dashboard" element={<DashboardHome />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="income" element={<Income />} />
@@ -66,7 +67,7 @@ const App = () => (
             <Route path="settings" element={<DashboardSettings />} />
           </Route>
           {/* CA Routes */}
-          <Route path="/ca" element={<DashboardLayout />}>
+          <Route path="/ca" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route path="dashboard" element={<CADashboardHome />} />
             <Route path="availability" element={<CAAvailability />} />
             <Route path="bookings" element={<CABookings />} />
