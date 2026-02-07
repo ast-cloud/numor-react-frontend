@@ -1,5 +1,5 @@
 // Type definitions for authentication (no in-memory storage)
-export type UserRole = "regular_user" | "ca" | "admin";
+export type UserRole = "SME_USER" | "CA_USER" | "ADMIN";
 
 export interface User {
   name: string;

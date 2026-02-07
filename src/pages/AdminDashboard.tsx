@@ -31,8 +31,8 @@ const AdminDashboard = () => {
       .catch(() => setAllUsers([]));
   }, [refreshKey]);
 
-  const regularUsers = allUsers.filter(u => u.roles.includes("regular_user") && !u.roles.includes("ca"));
-  const caUsers = allUsers.filter(u => u.roles.includes("ca"));
+  const regularUsers = allUsers.filter(u => u.roles.includes("SME_USER") && !u.roles.includes("CA_USER"));
+  const caUsers = allUsers.filter(u => u.roles.includes("CA_USER"));
 
   const handleLogout = () => {
     logout();
@@ -140,10 +140,10 @@ const AdminDashboard = () => {
                 <UserManagementTable key={`all-${refreshKey}`} onRefresh={() => setRefreshKey(k => k + 1)} />
               </TabsContent>
               <TabsContent value="regular">
-                <UserManagementTable key={`regular-${refreshKey}`} filterRole="regular_user" onRefresh={() => setRefreshKey(k => k + 1)} />
+                <UserManagementTable key={`regular-${refreshKey}`} filterRole="SME_USER" onRefresh={() => setRefreshKey(k => k + 1)} />
               </TabsContent>
               <TabsContent value="ca">
-                <UserManagementTable key={`ca-${refreshKey}`} filterRole="ca" onRefresh={() => setRefreshKey(k => k + 1)} />
+                <UserManagementTable key={`ca-${refreshKey}`} filterRole="CA_USER" onRefresh={() => setRefreshKey(k => k + 1)} />
               </TabsContent>
             </Tabs>
           </CardContent>

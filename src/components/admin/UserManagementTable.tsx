@@ -51,7 +51,7 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
     try {
       const data = await fetchAllUsers();
       const userList = Array.isArray(data) ? data : data.data || [];
-      setUsers(userList.filter((u: User) => !u.roles.includes("admin")));
+      setUsers(userList.filter((u: User) => !u.roles.includes("ADMIN")));
     } catch {
       setUsers([]);
     }
@@ -153,8 +153,8 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
 
   const getRoleBadgeVariant = (role: UserRole) => {
     switch (role) {
-      case "admin": return "destructive";
-      case "ca": return "default";
+      case "ADMIN": return "destructive";
+      case "CA_USER": return "default";
       default: return "secondary";
     }
   };
@@ -213,7 +213,7 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
                 <div className="flex gap-1 flex-wrap">
                   {user.roles.map(role => (
                     <Badge key={role} variant={getRoleBadgeVariant(role)} className="text-xs">
-                      {role === "regular_user" ? "User" : role.toUpperCase()}
+                      {role === "SME_USER" ? "User" : role}
                     </Badge>
                   ))}
                 </div>
@@ -305,7 +305,7 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
                   <div className="flex gap-1 mt-1">
                     {selectedUser.roles.map(role => (
                       <Badge key={role} variant={getRoleBadgeVariant(role)}>
-                        {role === "regular_user" ? "User" : role.toUpperCase()}
+                        {role === "SME_USER" ? "User" : role}
                       </Badge>
                     ))}
                   </div>
@@ -336,8 +336,8 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
             <div className="flex items-center space-x-2">
               <Checkbox 
                 id="role-user" 
-                checked={selectedRoles.includes("regular_user")}
-                onCheckedChange={() => toggleRole("regular_user")}
+                checked={selectedRoles.includes("SME_USER")}
+                onCheckedChange={() => toggleRole("SME_USER")}
               />
               <label htmlFor="role-user" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Regular User
@@ -346,8 +346,8 @@ const UserManagementTable = ({ filterRole, onRefresh }: UserManagementTableProps
             <div className="flex items-center space-x-2">
               <Checkbox 
                 id="role-ca" 
-                checked={selectedRoles.includes("ca")}
-                onCheckedChange={() => toggleRole("ca")}
+                checked={selectedRoles.includes("CA_USER")}
+                onCheckedChange={() => toggleRole("CA_USER")}
               />
               <label htmlFor="role-ca" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Chartered Accountant (CA)

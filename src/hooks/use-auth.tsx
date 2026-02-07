@@ -34,12 +34,12 @@ const ACTIVE_ROLE_KEY = "active_role";
 
 const mapBackendRole = (role: string): UserRole => {
   switch (role?.toUpperCase()) {
-    case "ADMIN": return "admin";
-    case "CA_USER": return "ca";
-    case "CA": return "ca";
-    case "SME_USER": return "regular_user";
-    case "REGULAR_USER": return "regular_user";
-    default: return "regular_user";
+    case "ADMIN": return "ADMIN";
+    case "CA_USER": return "CA_USER";
+    case "CA": return "CA_USER";
+    case "SME_USER": return "SME_USER";
+    case "REGULAR_USER": return "SME_USER";
+    default: return "SME_USER";
   }
 };
 
@@ -50,15 +50,15 @@ const parseRoles = (data: Record<string, unknown>): UserRole[] => {
   if (typeof data.role === "string") {
     return [mapBackendRole(data.role)];
   }
-  return ["regular_user"];
+  return ["SME_USER"];
 };
 
 const resolveActiveRole = (roles: UserRole[]): UserRole => {
   const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as UserRole;
   if (saved && roles.includes(saved)) return saved;
-  if (roles.includes("admin")) return "admin";
-  if (roles.includes("ca")) return "ca";
-  return "regular_user";
+  if (roles.includes("ADMIN")) return "ADMIN";
+  if (roles.includes("CA_USER")) return "CA_USER";
+  return "SME_USER";
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
