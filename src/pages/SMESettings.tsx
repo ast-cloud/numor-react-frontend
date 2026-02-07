@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { fetchCurrentOrganization } from "@/lib/api/user";
+import { fetchCurrentOrganization, updateOrganization } from "@/lib/api/user";
 import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2, Loader2 } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/constants";
 
@@ -54,11 +54,11 @@ const SMESettings = () => {
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
   const [originalCompanyData, setOriginalCompanyData] = useState({
-    companyName: "",
+    name: "",
     streetAddress: "",
     city: "",
     state: "",
-    zip: "",
+    zipCode: "",
     country: "",
     taxId: "",
     email: "",
@@ -72,11 +72,11 @@ const SMESettings = () => {
   });
 
   const [companyData, setCompanyData] = useState({
-    companyName: "",
+    name: "",
     streetAddress: "",
     city: "",
     state: "",
-    zip: "",
+    zipCode: "",
     country: "",
     taxId: "",
     email: "",
@@ -88,11 +88,11 @@ const SMESettings = () => {
       try {
         const org = await fetchCurrentOrganization();
         const orgData = {
-          companyName: org.name || "",
+          name: org.name || "",
           streetAddress: org.streetAddress || "",
           city: org.city || "",
           state: org.state || "",
-          zip: org.zipCode || "",
+          zipCode: org.zipCode || "",
           country: org.country || "",
           taxId: org.taxId || "",
           email: org.email || "",
@@ -169,13 +169,27 @@ const SMESettings = () => {
     setIsEditingProfile(false);
   };
 
-  const handleSaveCompany = () => {
-    // TODO: Call company update API when available
-    setIsEditingCompany(false);
-    toast({
-      title: "Company details saved",
-      description: "Your company information has been updated successfully.",
-    });
+  const [isSavingCompany, setIsSavingCompany] = useState(false);
+
+  const handleSaveCompany = async () => {
+    setIsSavingCompany(true);
+    try {
+      await updateOrganization(companyData);
+      setOriginalCompanyData({ ...companyData });
+      setIsEditingCompany(false);
+      toast({
+        title: "Company details saved",
+        description: "Your company information has been updated successfully.",
+      });
+    } catch {
+      toast({
+        title: "Failed to save",
+        description: "Could not update company details. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingCompany(false);
+    }
   };
 
   const handleCancelCompany = () => {
@@ -287,9 +301,9 @@ const SMESettings = () => {
                 <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveCompany}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveCompany} disabled={isSavingCompany}>
+                {isSavingCompany ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Save className="w-3 h-3 mr-1.5" />}
+                {isSavingCompany ? "Saving..." : "Save"}
               </Button>
             </div>
           )}
@@ -362,13 +376,13 @@ const SMESettings = () => {
               {isEditingCompany ? (
                 <Input
                   id="companyName"
-                  value={companyData.companyName}
-                  onChange={(e) => setCompanyData({ ...companyData, companyName: e.target.value })}
+                  value={companyData.name}
+                  onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
                   placeholder="Enter company name"
                 />
               ) : (
                 <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {companyData.companyName || "Not set"}
+                  {companyData.name || "Not set"}
                 </p>
               )}
             </div>
@@ -512,13 +526,13 @@ const SMESettings = () => {
                 {isEditingCompany ? (
                   <Input
                     id="zip"
-                    value={companyData.zip}
-                    onChange={(e) => setCompanyData({ ...companyData, zip: e.target.value })}
+                    value={companyData.zipCode}
+                    onChange={(e) => setCompanyData({ ...companyData, zipCode: e.target.value })}
                     placeholder="Enter ZIP code"
                   />
                 ) : (
                   <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                    {companyData.zip || "Not set"}
+                    {companyData.zipCode || "Not set"}
                   </p>
                 )}
               </div>
