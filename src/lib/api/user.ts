@@ -14,7 +14,8 @@ export async function fetchCurrentUser() {
   });
 
   if (!res.ok) throw new Error('Failed to fetch user');
-  return res.json();
+  const json = await res.json();
+  return json.data ?? json;
 }
 
 export async function fetchCurrentOrganization() {
