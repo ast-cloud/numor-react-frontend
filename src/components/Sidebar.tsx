@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, Calendar, CalendarCheck, Users } from "lucide-react";
-import { logoutUser, getActiveRole } from "@/lib/authStore";
+import { logoutUser, getActiveRole, getCurrentUser } from "@/lib/authStore";
 import { clearToken } from "@/lib/api/authToken";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
@@ -34,7 +34,14 @@ const Sidebar = () => {
         setUserName(data.name || "User");
         setUserEmail(data.email || "");
       })
-      .catch(() => {});
+      .catch(() => {
+        // Fallback to in-memory auth store if API call fails
+        const localUser = getCurrentUser();
+        if (localUser) {
+          setUserName(localUser.name || "User");
+          setUserEmail(localUser.email || "");
+        }
+      });
   }, []);
   
   const navItems = activeRole === "ca" ? caNavItems : regularNavItems;
