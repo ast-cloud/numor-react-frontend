@@ -45,7 +45,7 @@ const CASignup = () => {
     setIsSubmitting(true);
 
     try {
-      const result = await register(formData.fullName, formData.email, formData.password, "CA_USER");
+      const result = await register(formData.fullName, formData.email, formData.password);
 
       if (result.error) {
         throw new Error(result.error);
