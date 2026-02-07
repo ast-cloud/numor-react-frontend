@@ -1,6 +1,7 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, Calendar, CalendarCheck, Users } from "lucide-react";
 import { logoutUser, getCurrentUser, getActiveRole } from "@/lib/authStore";
+import { clearToken } from "@/lib/api/authToken";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 
@@ -28,7 +29,8 @@ const DashboardSidebar = () => {
 
   const handleLogout = () => {
     logoutUser();
-    navigate("/login");
+    clearToken();
+    navigate("/");
   };
 
   return (

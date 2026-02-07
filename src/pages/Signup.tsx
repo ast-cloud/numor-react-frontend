@@ -42,9 +42,9 @@ const Signup = () => {
 
       toast({
         title: "Success",
-        description: "Account created successfully! Please login.",
+        description: "Account created successfully!",
       });
-      navigate("/login");
+      navigate("/sme/dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
