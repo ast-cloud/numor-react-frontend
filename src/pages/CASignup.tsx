@@ -51,11 +51,11 @@ const CASignup = () => {
         throw new Error(result.error);
       }
 
-      navigate("/login");
       toast({
         title: "Account Created",
-        description: "Your account has been created successfully. Please sign in.",
+        description: "Your account has been created successfully!",
       });
+      navigate("/ca/dashboard");
     } catch (error: any) {
       toast({
         title: "Submission Failed",
