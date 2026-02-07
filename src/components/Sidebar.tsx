@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, Calendar, CalendarCheck, Users } from "lucide-react";
-import { logoutUser, getCurrentUser, getActiveRole } from "@/lib/authStore";
+import { logoutUser, getActiveRole } from "@/lib/authStore";
 import { clearToken } from "@/lib/api/authToken";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
+import { fetchCurrentUser } from "@/lib/api/user";
 
 const regularNavItems = [
   { title: "Dashboard", url: "/sme/dashboard", icon: LayoutDashboard },
@@ -18,12 +20,22 @@ const caNavItems = [
   { title: "Bookings", url: "/ca/bookings", icon: CalendarCheck },
 ];
 
-const DashboardSidebar = () => {
+const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = getCurrentUser();
   const activeRole = getActiveRole();
   const { collapsed, toggle } = useSidebarState();
+  const [userName, setUserName] = useState("User");
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    fetchCurrentUser()
+      .then((data) => {
+        setUserName(data.name || "User");
+        setUserEmail(data.email || "");
+      })
+      .catch(() => {});
+  }, []);
   
   const navItems = activeRole === "ca" ? caNavItems : regularNavItems;
 
@@ -57,10 +69,10 @@ const DashboardSidebar = () => {
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
-                {user?.name || "User"}
+                {userName}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                {user?.email || "user@example.com"}
+                {userEmail}
               </p>
             </div>
           )}
@@ -126,4 +138,4 @@ const DashboardSidebar = () => {
   );
 };
 
-export default DashboardSidebar;
+export default Sidebar;

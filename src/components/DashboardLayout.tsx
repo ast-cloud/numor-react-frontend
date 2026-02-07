@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import DashboardSidebar from "./DashboardSidebar";
+import Sidebar from "./Sidebar";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
@@ -27,7 +27,7 @@ const DashboardContent = () => {
   return (
     <div className="min-h-screen bg-background flex relative">
       <div className="fixed top-0 left-0 h-screen z-40">
-        <DashboardSidebar />
+        <Sidebar />
       </div>
       <main className={`flex-1 min-w-0 overflow-x-hidden p-8 pt-20 transition-all duration-300 ${collapsed ? "ml-16" : "ml-64"}`}>
         <Outlet />
