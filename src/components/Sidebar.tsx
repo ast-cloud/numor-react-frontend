@@ -1,11 +1,8 @@
-import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, Calendar, CalendarCheck, Users } from "lucide-react";
-import { logoutUser, getActiveRole, getCurrentUser } from "@/lib/authStore";
-import { clearToken } from "@/lib/api/authToken";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
-import { fetchCurrentUser } from "@/lib/api/user";
 
 const regularNavItems = [
   { title: "Dashboard", url: "/sme/dashboard", icon: LayoutDashboard },
@@ -23,32 +20,13 @@ const caNavItems = [
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const activeRole = getActiveRole();
+  const { user, activeRole, logout } = useAuth();
   const { collapsed, toggle } = useSidebarState();
-  const [userName, setUserName] = useState("User");
-  const [userEmail, setUserEmail] = useState("");
 
-  useEffect(() => {
-    fetchCurrentUser()
-      .then((data) => {
-        setUserName(data.name || "User");
-        setUserEmail(data.email || "");
-      })
-      .catch(() => {
-        // Fallback to in-memory auth store if API call fails
-        const localUser = getCurrentUser();
-        if (localUser) {
-          setUserName(localUser.name || "User");
-          setUserEmail(localUser.email || "");
-        }
-      });
-  }, []);
-  
   const navItems = activeRole === "ca" ? caNavItems : regularNavItems;
 
   const handleLogout = () => {
-    logoutUser();
-    clearToken();
+    logout();
     navigate("/");
   };
 
@@ -76,10 +54,10 @@ const Sidebar = () => {
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
-                {userName}
+                {user?.name || "User"}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                {userEmail}
+                {user?.email || ""}
               </p>
             </div>
           )}

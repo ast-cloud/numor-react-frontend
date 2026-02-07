@@ -3,15 +3,15 @@ import Sidebar from "./Sidebar";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
-import { hasRole, getActiveRole, setActiveRole } from "@/lib/authStore";
+import { useAuth } from "@/hooks/use-auth";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
 import { CAProfileProvider } from "@/hooks/use-ca-profile";
 
 const DashboardContent = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const { hasRole, activeRole, setActiveRole } = useAuth();
   const isCA = hasRole("ca");
-  const activeRole = getActiveRole();
   const { collapsed } = useSidebarState();
 
   const handleSwitchToRegular = () => {
