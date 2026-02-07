@@ -31,5 +31,6 @@ export async function fetchCurrentOrganization() {
   });
 
   if (!res.ok) throw new Error('Failed to fetch organization');
-  return res.json();
+  const json = await res.json();
+  return json.data ?? json;
 }

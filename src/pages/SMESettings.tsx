@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2 } from "lucide-react";
+import { fetchCurrentOrganization } from "@/lib/api/user";
+import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2, Loader2 } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/constants";
 
 const COUNTRIES = [
@@ -43,7 +44,7 @@ const COUNTRIES = [
   "Sweden",
 ];
 
-const DashboardSettings = () => {
+const SMESettings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,15 +52,9 @@ const DashboardSettings = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
-  
-  const [profileData, setProfileData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    phone: "",
-  });
-
-  const [companyData, setCompanyData] = useState({
-    companyName: user?.company || "",
+  const [isLoadingOrg, setIsLoadingOrg] = useState(true);
+  const [originalCompanyData, setOriginalCompanyData] = useState({
+    companyName: "",
     streetAddress: "",
     city: "",
     state: "",
@@ -69,6 +64,57 @@ const DashboardSettings = () => {
     email: "",
     phone: "",
   });
+  
+  const [profileData, setProfileData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: "",
+  });
+
+  const [companyData, setCompanyData] = useState({
+    companyName: "",
+    streetAddress: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+    taxId: "",
+    email: "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    const loadOrganization = async () => {
+      try {
+        const org = await fetchCurrentOrganization();
+        const orgData = {
+          companyName: org.name || "",
+          streetAddress: org.streetAddress || "",
+          city: org.city || "",
+          state: org.state || "",
+          zip: org.zipCode || "",
+          country: org.country || "",
+          taxId: org.taxId || "",
+          email: org.email || "",
+          phone: org.phone || "",
+        };
+        setCompanyData(orgData);
+        setOriginalCompanyData(orgData);
+        if (org.logoUrl) {
+          setCompanyLogo(org.logoUrl);
+        }
+      } catch {
+        toast({
+          title: "Failed to load organization",
+          description: "Could not fetch your company details.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingOrg(false);
+      }
+    };
+    loadOrganization();
+  }, [toast]);
 
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,17 +179,7 @@ const DashboardSettings = () => {
   };
 
   const handleCancelCompany = () => {
-    setCompanyData({
-      companyName: user?.company || "",
-      streetAddress: "",
-      city: "",
-      state: "",
-      zip: "",
-      country: "",
-      taxId: "",
-      email: "",
-      phone: "",
-    });
+    setCompanyData({ ...originalCompanyData });
     setIsEditingCompany(false);
   };
 
@@ -259,6 +295,12 @@ const DashboardSettings = () => {
           )}
         </CardHeader>
         <CardContent className="space-y-6">
+          {isLoadingOrg ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+          <>
           {/* Company Logo Upload */}
           <div className="space-y-3">
             <Label className="flex items-center gap-2">
@@ -507,6 +549,8 @@ const DashboardSettings = () => {
               </div>
             </div>
           </div>
+          </>
+          )}
         </CardContent>
       </Card>
 
@@ -514,4 +558,4 @@ const DashboardSettings = () => {
   );
 };
 
-export default DashboardSettings;
+export default SMESettings;
