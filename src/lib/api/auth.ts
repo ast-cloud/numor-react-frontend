@@ -22,7 +22,7 @@ export async function login(email: string, password: string) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ user: { email, password } })
+    body: JSON.stringify({ email, password })
   });
   const data = await res.json();
 
