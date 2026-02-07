@@ -34,7 +34,7 @@ const Signup = () => {
     setIsSubmitting(true);
 
     try {
-      const result = await register(formData.name, formData.email, formData.password);
+      const result = await register(formData.name, formData.email, formData.password, "SME_USER");
 
       if (result.error) {
         throw new Error(result.error);

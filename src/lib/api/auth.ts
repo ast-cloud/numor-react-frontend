@@ -1,11 +1,11 @@
 import { config } from '@/lib/config';
 
-export async function register(name: string, email: string, password: string) {
+export async function register(name: string, email: string, password: string, role: string) {
   const res = await fetch(`${config.backendHost}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ user: { name, email, password } })
+    body: JSON.stringify({ user: { name, email, password, role } })
   });
   const data = await res.json();
   return data;
