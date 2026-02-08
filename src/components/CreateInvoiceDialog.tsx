@@ -478,6 +478,8 @@ const CreateInvoiceDialog = () => {
             </div>
 
             {/* Seller Info - Collapsible */}
+            <div className="space-y-2">
+            <h3 className="font-medium text-foreground">Seller Information</h3>
             <Collapsible open={sellerExpanded} onOpenChange={setSellerExpanded}>
               <div className="border border-border rounded-lg overflow-hidden">
                 <CollapsibleTrigger asChild>
@@ -685,6 +687,7 @@ const CreateInvoiceDialog = () => {
                 </CollapsibleContent>
               </div>
             </Collapsible>
+            </div>
 
             {/* Client Info */}
             <div className="space-y-4">
