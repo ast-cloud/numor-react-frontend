@@ -7,9 +7,27 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users } from "lucide-react";
-import { format, parse, startOfDay, endOfDay, startOfWeek, startOfMonth, startOfQuarter, isWithinInterval } from "date-fns";
+import {
+  format,
+  parse,
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  startOfMonth,
+  startOfQuarter,
+  isWithinInterval,
+} from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
@@ -34,17 +52,84 @@ interface Invoice {
 const DUMMY_PDF_URL = "https://pdfobject.com/pdf/sample.pdf";
 
 const mockInvoices: Invoice[] = [
-  { id: "1", invoiceNumber: "INV-2025001", clientName: "Acme Corporation", dueDate: "15/01/2026", amount: 12500.00, status: "paid", pdfUrl: DUMMY_PDF_URL },
-  { id: "2", invoiceNumber: "INV-2025002", clientName: "Global Tech Solutions", dueDate: "20/01/2026", amount: 8750.50, status: "unpaid", pdfUrl: DUMMY_PDF_URL },
-  { id: "3", invoiceNumber: "INV-2025003", clientName: "Design Studio LLC", dueDate: "10/01/2026", amount: 3200.00, status: "overdue", pdfUrl: DUMMY_PDF_URL },
-  { id: "4", invoiceNumber: "INV-2025004", clientName: "Marketing Pro Agency", dueDate: "25/01/2026", amount: 15000.00, status: "draft", pdfUrl: DUMMY_PDF_URL },
-  { id: "5", invoiceNumber: "INV-2025005", clientName: "Tech Innovators Inc", dueDate: "18/01/2026", amount: 22400.00, status: "paid", pdfUrl: DUMMY_PDF_URL },
-  { id: "6", invoiceNumber: "INV-2025006", clientName: "Creative Works Studio", dueDate: "05/01/2026", amount: 6800.00, status: "overdue", pdfUrl: DUMMY_PDF_URL },
-  { id: "7", invoiceNumber: "INV-2025007", clientName: "Business Consulting Group", dueDate: "28/01/2026", amount: 9500.00, status: "unpaid", pdfUrl: DUMMY_PDF_URL },
-  { id: "8", invoiceNumber: "INV-2025008", clientName: "Digital Media Partners", dueDate: "30/01/2026", amount: 4200.00, status: "draft", pdfUrl: DUMMY_PDF_URL },
+  {
+    id: "1",
+    invoiceNumber: "INV-2025001",
+    clientName: "Acme Corporation",
+    dueDate: "15/01/2026",
+    amount: 12500.0,
+    status: "paid",
+    pdfUrl: DUMMY_PDF_URL,
+  },
+  {
+    id: "2",
+    invoiceNumber: "INV-2025002",
+    clientName: "Global Tech Solutions",
+    dueDate: "20/01/2026",
+    amount: 8750.5,
+    status: "unpaid",
+    pdfUrl: DUMMY_PDF_URL,
+  },
+  {
+    id: "3",
+    invoiceNumber: "INV-2025003",
+    clientName: "Design Studio LLC",
+    dueDate: "10/01/2026",
+    amount: 3200.0,
+    status: "overdue",
+    pdfUrl: DUMMY_PDF_URL,
+  },
+  {
+    id: "4",
+    invoiceNumber: "INV-2025004",
+    clientName: "Marketing Pro Agency",
+    dueDate: "25/01/2026",
+    amount: 15000.0,
+    status: "draft",
+    pdfUrl: DUMMY_PDF_URL,
+  },
+  {
+    id: "5",
+    invoiceNumber: "INV-2025005",
+    clientName: "Tech Innovators Inc",
+    dueDate: "18/01/2026",
+    amount: 22400.0,
+    status: "paid",
+    pdfUrl: DUMMY_PDF_URL,
+  },
+  {
+    id: "6",
+    invoiceNumber: "INV-2025006",
+    clientName: "Creative Works Studio",
+    dueDate: "05/01/2026",
+    amount: 6800.0,
+    status: "overdue",
+    pdfUrl: DUMMY_PDF_URL,
+  },
+  {
+    id: "7",
+    invoiceNumber: "INV-2025007",
+    clientName: "Business Consulting Group",
+    dueDate: "28/01/2026",
+    amount: 9500.0,
+    status: "unpaid",
+    pdfUrl: DUMMY_PDF_URL,
+  },
+  {
+    id: "8",
+    invoiceNumber: "INV-2025008",
+    clientName: "Digital Media Partners",
+    dueDate: "30/01/2026",
+    amount: 4200.0,
+    status: "draft",
+    pdfUrl: DUMMY_PDF_URL,
+  },
 ];
 
-const statusStyles: Record<InvoiceStatus, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
+const statusStyles: Record<
+  InvoiceStatus,
+  { variant: "default" | "secondary" | "destructive" | "outline"; label: string }
+> = {
   draft: { variant: "secondary", label: "Draft" },
   paid: { variant: "default", label: "Paid" },
   unpaid: { variant: "outline", label: "Unpaid" },
@@ -59,21 +144,21 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const InvoiceRow = ({ 
-  invoice, 
-  onClick, 
-  onStatusChange, 
-  onDownload 
-}: { 
-  invoice: Invoice; 
+const InvoiceRow = ({
+  invoice,
+  onClick,
+  onStatusChange,
+  onDownload,
+}: {
+  invoice: Invoice;
   onClick: () => void;
   onStatusChange: (invoiceId: string, status: InvoiceStatus) => void;
   onDownload: (invoice: Invoice) => void;
 }) => {
   const { variant, label } = statusStyles[invoice.status];
-  
+
   return (
-    <div 
+    <div
       className="flex items-center justify-between py-4 px-4 border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
       onClick={onClick}
     >
@@ -89,15 +174,10 @@ const InvoiceRow = ({
         <Badge variant={variant} className="min-w-[70px] justify-center">
           {label}
         </Badge>
-        <span className="font-semibold text-foreground min-w-[100px] text-right">
-          {formatCurrency(invoice.amount)}
-        </span>
+        <span className="font-semibold text-foreground min-w-[100px] text-right">{formatCurrency(invoice.amount)}</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button 
-              className="p-1 hover:bg-muted rounded-md transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <button className="p-1 hover:bg-muted rounded-md transition-colors" onClick={(e) => e.stopPropagation()}>
               <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
             </button>
           </DropdownMenuTrigger>
@@ -108,18 +188,10 @@ const InvoiceRow = ({
                 Change Status
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent onClick={(e) => e.stopPropagation()}>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "draft")}>
-                  Draft
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "paid")}>
-                  Paid
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "unpaid")}>
-                  Unpaid
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "overdue")}>
-                  Overdue
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "draft")}>Draft</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "paid")}>Paid</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "unpaid")}>Unpaid</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "overdue")}>Overdue</DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
@@ -155,10 +227,10 @@ const Income = () => {
   const handleDownloadPdf = (invoice?: Invoice) => {
     const target = invoice || selectedInvoice;
     if (target) {
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = target.pdfUrl;
       link.download = `${target.invoiceNumber}.pdf`;
-      link.target = '_blank';
+      link.target = "_blank";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -166,11 +238,9 @@ const Income = () => {
   };
 
   const handleStatusChange = (invoiceId: string, newStatus: InvoiceStatus) => {
-    const invoice = invoices.find(inv => inv.id === invoiceId);
+    const invoice = invoices.find((inv) => inv.id === invoiceId);
     if (invoice) {
-      setInvoices(prev => prev.map(inv => 
-        inv.id === invoiceId ? { ...inv, status: newStatus } : inv
-      ));
+      setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: newStatus } : inv)));
       if (selectedInvoice?.id === invoiceId) {
         setSelectedInvoice({ ...selectedInvoice, status: newStatus });
       }
@@ -250,7 +320,7 @@ const Income = () => {
 
   const filterInvoices = (status: string) => {
     let filtered = status === "all" ? invoices : invoices.filter((inv) => inv.status === status);
-    
+
     const dateRange = getDateRange();
     if (dateRange) {
       filtered = filtered.filter((inv) => {
@@ -258,7 +328,7 @@ const Income = () => {
         return isWithinInterval(invoiceDate, { start: dateRange.start, end: dateRange.end });
       });
     }
-    
+
     return sortInvoices(filtered);
   };
 
@@ -317,7 +387,7 @@ const Income = () => {
           <p className="text-muted-foreground mt-1">Track and manage your income.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" title="Manage Clients" onClick={() => navigate("/dashboard/income/clients")}>
+          <Button variant="outline" size="icon" title="Manage Clients" onClick={() => navigate("/sme/income/clients")}>
             <Users className="h-4 w-4" />
           </Button>
           <CreateInvoiceDialog />
@@ -418,18 +488,16 @@ const Income = () => {
             <div className="bg-card rounded-lg border border-border overflow-hidden">
               {filterInvoices(tab.value).length > 0 ? (
                 filterInvoices(tab.value).map((invoice) => (
-                  <InvoiceRow 
-                    key={invoice.id} 
-                    invoice={invoice} 
+                  <InvoiceRow
+                    key={invoice.id}
+                    invoice={invoice}
                     onClick={() => handleInvoiceClick(invoice)}
                     onStatusChange={handleStatusChange}
                     onDownload={handleDownloadPdf}
                   />
                 ))
               ) : (
-                <div className="flex items-center justify-center h-32 text-muted-foreground">
-                  No invoices found
-                </div>
+                <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
               )}
             </div>
           </TabsContent>
@@ -445,8 +513,8 @@ const Income = () => {
                 {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
               </DialogTitle>
               <div className="flex items-center gap-2">
-                <Select 
-                  value={selectedInvoice?.status} 
+                <Select
+                  value={selectedInvoice?.status}
                   onValueChange={(value: InvoiceStatus) => handleDialogStatusChange(value)}
                 >
                   <SelectTrigger className="w-[120px] h-8 text-sm">
