@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, ArrowLeft, Loader2 } from "lucide-react";
-import { fetchClients, updateClient, type ClientData } from "@/lib/api/clients";
+import { fetchClients, createClient, updateClient, type ClientData } from "@/lib/api/clients";
 import ClientCard from "@/components/clients/ClientCard";
 
 export interface Client {
@@ -100,28 +100,53 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
     }
     if (!client) return;
 
+    const isNewClient = backupRef.current && !backupRef.current.name.trim();
+
     setIsSaving(true);
     try {
-      await updateClient(id, {
-        name: client.name || null,
-        email: client.email || null,
-        phone: client.phone || null,
-        streetAddress: client.streetAddress || null,
-        city: client.city || null,
-        state: client.state || null,
-        zipCode: client.zipCode || null,
-        country: client.country || null,
-      });
+      if (isNewClient) {
+        const address = [client.streetAddress, client.city, client.state, client.country]
+          .filter(Boolean)
+          .join(", ") || null;
+
+        const created = await createClient({
+          name: client.name,
+          email: client.email || null,
+          phone: client.phone || null,
+          address,
+          country: client.country || null,
+        });
+
+        // Replace temp id with server id
+        setClients(prev =>
+          prev.map(c => c.id === id ? mapClientData(created) : c)
+        );
+        toast({
+          title: "Client created",
+          description: "New client has been added.",
+        });
+      } else {
+        await updateClient(id, {
+          name: client.name || null,
+          email: client.email || null,
+          phone: client.phone || null,
+          streetAddress: client.streetAddress || null,
+          city: client.city || null,
+          state: client.state || null,
+          zipCode: client.zipCode || null,
+          country: client.country || null,
+        });
+        toast({
+          title: "Client saved",
+          description: "Client information has been updated.",
+        });
+      }
       setEditingClientId(null);
       backupRef.current = null;
-      toast({
-        title: "Client saved",
-        description: "Client information has been updated.",
-      });
     } catch {
       toast({
         title: "Save failed",
-        description: "Could not update client. Please try again.",
+        description: isNewClient ? "Could not create client." : "Could not update client. Please try again.",
         variant: "destructive",
       });
     } finally {
