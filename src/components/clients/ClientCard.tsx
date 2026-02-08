@@ -27,7 +27,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onDelete, onUpdate }: C
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-hidden transition-shadow duration-300 hover:shadow-sm">
         {/* Collapsed header - always visible */}
         <div className="flex items-center justify-between p-4">
           <CollapsibleTrigger className="flex items-center gap-3 flex-1 text-left group">
@@ -62,7 +62,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onDelete, onUpdate }: C
         </div>
 
         {/* Expandable content */}
-        <CollapsibleContent>
+        <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
           <div className="px-4 pb-4 pt-0 space-y-4 border-t">
             <div className="grid gap-4 md:grid-cols-2 pt-4">
               <div className="space-y-2">
