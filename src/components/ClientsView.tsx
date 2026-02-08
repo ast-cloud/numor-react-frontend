@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, ArrowLeft, Loader2 } from "lucide-react";
-import { fetchClients, type ClientData } from "@/lib/api/clients";
+import { fetchClients, updateClient, type ClientData } from "@/lib/api/clients";
 import ClientCard from "@/components/clients/ClientCard";
 
 export interface Client {
@@ -38,6 +38,8 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
   const [clients, setClients] = useState<Client[]>([]);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const backupRef = useRef<Client | null>(null);
 
   useEffect(() => {
     const loadClients = async () => {
@@ -70,14 +72,23 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
       phone: "",
     };
     setClients([...clients, newClient]);
+    backupRef.current = { ...newClient };
     setEditingClientId(newClient.id);
+  };
+
+  const handleEditClient = (id: string) => {
+    const client = clients.find(c => c.id === id);
+    if (client) {
+      backupRef.current = { ...client };
+    }
+    setEditingClientId(id);
   };
 
   const handleUpdateClient = (id: string, field: keyof Client, value: string) => {
     setClients(clients.map(c => c.id === id ? { ...c, [field]: value } : c));
   };
 
-  const handleSaveClient = (id: string) => {
+  const handleSaveClient = async (id: string) => {
     const client = clients.find(c => c.id === id);
     if (client && !client.name.trim()) {
       toast({
@@ -87,11 +98,49 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
       });
       return;
     }
+    if (!client) return;
+
+    setIsSaving(true);
+    try {
+      await updateClient(id, {
+        name: client.name || null,
+        email: client.email || null,
+        phone: client.phone || null,
+        streetAddress: client.streetAddress || null,
+        city: client.city || null,
+        state: client.state || null,
+        zipCode: client.zipCode || null,
+        country: client.country || null,
+      });
+      setEditingClientId(null);
+      backupRef.current = null;
+      toast({
+        title: "Client saved",
+        description: "Client information has been updated.",
+      });
+    } catch {
+      toast({
+        title: "Save failed",
+        description: "Could not update client. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = (id: string) => {
+    if (backupRef.current) {
+      // If it was a new unsaved client (no name in backup), remove it
+      if (!backupRef.current.name.trim()) {
+        setClients(clients.filter(c => c.id !== id));
+      } else {
+        // Restore original values
+        setClients(clients.map(c => c.id === id ? { ...backupRef.current! } : c));
+      }
+    }
+    backupRef.current = null;
     setEditingClientId(null);
-    toast({
-      title: "Client saved",
-      description: "Client information has been saved.",
-    });
   };
 
   const handleDeleteClient = (id: string) => {
@@ -139,8 +188,9 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
                 key={client.id}
                 client={client}
                 isEditing={editingClientId === client.id}
-                onEdit={() => setEditingClientId(client.id)}
+                onEdit={() => handleEditClient(client.id)}
                 onSave={() => handleSaveClient(client.id)}
+                onCancel={() => handleCancelEdit(client.id)}
                 onDelete={() => handleDeleteClient(client.id)}
                 onUpdate={(field, value) => handleUpdateClient(client.id, field, value)}
               />

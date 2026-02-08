@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { User, Mail, Phone, MapPin, Pencil, Save, Trash2, ChevronDown } from "lucide-react";
+import { User, Mail, Phone, MapPin, Pencil, Save, Trash2, ChevronDown, X } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/constants";
 import type { Client } from "@/components/ClientsView";
 
@@ -13,11 +13,12 @@ interface ClientCardProps {
   isEditing: boolean;
   onEdit: () => void;
   onSave: () => void;
+  onCancel: () => void;
   onDelete: () => void;
   onUpdate: (field: keyof Client, value: string) => void;
 }
 
-const ClientCard = ({ client, isEditing, onEdit, onSave, onDelete, onUpdate }: ClientCardProps) => {
+const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onUpdate }: ClientCardProps) => {
   const [isOpen, setIsOpen] = useState(isEditing);
 
   // Auto-expand when editing starts
@@ -41,10 +42,16 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onDelete, onUpdate }: C
           </CollapsibleTrigger>
           <div className="flex gap-2 shrink-0 ml-3">
             {isEditing ? (
-              <Button size="sm" className="h-7 text-xs" onClick={onSave}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
-              </Button>
+              <>
+                <Button size="sm" className="h-7 text-xs" onClick={onSave}>
+                  <Save className="w-3 h-3 mr-1.5" />
+                  Save
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={onCancel}>
+                  <X className="w-3 h-3 mr-1.5" />
+                  Cancel
+                </Button>
+              </>
             ) : (
               <Button variant="outline" size="icon" className="h-7 w-7" onClick={onEdit}>
                 <Pencil className="w-3 h-3" />
