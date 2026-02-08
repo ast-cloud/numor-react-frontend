@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
+import { fetchCurrentOrganization } from "@/lib/api/user";
 
 interface LineItem {
   id: string;
@@ -118,47 +119,80 @@ const getTaxOptions = (country: string): number[] => {
   return taxPercentOptions[country] || [];
 };
 
-// Dummy seller data (would come from user settings)
-const defaultSellerInfo: SellerInfo = {
+// Empty default seller - will be filled from org API
+const emptySellerInfo: SellerInfo = {
   logo: "",
-  name: "Acme Corporation LLC",
-  streetAddress: "123 Business Street, Suite 100",
-  city: "Dubai",
+  name: "",
+  streetAddress: "",
+  city: "",
   state: "",
   zip: "",
-  country: "UAE",
-  taxId: "TRN-100234567890003",
-  email: "billing@acmecorp.com",
-  phone: "+971 4 123 4567",
+  country: "",
+  taxId: "",
+  email: "",
+  phone: "",
 };
 
-const initialFormData: InvoiceFormData = {
-  invoiceNumber: "",
-  invoiceDate: new Date(),
-  dueDate: undefined,
-  currency: "AED",
-  taxType: "VAT",
-  seller: { ...defaultSellerInfo },
-  clientName: "",
-  clientStreetAddress: "",
-  clientCity: "",
-  clientState: "",
-  clientZip: "",
-  clientCountry: "",
-  lineItems: [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
-  bankName: "",
-  iban: "",
-  swiftBic: "",
-  bankAddress: "",
-  notes: "",
+const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
+  const s = seller || emptySellerInfo;
+  const defaults = s.country && countryDefaults[s.country]
+    ? countryDefaults[s.country]
+    : { currency: "USD", taxType: "None" };
+  return {
+    invoiceNumber: "",
+    invoiceDate: new Date(),
+    dueDate: undefined,
+    currency: defaults.currency,
+    taxType: defaults.taxType,
+    seller: { ...s },
+    clientName: "",
+    clientStreetAddress: "",
+    clientCity: "",
+    clientState: "",
+    clientZip: "",
+    clientCountry: "",
+    lineItems: [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
+    bankName: "",
+    iban: "",
+    swiftBic: "",
+    bankAddress: "",
+    notes: "",
+  };
 };
 
 const CreateInvoiceDialog = () => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<InvoiceFormData>(initialFormData);
+  const [formData, setFormData] = useState<InvoiceFormData>(getInitialFormData());
   const [showPreview, setShowPreview] = useState(false);
   const [invoiceDateOpen, setInvoiceDateOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
+
+  // Fetch organization data when dialog opens to prefill seller info
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    fetchCurrentOrganization()
+      .then((org) => {
+        if (cancelled) return;
+        const seller: SellerInfo = {
+          logo: "",
+          name: org.name || "",
+          streetAddress: org.streetAddress || "",
+          city: org.city || "",
+          state: org.state || "",
+          zip: org.zipCode || "",
+          country: org.country || "",
+          taxId: org.taxId || "",
+          email: org.email || "",
+          phone: org.phone || "",
+        };
+        setFormData(getInitialFormData(seller));
+      })
+      .catch(() => {
+        // Silently fall back to empty seller info
+      });
+    return () => { cancelled = true; };
+  }, [open]);
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | Date | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -271,21 +305,21 @@ const CreateInvoiceDialog = () => {
   const handleConfirmInvoice = () => {
     console.log("Invoice Confirmed:", formData);
     setOpen(false);
-    setFormData(initialFormData);
+    setFormData(getInitialFormData());
     setShowPreview(false);
   };
 
   const handleSaveAsDraft = () => {
     console.log("Draft Invoice Data:", { ...formData, status: "draft" });
     setOpen(false);
-    setFormData(initialFormData);
+    setFormData(getInitialFormData());
     setShowPreview(false);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
-      setFormData(initialFormData);
+      setFormData(getInitialFormData());
       setShowPreview(false);
     }
   };
