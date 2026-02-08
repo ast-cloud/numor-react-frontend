@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, CalendarIcon, Trash2, Upload, ArrowLeft, MapPin } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, CalendarIcon, Trash2, Upload, ArrowLeft, MapPin, ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization } from "@/lib/api/user";
+import { fetchClients, type ClientData } from "@/lib/api/clients";
 
 interface LineItem {
   id: string;
@@ -166,11 +168,14 @@ const CreateInvoiceDialog = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [invoiceDateOpen, setInvoiceDateOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
+  const [sellerExpanded, setSellerExpanded] = useState(false);
+  const [savedClients, setSavedClients] = useState<ClientData[]>([]);
 
-  // Fetch organization data when dialog opens to prefill seller info
+  // Fetch organization data and clients when dialog opens
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
+
     fetchCurrentOrganization()
       .then((org) => {
         if (cancelled) return;
@@ -188,11 +193,31 @@ const CreateInvoiceDialog = () => {
         };
         setFormData(getInitialFormData(seller));
       })
-      .catch(() => {
-        // Silently fall back to empty seller info
-      });
+      .catch(() => {});
+
+    fetchClients()
+      .then((clients) => {
+        if (cancelled) return;
+        setSavedClients(clients);
+      })
+      .catch(() => {});
+
     return () => { cancelled = true; };
   }, [open]);
+
+  const handleClientSelect = (clientId: string) => {
+    const client = savedClients.find((c) => c.id === clientId);
+    if (!client) return;
+    setFormData((prev) => ({
+      ...prev,
+      clientName: client.name || "",
+      clientStreetAddress: client.streetAddress || "",
+      clientCity: client.city || "",
+      clientState: client.state || "",
+      clientZip: client.zipCode || "",
+      clientCountry: client.country || "",
+    }));
+  };
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | Date | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -452,189 +477,235 @@ const CreateInvoiceDialog = () => {
               </div>
             </div>
 
-            {/* Seller Info */}
-            <div className="space-y-4">
-              <h3 className="font-medium text-foreground">Seller Information</h3>
-              <div className="flex items-start gap-4">
-                <div className="flex flex-col items-center gap-2">
-                  <Avatar className="h-16 w-16 border">
-                    <AvatarImage src={formData.seller.logo} alt="Seller logo" />
-                    <AvatarFallback className="bg-muted">
-                      <Upload className="h-6 w-6 text-muted-foreground" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <Label htmlFor="sellerLogo" className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                    Upload Logo
-                  </Label>
-                  <Input
-                    id="sellerLogo"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          handleSellerChange("logo", reader.result as string);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                </div>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="sellerName">Name</Label>
-                    <Input
-                      id="sellerName"
-                      placeholder="e.g. Acme Corporation LLC"
-                      value={formData.seller.name}
-                      onChange={(e) => handleSellerChange("name", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sellerTaxId">Tax ID</Label>
-                    <Input
-                      id="sellerTaxId"
-                      placeholder="e.g. TRN-100234567890003"
-                      value={formData.seller.taxId}
-                      onChange={(e) => handleSellerChange("taxId", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sellerEmail">Email</Label>
-                    <Input
-                      id="sellerEmail"
-                      type="email"
-                      placeholder="e.g. billing@acmecorp.com"
-                      value={formData.seller.email}
-                      onChange={(e) => handleSellerChange("email", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sellerPhone">Phone Number</Label>
-                    <Input
-                      id="sellerPhone"
-                      placeholder="e.g. +971 4 123 4567"
-                      value={formData.seller.phone}
-                      onChange={(e) => handleSellerChange("phone", e.target.value)}
-                    />
-                  </div>
-                  {/* Business Address Subgroup */}
-                  <div className="md:col-span-2 space-y-4 p-4 border border-border rounded-lg bg-muted/20">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      Business Address
+            {/* Seller Info - Collapsible */}
+            <Collapsible open={sellerExpanded} onOpenChange={setSellerExpanded}>
+              <div className="border border-border rounded-lg overflow-hidden">
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 border">
+                        <AvatarImage src={formData.seller.logo} alt="Seller logo" />
+                        <AvatarFallback className="bg-muted text-xs">
+                          {formData.seller.name ? formData.seller.name.charAt(0).toUpperCase() : "S"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-left">
+                        <p className="font-medium text-foreground text-sm">
+                          {formData.seller.name || "Seller Information"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formData.seller.email || "No email set"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="sellerStreetAddress">Street Address</Label>
+                    <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", sellerExpanded && "rotate-180")} />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+                  <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
+                    <div className="flex items-start gap-4 pt-4">
+                      <div className="flex flex-col items-center gap-2">
+                        <Avatar className="h-16 w-16 border">
+                          <AvatarImage src={formData.seller.logo} alt="Seller logo" />
+                          <AvatarFallback className="bg-muted">
+                            <Upload className="h-6 w-6 text-muted-foreground" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <Label htmlFor="sellerLogo" className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                          Upload Logo
+                        </Label>
                         <Input
-                          id="sellerStreetAddress"
-                          placeholder="e.g. 123 Business Street, Suite 100"
-                          value={formData.seller.streetAddress}
-                          onChange={(e) => handleSellerChange("streetAddress", e.target.value)}
+                          id="sellerLogo"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                handleSellerChange("logo", reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sellerCity">City</Label>
-                        <Input
-                          id="sellerCity"
-                          placeholder="e.g. Dubai"
-                          value={formData.seller.city}
-                          onChange={(e) => handleSellerChange("city", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sellerState">State / Province</Label>
-                        {formData.seller.country === "India" ? (
-                          <Select
-                            value={formData.seller.state}
-                            onValueChange={(value) => handleSellerChange("state", value)}
-                          >
-                            <SelectTrigger id="sellerState">
-                              <SelectValue placeholder="Select state" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {INDIAN_STATES.map((state) => (
-                                <SelectItem key={state} value={state}>
-                                  {state}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="sellerName">Name</Label>
                           <Input
-                            id="sellerState"
-                            placeholder="e.g. Dubai"
-                            value={formData.seller.state}
-                            onChange={(e) => handleSellerChange("state", e.target.value)}
+                            id="sellerName"
+                            placeholder="e.g. Acme Corporation LLC"
+                            value={formData.seller.name}
+                            onChange={(e) => handleSellerChange("name", e.target.value)}
                           />
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sellerZip">ZIP / Postal Code</Label>
-                        <Input
-                          id="sellerZip"
-                          placeholder="e.g. 00000"
-                          value={formData.seller.zip}
-                          onChange={(e) => handleSellerChange("zip", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sellerCountry">Country</Label>
-                        <Select 
-                          value={formData.seller.country} 
-                          onValueChange={(value) => handleSellerChange("country", value)}
-                        >
-                          <SelectTrigger id="sellerCountry">
-                            <SelectValue placeholder="Select country" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="India">India</SelectItem>
-                            <SelectItem value="UAE">UAE</SelectItem>
-                            <SelectItem value="US">United States</SelectItem>
-                            <SelectItem value="UK">United Kingdom</SelectItem>
-                            <SelectItem value="Austria">Austria</SelectItem>
-                            <SelectItem value="Belgium">Belgium</SelectItem>
-                            <SelectItem value="Bulgaria">Bulgaria</SelectItem>
-                            <SelectItem value="Croatia">Croatia</SelectItem>
-                            <SelectItem value="Cyprus">Cyprus</SelectItem>
-                            <SelectItem value="Czech Republic">Czech Republic</SelectItem>
-                            <SelectItem value="Denmark">Denmark</SelectItem>
-                            <SelectItem value="Estonia">Estonia</SelectItem>
-                            <SelectItem value="Finland">Finland</SelectItem>
-                            <SelectItem value="France">France</SelectItem>
-                            <SelectItem value="Germany">Germany</SelectItem>
-                            <SelectItem value="Greece">Greece</SelectItem>
-                            <SelectItem value="Hungary">Hungary</SelectItem>
-                            <SelectItem value="Ireland">Ireland</SelectItem>
-                            <SelectItem value="Italy">Italy</SelectItem>
-                            <SelectItem value="Latvia">Latvia</SelectItem>
-                            <SelectItem value="Lithuania">Lithuania</SelectItem>
-                            <SelectItem value="Luxembourg">Luxembourg</SelectItem>
-                            <SelectItem value="Malta">Malta</SelectItem>
-                            <SelectItem value="Netherlands">Netherlands</SelectItem>
-                            <SelectItem value="Poland">Poland</SelectItem>
-                            <SelectItem value="Portugal">Portugal</SelectItem>
-                            <SelectItem value="Romania">Romania</SelectItem>
-                            <SelectItem value="Slovakia">Slovakia</SelectItem>
-                            <SelectItem value="Slovenia">Slovenia</SelectItem>
-                            <SelectItem value="Spain">Spain</SelectItem>
-                            <SelectItem value="Sweden">Sweden</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sellerTaxId">Tax ID</Label>
+                          <Input
+                            id="sellerTaxId"
+                            placeholder="e.g. TRN-100234567890003"
+                            value={formData.seller.taxId}
+                            onChange={(e) => handleSellerChange("taxId", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sellerEmail">Email</Label>
+                          <Input
+                            id="sellerEmail"
+                            type="email"
+                            placeholder="e.g. billing@acmecorp.com"
+                            value={formData.seller.email}
+                            onChange={(e) => handleSellerChange("email", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sellerPhone">Phone Number</Label>
+                          <Input
+                            id="sellerPhone"
+                            placeholder="e.g. +971 4 123 4567"
+                            value={formData.seller.phone}
+                            onChange={(e) => handleSellerChange("phone", e.target.value)}
+                          />
+                        </div>
+                        {/* Business Address Subgroup */}
+                        <div className="md:col-span-2 space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+                          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                            <MapPin className="w-4 h-4" />
+                            Business Address
+                          </div>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="sellerStreetAddress">Street Address</Label>
+                              <Input
+                                id="sellerStreetAddress"
+                                placeholder="e.g. 123 Business Street, Suite 100"
+                                value={formData.seller.streetAddress}
+                                onChange={(e) => handleSellerChange("streetAddress", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="sellerCity">City</Label>
+                              <Input
+                                id="sellerCity"
+                                placeholder="e.g. Dubai"
+                                value={formData.seller.city}
+                                onChange={(e) => handleSellerChange("city", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="sellerState">State / Province</Label>
+                              {formData.seller.country === "India" ? (
+                                <Select
+                                  value={formData.seller.state}
+                                  onValueChange={(value) => handleSellerChange("state", value)}
+                                >
+                                  <SelectTrigger id="sellerState">
+                                    <SelectValue placeholder="Select state" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {INDIAN_STATES.map((state) => (
+                                      <SelectItem key={state} value={state}>
+                                        {state}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <Input
+                                  id="sellerState"
+                                  placeholder="e.g. Dubai"
+                                  value={formData.seller.state}
+                                  onChange={(e) => handleSellerChange("state", e.target.value)}
+                                />
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="sellerZip">ZIP / Postal Code</Label>
+                              <Input
+                                id="sellerZip"
+                                placeholder="e.g. 00000"
+                                value={formData.seller.zip}
+                                onChange={(e) => handleSellerChange("zip", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="sellerCountry">Country</Label>
+                              <Select 
+                                value={formData.seller.country} 
+                                onValueChange={(value) => handleSellerChange("country", value)}
+                              >
+                                <SelectTrigger id="sellerCountry">
+                                  <SelectValue placeholder="Select country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="India">India</SelectItem>
+                                  <SelectItem value="UAE">UAE</SelectItem>
+                                  <SelectItem value="US">United States</SelectItem>
+                                  <SelectItem value="UK">United Kingdom</SelectItem>
+                                  <SelectItem value="Austria">Austria</SelectItem>
+                                  <SelectItem value="Belgium">Belgium</SelectItem>
+                                  <SelectItem value="Bulgaria">Bulgaria</SelectItem>
+                                  <SelectItem value="Croatia">Croatia</SelectItem>
+                                  <SelectItem value="Cyprus">Cyprus</SelectItem>
+                                  <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                                  <SelectItem value="Denmark">Denmark</SelectItem>
+                                  <SelectItem value="Estonia">Estonia</SelectItem>
+                                  <SelectItem value="Finland">Finland</SelectItem>
+                                  <SelectItem value="France">France</SelectItem>
+                                  <SelectItem value="Germany">Germany</SelectItem>
+                                  <SelectItem value="Greece">Greece</SelectItem>
+                                  <SelectItem value="Hungary">Hungary</SelectItem>
+                                  <SelectItem value="Ireland">Ireland</SelectItem>
+                                  <SelectItem value="Italy">Italy</SelectItem>
+                                  <SelectItem value="Latvia">Latvia</SelectItem>
+                                  <SelectItem value="Lithuania">Lithuania</SelectItem>
+                                  <SelectItem value="Luxembourg">Luxembourg</SelectItem>
+                                  <SelectItem value="Malta">Malta</SelectItem>
+                                  <SelectItem value="Netherlands">Netherlands</SelectItem>
+                                  <SelectItem value="Poland">Poland</SelectItem>
+                                  <SelectItem value="Portugal">Portugal</SelectItem>
+                                  <SelectItem value="Romania">Romania</SelectItem>
+                                  <SelectItem value="Slovakia">Slovakia</SelectItem>
+                                  <SelectItem value="Slovenia">Slovenia</SelectItem>
+                                  <SelectItem value="Spain">Spain</SelectItem>
+                                  <SelectItem value="Sweden">Sweden</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </CollapsibleContent>
               </div>
-            </div>
+            </Collapsible>
 
             {/* Client Info */}
             <div className="space-y-4">
               <h3 className="font-medium text-foreground">Client Information</h3>
+              {savedClients.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Select Saved Client</Label>
+                  <Select onValueChange={handleClientSelect}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose from saved clients..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {savedClients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}{client.email ? ` (${client.email})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="clientName">Client Name</Label>
                 <Input
