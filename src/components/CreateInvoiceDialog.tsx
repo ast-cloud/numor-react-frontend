@@ -48,6 +48,7 @@ interface InvoiceFormData {
   taxType: string;
   seller: SellerInfo;
   clientName: string;
+  clientEmail: string;
   clientStreetAddress: string;
   clientCity: string;
   clientState: string;
@@ -148,6 +149,7 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
     taxType: defaults.taxType,
     seller: { ...s },
     clientName: "",
+    clientEmail: "",
     clientStreetAddress: "",
     clientCity: "",
     clientState: "",
@@ -169,6 +171,7 @@ const CreateInvoiceDialog = () => {
   const [invoiceDateOpen, setInvoiceDateOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
   const [sellerExpanded, setSellerExpanded] = useState(false);
+  const [clientExpanded, setClientExpanded] = useState(false);
   const [savedClients, setSavedClients] = useState<ClientData[]>([]);
 
   // Fetch organization data and clients when dialog opens
@@ -211,12 +214,14 @@ const CreateInvoiceDialog = () => {
     setFormData((prev) => ({
       ...prev,
       clientName: client.name || "",
+      clientEmail: client.email || "",
       clientStreetAddress: client.streetAddress || "",
       clientCity: client.city || "",
       clientState: client.state || "",
       clientZip: client.zipCode || "",
       clientCountry: client.country || "",
     }));
+    setClientExpanded(false);
   };
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | Date | undefined) => {
@@ -709,122 +714,158 @@ const CreateInvoiceDialog = () => {
                   </Select>
                 </div>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Client Name</Label>
-                <Input
-                  id="clientName"
-                  placeholder="e.g. Design Smith Interior Works LLC"
-                  value={formData.clientName}
-                  onChange={(e) => handleInputChange("clientName", e.target.value)}
-                />
-              </div>
-              {/* Client Address Subgroup */}
-              <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <MapPin className="w-4 h-4" />
-                  Client Address
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="clientStreetAddress">Street Address</Label>
-                    <Input
-                      id="clientStreetAddress"
-                      placeholder="e.g. 123 Business Street, Suite 100"
-                      value={formData.clientStreetAddress}
-                      onChange={(e) => handleInputChange("clientStreetAddress", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="clientCity">City</Label>
-                    <Input
-                      id="clientCity"
-                      placeholder="e.g. Dubai"
-                      value={formData.clientCity}
-                      onChange={(e) => handleInputChange("clientCity", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="clientState">State / Province</Label>
-                    {formData.clientCountry === "India" ? (
-                      <Select
-                        value={formData.clientState}
-                        onValueChange={(value) => handleInputChange("clientState", value)}
-                      >
-                        <SelectTrigger id="clientState">
-                          <SelectValue placeholder="Select state" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {INDIAN_STATES.map((state) => (
-                            <SelectItem key={state} value={state}>
-                              {state}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input
-                        id="clientState"
-                        placeholder="e.g. Dubai"
-                        value={formData.clientState}
-                        onChange={(e) => handleInputChange("clientState", e.target.value)}
-                      />
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="clientZip">ZIP / Postal Code</Label>
-                    <Input
-                      id="clientZip"
-                      placeholder="e.g. 00000"
-                      value={formData.clientZip}
-                      onChange={(e) => handleInputChange("clientZip", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="clientCountry">Country</Label>
-                    <Select 
-                      value={formData.clientCountry} 
-                      onValueChange={handleClientCountryChange}
+              <Collapsible open={clientExpanded} onOpenChange={setClientExpanded}>
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
                     >
-                      <SelectTrigger id="clientCountry">
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="India">India</SelectItem>
-                        <SelectItem value="UAE">UAE</SelectItem>
-                        <SelectItem value="US">United States</SelectItem>
-                        <SelectItem value="UK">United Kingdom</SelectItem>
-                        <SelectItem value="Austria">Austria</SelectItem>
-                        <SelectItem value="Belgium">Belgium</SelectItem>
-                        <SelectItem value="Bulgaria">Bulgaria</SelectItem>
-                        <SelectItem value="Croatia">Croatia</SelectItem>
-                        <SelectItem value="Cyprus">Cyprus</SelectItem>
-                        <SelectItem value="Czech Republic">Czech Republic</SelectItem>
-                        <SelectItem value="Denmark">Denmark</SelectItem>
-                        <SelectItem value="Estonia">Estonia</SelectItem>
-                        <SelectItem value="Finland">Finland</SelectItem>
-                        <SelectItem value="France">France</SelectItem>
-                        <SelectItem value="Germany">Germany</SelectItem>
-                        <SelectItem value="Greece">Greece</SelectItem>
-                        <SelectItem value="Hungary">Hungary</SelectItem>
-                        <SelectItem value="Ireland">Ireland</SelectItem>
-                        <SelectItem value="Italy">Italy</SelectItem>
-                        <SelectItem value="Latvia">Latvia</SelectItem>
-                        <SelectItem value="Lithuania">Lithuania</SelectItem>
-                        <SelectItem value="Luxembourg">Luxembourg</SelectItem>
-                        <SelectItem value="Malta">Malta</SelectItem>
-                        <SelectItem value="Netherlands">Netherlands</SelectItem>
-                        <SelectItem value="Poland">Poland</SelectItem>
-                        <SelectItem value="Portugal">Portugal</SelectItem>
-                        <SelectItem value="Romania">Romania</SelectItem>
-                        <SelectItem value="Slovakia">Slovakia</SelectItem>
-                        <SelectItem value="Slovenia">Slovenia</SelectItem>
-                        <SelectItem value="Spain">Spain</SelectItem>
-                        <SelectItem value="Sweden">Sweden</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                      <div className="text-left">
+                        <p className="font-medium text-foreground text-sm">
+                          {formData.clientName || "No client selected"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formData.clientEmail || "No email set"}
+                        </p>
+                      </div>
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", clientExpanded && "rotate-180")} />
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+                    <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
+                      <div className="grid gap-4 md:grid-cols-2 pt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="clientName">Client Name</Label>
+                          <Input
+                            id="clientName"
+                            placeholder="e.g. Design Smith Interior Works LLC"
+                            value={formData.clientName}
+                            onChange={(e) => handleInputChange("clientName", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="clientEmail">Email</Label>
+                          <Input
+                            id="clientEmail"
+                            type="email"
+                            placeholder="e.g. client@example.com"
+                            value={formData.clientEmail}
+                            onChange={(e) => handleInputChange("clientEmail", e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      {/* Client Address Subgroup */}
+                      <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                          <MapPin className="w-4 h-4" />
+                          Client Address
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="clientStreetAddress">Street Address</Label>
+                            <Input
+                              id="clientStreetAddress"
+                              placeholder="e.g. 123 Business Street, Suite 100"
+                              value={formData.clientStreetAddress}
+                              onChange={(e) => handleInputChange("clientStreetAddress", e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="clientCity">City</Label>
+                            <Input
+                              id="clientCity"
+                              placeholder="e.g. Dubai"
+                              value={formData.clientCity}
+                              onChange={(e) => handleInputChange("clientCity", e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="clientState">State / Province</Label>
+                            {formData.clientCountry === "India" ? (
+                              <Select
+                                value={formData.clientState}
+                                onValueChange={(value) => handleInputChange("clientState", value)}
+                              >
+                                <SelectTrigger id="clientState">
+                                  <SelectValue placeholder="Select state" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {INDIAN_STATES.map((state) => (
+                                    <SelectItem key={state} value={state}>
+                                      {state}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                id="clientState"
+                                placeholder="e.g. Dubai"
+                                value={formData.clientState}
+                                onChange={(e) => handleInputChange("clientState", e.target.value)}
+                              />
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="clientZip">ZIP / Postal Code</Label>
+                            <Input
+                              id="clientZip"
+                              placeholder="e.g. 00000"
+                              value={formData.clientZip}
+                              onChange={(e) => handleInputChange("clientZip", e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="clientCountry">Country</Label>
+                            <Select 
+                              value={formData.clientCountry} 
+                              onValueChange={handleClientCountryChange}
+                            >
+                              <SelectTrigger id="clientCountry">
+                                <SelectValue placeholder="Select country" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="India">India</SelectItem>
+                                <SelectItem value="UAE">UAE</SelectItem>
+                                <SelectItem value="US">United States</SelectItem>
+                                <SelectItem value="UK">United Kingdom</SelectItem>
+                                <SelectItem value="Austria">Austria</SelectItem>
+                                <SelectItem value="Belgium">Belgium</SelectItem>
+                                <SelectItem value="Bulgaria">Bulgaria</SelectItem>
+                                <SelectItem value="Croatia">Croatia</SelectItem>
+                                <SelectItem value="Cyprus">Cyprus</SelectItem>
+                                <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                                <SelectItem value="Denmark">Denmark</SelectItem>
+                                <SelectItem value="Estonia">Estonia</SelectItem>
+                                <SelectItem value="Finland">Finland</SelectItem>
+                                <SelectItem value="France">France</SelectItem>
+                                <SelectItem value="Germany">Germany</SelectItem>
+                                <SelectItem value="Greece">Greece</SelectItem>
+                                <SelectItem value="Hungary">Hungary</SelectItem>
+                                <SelectItem value="Ireland">Ireland</SelectItem>
+                                <SelectItem value="Italy">Italy</SelectItem>
+                                <SelectItem value="Latvia">Latvia</SelectItem>
+                                <SelectItem value="Lithuania">Lithuania</SelectItem>
+                                <SelectItem value="Luxembourg">Luxembourg</SelectItem>
+                                <SelectItem value="Malta">Malta</SelectItem>
+                                <SelectItem value="Netherlands">Netherlands</SelectItem>
+                                <SelectItem value="Poland">Poland</SelectItem>
+                                <SelectItem value="Portugal">Portugal</SelectItem>
+                                <SelectItem value="Romania">Romania</SelectItem>
+                                <SelectItem value="Slovakia">Slovakia</SelectItem>
+                                <SelectItem value="Slovenia">Slovenia</SelectItem>
+                                <SelectItem value="Spain">Spain</SelectItem>
+                                <SelectItem value="Sweden">Sweden</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
                 </div>
-              </div>
+              </Collapsible>
             </div>
 
             {/* Line Items */}
