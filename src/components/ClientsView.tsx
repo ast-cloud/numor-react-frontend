@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Users, User, Mail, Phone, MapPin, Plus, Pencil, Save, Trash2, ArrowLeft } from "lucide-react";
+import { Users, User, Mail, Phone, MapPin, Plus, Pencil, Save, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/constants";
+import { fetchClients, type ClientData } from "@/lib/api/clients";
 
 export interface Client {
   id: string;
@@ -13,7 +14,7 @@ export interface Client {
   streetAddress: string;
   city: string;
   state: string;
-  zip: string;
+  zipCode: string;
   country: string;
   email: string;
   phone: string;
@@ -23,10 +24,41 @@ interface ClientsViewProps {
   onBack: () => void;
 }
 
+const mapClientData = (c: ClientData): Client => ({
+  id: c.id,
+  name: c.name || "",
+  streetAddress: c.streetAddress || "",
+  city: c.city || "",
+  state: c.state || "",
+  zipCode: c.zipCode || "",
+  country: c.country || "",
+  email: c.email || "",
+  phone: c.phone || "",
+});
+
 const ClientsView = ({ onBack }: ClientsViewProps) => {
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadClients = async () => {
+      try {
+        const data = await fetchClients();
+        setClients(data.map(mapClientData));
+      } catch (err) {
+        toast({
+          title: "Error loading clients",
+          description: "Could not fetch clients from the server.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadClients();
+  }, [toast]);
 
   const handleAddClient = () => {
     const newClient: Client = {
@@ -35,7 +67,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
       streetAddress: "",
       city: "",
       state: "",
-      zip: "",
+      zipCode: "",
       country: "",
       email: "",
       phone: "",
@@ -92,7 +124,12 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
       </div>
 
       <div className="bg-card rounded-lg border border-border p-6">
-        {clients.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin opacity-50" />
+            <p>Loading clients...</p>
+          </div>
+        ) : clients.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p>No clients added yet</p>
@@ -262,14 +299,14 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
                         <Label className="text-xs">ZIP / Postal Code</Label>
                         {editingClientId === client.id ? (
                           <Input
-                            value={client.zip}
-                            onChange={(e) => handleUpdateClient(client.id, "zip", e.target.value)}
+                            value={client.zipCode}
+                            onChange={(e) => handleUpdateClient(client.id, "zipCode", e.target.value)}
                             placeholder="e.g. 00000"
                             className="h-8 text-sm"
                           />
                         ) : (
                           <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
-                            {client.zip || "Not set"}
+                            {client.zipCode || "Not set"}
                           </p>
                         )}
                       </div>

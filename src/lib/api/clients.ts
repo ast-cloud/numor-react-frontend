@@ -1,0 +1,39 @@
+import { config } from '@/lib/config';
+import { getToken } from './authToken';
+
+export interface ClientData {
+  id: string;
+  userId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  streetAddress: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  gstin: string | null;
+  country: string | null;
+  companyType: string | null;
+  taxId: string | null;
+  taxSystem: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchClients(): Promise<ClientData[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/clients`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) throw new Error('Failed to fetch clients');
+  const json = await res.json();
+  return json.data ?? [];
+}
