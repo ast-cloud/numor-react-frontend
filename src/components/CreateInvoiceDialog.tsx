@@ -963,6 +963,7 @@ const CreateInvoiceDialog = () => {
                           max="100"
                           value={item.taxPercent}
                           onChange={(e) => handleLineItemChange(item.id, "taxPercent", parseFloat(e.target.value) || 0)}
+                          className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       )}
                     </div>
