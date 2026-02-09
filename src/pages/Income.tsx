@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,10 +17,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users } from "lucide-react";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2 } from "lucide-react";
 import {
   format,
   parse,
+  parseISO,
   startOfDay,
   endOfDay,
   startOfWeek,
@@ -32,99 +33,42 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
+import { fetchInvoices, type InvoiceData } from "@/lib/api/invoices";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
 type SortOption = "due_date_asc" | "due_date_desc" | "amount_asc" | "amount_desc" | "client_asc" | "client_desc";
 
-type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue";
+type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue" | "sent";
 
 interface Invoice {
   id: string;
   invoiceNumber: string;
-  clientName: string;
+  sellerName: string;
   dueDate: string;
   amount: number;
   status: InvoiceStatus;
   pdfUrl: string;
 }
 
-const DUMMY_PDF_URL = "https://pdfobject.com/pdf/sample.pdf";
+const mapApiStatus = (status: string): InvoiceStatus => {
+  const s = status.toLowerCase();
+  if (s === "sent") return "sent";
+  if (s === "paid") return "paid";
+  if (s === "draft") return "draft";
+  if (s === "overdue") return "overdue";
+  return "unpaid";
+};
 
-const mockInvoices: Invoice[] = [
-  {
-    id: "1",
-    invoiceNumber: "INV-2025001",
-    clientName: "Acme Corporation",
-    dueDate: "15/01/2026",
-    amount: 12500.0,
-    status: "paid",
-    pdfUrl: DUMMY_PDF_URL,
-  },
-  {
-    id: "2",
-    invoiceNumber: "INV-2025002",
-    clientName: "Global Tech Solutions",
-    dueDate: "20/01/2026",
-    amount: 8750.5,
-    status: "unpaid",
-    pdfUrl: DUMMY_PDF_URL,
-  },
-  {
-    id: "3",
-    invoiceNumber: "INV-2025003",
-    clientName: "Design Studio LLC",
-    dueDate: "10/01/2026",
-    amount: 3200.0,
-    status: "overdue",
-    pdfUrl: DUMMY_PDF_URL,
-  },
-  {
-    id: "4",
-    invoiceNumber: "INV-2025004",
-    clientName: "Marketing Pro Agency",
-    dueDate: "25/01/2026",
-    amount: 15000.0,
-    status: "draft",
-    pdfUrl: DUMMY_PDF_URL,
-  },
-  {
-    id: "5",
-    invoiceNumber: "INV-2025005",
-    clientName: "Tech Innovators Inc",
-    dueDate: "18/01/2026",
-    amount: 22400.0,
-    status: "paid",
-    pdfUrl: DUMMY_PDF_URL,
-  },
-  {
-    id: "6",
-    invoiceNumber: "INV-2025006",
-    clientName: "Creative Works Studio",
-    dueDate: "05/01/2026",
-    amount: 6800.0,
-    status: "overdue",
-    pdfUrl: DUMMY_PDF_URL,
-  },
-  {
-    id: "7",
-    invoiceNumber: "INV-2025007",
-    clientName: "Business Consulting Group",
-    dueDate: "28/01/2026",
-    amount: 9500.0,
-    status: "unpaid",
-    pdfUrl: DUMMY_PDF_URL,
-  },
-  {
-    id: "8",
-    invoiceNumber: "INV-2025008",
-    clientName: "Digital Media Partners",
-    dueDate: "30/01/2026",
-    amount: 4200.0,
-    status: "draft",
-    pdfUrl: DUMMY_PDF_URL,
-  },
-];
+const mapApiInvoice = (inv: InvoiceData): Invoice => ({
+  id: inv.id,
+  invoiceNumber: inv.invoiceNumber,
+  sellerName: inv.sellerName,
+  dueDate: format(parseISO(inv.dueDate), "dd/MM/yyyy"),
+  amount: parseFloat(inv.totalAmount),
+  status: mapApiStatus(inv.status),
+  pdfUrl: inv.pdfKey || "",
+});
 
 const statusStyles: Record<
   InvoiceStatus,
@@ -132,6 +76,7 @@ const statusStyles: Record<
 > = {
   draft: { variant: "secondary", label: "Draft" },
   paid: { variant: "default", label: "Paid" },
+  sent: { variant: "outline", label: "Sent" },
   unpaid: { variant: "outline", label: "Unpaid" },
   overdue: { variant: "destructive", label: "Overdue" },
 };
@@ -166,7 +111,7 @@ const InvoiceRow = ({
         <div className="flex items-center gap-2">
           <span className="font-medium text-foreground">{invoice.invoiceNumber}</span>
           <span className="text-muted-foreground">,</span>
-          <span className="text-foreground truncate">{invoice.clientName}</span>
+          <span className="text-foreground truncate">{invoice.sellerName}</span>
         </div>
         <p className="text-sm text-muted-foreground mt-0.5">{invoice.dueDate}</p>
       </div>
@@ -189,6 +134,7 @@ const InvoiceRow = ({
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent onClick={(e) => e.stopPropagation()}>
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "draft")}>Draft</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "sent")}>Sent</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "paid")}>Paid</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "unpaid")}>Unpaid</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "overdue")}>Overdue</DropdownMenuItem>
@@ -216,8 +162,22 @@ const Income = () => {
   const [sortOption, setSortOption] = useState<SortOption>("due_date_desc");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
-  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchInvoices()
+      .then((data) => {
+        setInvoices(data.map(mapApiInvoice));
+      })
+      .catch((err) => {
+        console.error("Failed to fetch invoices:", err);
+        toast({ title: "Error", description: "Failed to load invoices", variant: "destructive" });
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const handleInvoiceClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -309,9 +269,9 @@ const Income = () => {
         case "amount_desc":
           return b.amount - a.amount;
         case "client_asc":
-          return a.clientName.localeCompare(b.clientName);
+          return a.sellerName.localeCompare(b.sellerName);
         case "client_desc":
-          return b.clientName.localeCompare(a.clientName);
+          return b.sellerName.localeCompare(a.sellerName);
         default:
           return 0;
       }
@@ -374,6 +334,7 @@ const Income = () => {
   const tabs = [
     { value: "all", label: "All" },
     { value: "draft", label: "Draft" },
+    { value: "sent", label: "Sent" },
     { value: "paid", label: "Paid" },
     { value: "unpaid", label: "Unpaid" },
     { value: "overdue", label: "Overdue" },
@@ -483,25 +444,31 @@ const Income = () => {
           </div>
         </div>
 
-        {tabs.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value} className="mt-6">
-            <div className="bg-card rounded-lg border border-border overflow-hidden">
-              {filterInvoices(tab.value).length > 0 ? (
-                filterInvoices(tab.value).map((invoice) => (
-                  <InvoiceRow
-                    key={invoice.id}
-                    invoice={invoice}
-                    onClick={() => handleInvoiceClick(invoice)}
-                    onStatusChange={handleStatusChange}
-                    onDownload={handleDownloadPdf}
-                  />
-                ))
-              ) : (
-                <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
-              )}
-            </div>
-          </TabsContent>
-        ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          tabs.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value} className="mt-6">
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                {filterInvoices(tab.value).length > 0 ? (
+                  filterInvoices(tab.value).map((invoice) => (
+                    <InvoiceRow
+                      key={invoice.id}
+                      invoice={invoice}
+                      onClick={() => handleInvoiceClick(invoice)}
+                      onStatusChange={handleStatusChange}
+                      onDownload={handleDownloadPdf}
+                    />
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
+                )}
+              </div>
+            </TabsContent>
+          ))
+        )}
       </Tabs>
 
       {/* PDF Preview Dialog */}
@@ -510,7 +477,7 @@ const Income = () => {
           <DialogHeader className="flex-shrink-0">
             <div className="flex items-center justify-between pr-8">
               <DialogTitle>
-                {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
+                {selectedInvoice?.invoiceNumber} - {selectedInvoice?.sellerName}
               </DialogTitle>
               <div className="flex items-center gap-2">
                 <Select
@@ -522,6 +489,7 @@ const Income = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
                     <SelectItem value="paid">Paid</SelectItem>
                     <SelectItem value="unpaid">Unpaid</SelectItem>
                     <SelectItem value="overdue">Overdue</SelectItem>
