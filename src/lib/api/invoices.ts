@@ -1,0 +1,61 @@
+import { config } from '@/lib/config';
+import { getToken } from './authToken';
+
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  itemName: string;
+  description: string;
+  quantity: string;
+  unitPrice: string;
+  taxRate: string;
+  totalPrice: string;
+  createdAt: string;
+}
+
+export interface InvoiceData {
+  id: string;
+  orgId: string;
+  clientId: string;
+  customerId: string;
+  invoiceNumber: string;
+  invoiceType: string;
+  issueDate: string;
+  dueDate: string;
+  paymentTerms: string;
+  currency: string;
+  subtotal: string;
+  discount: string;
+  taxAmount: string;
+  shippingCost: string;
+  totalAmount: string;
+  paidAmount: string;
+  balanceDue: string;
+  status: string;
+  category: string;
+  pdfKey: string | null;
+  pdfStatus: string;
+  sellerName: string;
+  sellerEmail: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+  items: InvoiceItem[];
+}
+
+export async function fetchInvoices(): Promise<InvoiceData[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) throw new Error('Failed to fetch invoices');
+  const json = await res.json();
+  return json.data ?? [];
+}
