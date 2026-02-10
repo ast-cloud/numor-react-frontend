@@ -59,3 +59,21 @@ export async function fetchInvoices(): Promise<InvoiceData[]> {
   const json = await res.json();
   return json.data ?? [];
 }
+
+export async function updateInvoiceStatus(invoiceId: string, status: string): Promise<InvoiceData> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/updateInvoice`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) throw new Error('Failed to update invoice status');
+  const json = await res.json();
+  return json.data;
+}
