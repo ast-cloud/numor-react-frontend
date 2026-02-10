@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
-import { fetchInvoices, type InvoiceData } from "@/lib/api/invoices";
+import { fetchInvoices, updateInvoiceStatus, type InvoiceData } from "@/lib/api/invoices";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
@@ -194,17 +194,30 @@ const Income = () => {
     }
   };
 
-  const handleStatusChange = (invoiceId: string, newStatus: InvoiceStatus) => {
+  const handleStatusChange = async (invoiceId: string, newStatus: InvoiceStatus) => {
     const invoice = invoices.find((inv) => inv.id === invoiceId);
-    if (invoice) {
-      setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: newStatus } : inv)));
-      if (selectedInvoice?.id === invoiceId) {
-        setSelectedInvoice({ ...selectedInvoice, status: newStatus });
-      }
+    if (!invoice) return;
+
+    const oldStatus = invoice.status;
+    // Optimistic update
+    setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: newStatus } : inv)));
+    if (selectedInvoice?.id === invoiceId) {
+      setSelectedInvoice({ ...selectedInvoice, status: newStatus });
+    }
+
+    try {
+      await updateInvoiceStatus(invoiceId, newStatus.toUpperCase());
       toast({
         title: "Status updated",
         description: `Invoice ${invoice.invoiceNumber} marked as ${statusStyles[newStatus].label}`,
       });
+    } catch {
+      // Revert on failure
+      setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: oldStatus } : inv)));
+      if (selectedInvoice?.id === invoiceId) {
+        setSelectedInvoice({ ...selectedInvoice, status: oldStatus });
+      }
+      toast({ title: "Error", description: "Failed to update invoice status", variant: "destructive" });
     }
   };
 
