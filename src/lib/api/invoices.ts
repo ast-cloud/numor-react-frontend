@@ -77,3 +77,21 @@ export async function updateInvoiceStatus(invoiceId: string, status: string): Pr
   const json = await res.json();
   return json.data;
 }
+
+export async function createInvoice(payload: Record<string, unknown>): Promise<InvoiceData> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/createInvoice`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) throw new Error('Failed to create invoice');
+  const json = await res.json();
+  return json.data;
+}

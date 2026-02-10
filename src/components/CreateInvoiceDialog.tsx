@@ -17,6 +17,8 @@ import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
+import { createInvoice } from "@/lib/api/invoices";
+import { toast } from "@/hooks/use-toast";
 
 interface LineItem {
   id: string;
@@ -56,8 +58,10 @@ interface InvoiceFormData {
   clientCountry: string;
   lineItems: LineItem[];
   bankName: string;
+  accountName: string;
   iban: string;
   swiftBic: string;
+  ifscCode: string;
   bankAddress: string;
   notes: string;
 }
@@ -157,8 +161,10 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
     clientCountry: "",
     lineItems: [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
     bankName: "",
+    accountName: "",
     iban: "",
     swiftBic: "",
+    ifscCode: "",
     bankAddress: "",
     notes: "",
   };
@@ -341,11 +347,61 @@ const CreateInvoiceDialog = () => {
     setShowPreview(false);
   };
 
-  const handleSaveAsDraft = () => {
-    console.log("Draft Invoice Data:", { ...formData, status: "draft" });
-    setOpen(false);
-    setFormData(getInitialFormData());
-    setShowPreview(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+
+  const handleSaveAsDraft = async () => {
+    setSavingDraft(true);
+    try {
+      const payload: Record<string, unknown> = {
+        clientId: selectedClientId || undefined,
+        invoiceType: "TAX",
+        issueDate: formData.invoiceDate ? formData.invoiceDate.toISOString() : undefined,
+        dueDate: formData.dueDate ? formData.dueDate.toISOString() : undefined,
+        currency: formData.currency,
+        status: "DRAFT",
+        taxType: formData.taxType,
+        seller: {
+          name: formData.seller.name,
+          email: formData.seller.email,
+          phone: formData.seller.phone,
+          streetAddress: formData.seller.streetAddress,
+          city: formData.seller.city,
+          state: formData.seller.state,
+          zipCode: formData.seller.zip,
+          country: formData.seller.country,
+          taxId: formData.seller.taxId,
+        },
+        bankDetails: {
+          bankName: formData.bankName,
+          accountName: formData.accountName,
+          accountNumber: formData.iban,
+          ifsc: formData.ifscCode,
+          swift: formData.swiftBic,
+        },
+        bankAddress: formData.bankAddress,
+        notes: formData.notes,
+        items: formData.lineItems.map((item) => ({
+          name: item.description,
+          description: item.description,
+          quantity: item.quantity,
+          unitType: item.unit,
+          unitPrice: item.rate,
+          taxRate: item.taxPercent,
+          itemTotal: String(calculateLineTotal(item)),
+        })),
+      };
+
+      await createInvoice(payload);
+      toast({ title: "Draft saved", description: "Invoice has been saved as a draft." });
+      setOpen(false);
+      setFormData(getInitialFormData());
+      setShowPreview(false);
+      setSelectedClientId(null);
+    } catch {
+      toast({ title: "Error", description: "Failed to save draft. Please try again.", variant: "destructive" });
+    } finally {
+      setSavingDraft(false);
+    }
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -1029,6 +1085,15 @@ const CreateInvoiceDialog = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="accountName">Account Name</Label>
+                  <Input
+                    id="accountName"
+                    placeholder="e.g. Numor Technologies Pvt Ltd"
+                    value={formData.accountName}
+                    onChange={(e) => handleInputChange("accountName", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="iban">IBAN</Label>
                   <Input
                     id="iban"
@@ -1044,6 +1109,15 @@ const CreateInvoiceDialog = () => {
                     placeholder="e.g. WIOBAEADXXX"
                     value={formData.swiftBic}
                     onChange={(e) => handleInputChange("swiftBic", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ifscCode">IFSC Code</Label>
+                  <Input
+                    id="ifscCode"
+                    placeholder="e.g. HDFC0000123"
+                    value={formData.ifscCode}
+                    onChange={(e) => handleInputChange("ifscCode", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1075,8 +1149,8 @@ const CreateInvoiceDialog = () => {
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button variant="secondary" onClick={handleSaveAsDraft}>
-                Save as Draft
+              <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
+                {savingDraft ? "Saving..." : "Save as Draft"}
               </Button>
               <Button onClick={handlePreview}>
                 Create Invoice
