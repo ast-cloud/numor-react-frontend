@@ -173,6 +173,7 @@ const CreateInvoiceDialog = () => {
   const [sellerExpanded, setSellerExpanded] = useState(false);
   const [clientExpanded, setClientExpanded] = useState(false);
   const [savedClients, setSavedClients] = useState<ClientData[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   // Fetch organization data and clients when dialog opens
   useEffect(() => {
@@ -209,8 +210,23 @@ const CreateInvoiceDialog = () => {
   }, [open]);
 
   const handleClientSelect = (clientId: string) => {
+    if (clientId === "__clear__") {
+      setSelectedClientId(null);
+      setFormData((prev) => ({
+        ...prev,
+        clientName: "",
+        clientEmail: "",
+        clientStreetAddress: "",
+        clientCity: "",
+        clientState: "",
+        clientZip: "",
+        clientCountry: "",
+      }));
+      return;
+    }
     const client = savedClients.find((c) => c.id === clientId);
     if (!client) return;
+    setSelectedClientId(clientId);
     setFormData((prev) => ({
       ...prev,
       clientName: client.name || "",
@@ -351,6 +367,7 @@ const CreateInvoiceDialog = () => {
     if (!isOpen) {
       setFormData(getInitialFormData());
       setShowPreview(false);
+      setSelectedClientId(null);
     }
   };
 
@@ -705,6 +722,7 @@ const CreateInvoiceDialog = () => {
                       <SelectValue placeholder="Choose from saved clients..." />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="__clear__">— Enter manually —</SelectItem>
                       {savedClients.map((client) => (
                         <SelectItem key={client.id} value={client.id}>
                           {client.name}{client.email ? ` (${client.email})` : ""}
@@ -742,6 +760,7 @@ const CreateInvoiceDialog = () => {
                             placeholder="e.g. Design Smith Interior Works LLC"
                             value={formData.clientName}
                             onChange={(e) => handleInputChange("clientName", e.target.value)}
+                            disabled={!!selectedClientId}
                           />
                         </div>
                         <div className="space-y-2">
@@ -752,6 +771,7 @@ const CreateInvoiceDialog = () => {
                             placeholder="e.g. client@example.com"
                             value={formData.clientEmail}
                             onChange={(e) => handleInputChange("clientEmail", e.target.value)}
+                            disabled={!!selectedClientId}
                           />
                         </div>
                       </div>
@@ -769,6 +789,7 @@ const CreateInvoiceDialog = () => {
                               placeholder="e.g. 123 Business Street, Suite 100"
                               value={formData.clientStreetAddress}
                               onChange={(e) => handleInputChange("clientStreetAddress", e.target.value)}
+                              disabled={!!selectedClientId}
                             />
                           </div>
                           <div className="space-y-2">
@@ -778,6 +799,7 @@ const CreateInvoiceDialog = () => {
                               placeholder="e.g. Dubai"
                               value={formData.clientCity}
                               onChange={(e) => handleInputChange("clientCity", e.target.value)}
+                              disabled={!!selectedClientId}
                             />
                           </div>
                           <div className="space-y-2">
@@ -786,6 +808,7 @@ const CreateInvoiceDialog = () => {
                               <Select
                                 value={formData.clientState}
                                 onValueChange={(value) => handleInputChange("clientState", value)}
+                                disabled={!!selectedClientId}
                               >
                                 <SelectTrigger id="clientState">
                                   <SelectValue placeholder="Select state" />
@@ -804,6 +827,7 @@ const CreateInvoiceDialog = () => {
                                 placeholder="e.g. Dubai"
                                 value={formData.clientState}
                                 onChange={(e) => handleInputChange("clientState", e.target.value)}
+                                disabled={!!selectedClientId}
                               />
                             )}
                           </div>
@@ -814,6 +838,7 @@ const CreateInvoiceDialog = () => {
                               placeholder="e.g. 00000"
                               value={formData.clientZip}
                               onChange={(e) => handleInputChange("clientZip", e.target.value)}
+                              disabled={!!selectedClientId}
                             />
                           </div>
                           <div className="space-y-2">
@@ -821,6 +846,7 @@ const CreateInvoiceDialog = () => {
                             <Select 
                               value={formData.clientCountry} 
                               onValueChange={handleClientCountryChange}
+                              disabled={!!selectedClientId}
                             >
                               <SelectTrigger id="clientCountry">
                                 <SelectValue placeholder="Select country" />
