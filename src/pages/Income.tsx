@@ -34,6 +34,7 @@ import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
 import { fetchInvoices, updateInvoiceStatus, type InvoiceData } from "@/lib/api/invoices";
+import { fetchClients, type ClientData } from "@/lib/api/clients";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
@@ -44,7 +45,7 @@ type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue";
 interface Invoice {
   id: string;
   invoiceNumber: string;
-  sellerName: string;
+  clientName: string;
   dueDate: string;
   amount: number;
   status: InvoiceStatus;
@@ -59,10 +60,10 @@ const mapApiStatus = (status: string): InvoiceStatus => {
   return "unpaid";
 };
 
-const mapApiInvoice = (inv: InvoiceData): Invoice => ({
+const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoice => ({
   id: inv.id,
   invoiceNumber: inv.invoiceNumber,
-  sellerName: inv.sellerName,
+  clientName: clientsMap.get(inv.clientId) || inv.sellerName,
   dueDate: format(parseISO(inv.dueDate), "dd/MM/yyyy"),
   amount: parseFloat(inv.totalAmount),
   status: mapApiStatus(inv.status),
@@ -109,7 +110,7 @@ const InvoiceRow = ({
         <div className="flex items-center gap-2">
           <span className="font-medium text-foreground">{invoice.invoiceNumber}</span>
           <span className="text-muted-foreground">,</span>
-          <span className="text-foreground truncate">{invoice.sellerName}</span>
+          <span className="text-foreground truncate">{invoice.clientName}</span>
         </div>
         <p className="text-sm text-muted-foreground mt-0.5">{invoice.dueDate}</p>
       </div>
@@ -163,17 +164,22 @@ const Income = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const loadInvoices = () => {
     setIsLoading(true);
-    fetchInvoices()
-      .then((data) => {
-        setInvoices(data.map(mapApiInvoice));
+    Promise.all([fetchInvoices(), fetchClients()])
+      .then(([invoiceData, clientData]) => {
+        const clientsMap = new Map(clientData.map((c) => [c.id, c.name]));
+        setInvoices(invoiceData.map((inv) => mapApiInvoice(inv, clientsMap)));
       })
       .catch((err) => {
         console.error("Failed to fetch invoices:", err);
         toast({ title: "Error", description: "Failed to load invoices", variant: "destructive" });
       })
       .finally(() => setIsLoading(false));
+  };
+
+  useEffect(() => {
+    loadInvoices();
   }, []);
 
   const handleInvoiceClick = (invoice: Invoice) => {
@@ -279,9 +285,9 @@ const Income = () => {
         case "amount_desc":
           return b.amount - a.amount;
         case "client_asc":
-          return a.sellerName.localeCompare(b.sellerName);
+          return a.clientName.localeCompare(b.clientName);
         case "client_desc":
-          return b.sellerName.localeCompare(a.sellerName);
+          return b.clientName.localeCompare(a.clientName);
         default:
           return 0;
       }
@@ -360,13 +366,7 @@ const Income = () => {
           <Button variant="outline" size="icon" title="Manage Clients" onClick={() => navigate("/sme/income/clients")}>
             <Users className="h-4 w-4" />
           </Button>
-          <CreateInvoiceDialog onInvoiceCreated={() => {
-            setIsLoading(true);
-            fetchInvoices()
-              .then((data) => setInvoices(data.map(mapApiInvoice)))
-              .catch(() => {})
-              .finally(() => setIsLoading(false));
-          }} />
+          <CreateInvoiceDialog onInvoiceCreated={loadInvoices} />
         </div>
       </div>
 
@@ -492,7 +492,7 @@ const Income = () => {
           <DialogHeader className="flex-shrink-0">
             <div className="flex items-center justify-between pr-8">
               <DialogTitle>
-                {selectedInvoice?.invoiceNumber} - {selectedInvoice?.sellerName}
+                {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
               </DialogTitle>
               <div className="flex items-center gap-2">
                 <Select
