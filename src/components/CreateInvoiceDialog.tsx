@@ -210,20 +210,6 @@ const CreateInvoiceDialog = () => {
   }, [open]);
 
   const handleClientSelect = (clientId: string) => {
-    if (clientId === "__clear__") {
-      setSelectedClientId(null);
-      setFormData((prev) => ({
-        ...prev,
-        clientName: "",
-        clientEmail: "",
-        clientStreetAddress: "",
-        clientCity: "",
-        clientState: "",
-        clientZip: "",
-        clientCountry: "",
-      }));
-      return;
-    }
     const client = savedClients.find((c) => c.id === clientId);
     if (!client) return;
     setSelectedClientId(clientId);
@@ -722,7 +708,7 @@ const CreateInvoiceDialog = () => {
                       <SelectValue placeholder="Choose from saved clients..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__clear__">— Enter manually —</SelectItem>
+                      
                       {savedClients.map((client) => (
                         <SelectItem key={client.id} value={client.id}>
                           {client.name}{client.email ? ` (${client.email})` : ""}
