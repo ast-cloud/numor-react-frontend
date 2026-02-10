@@ -39,7 +39,7 @@ type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quar
 
 type SortOption = "due_date_asc" | "due_date_desc" | "amount_asc" | "amount_desc" | "client_asc" | "client_desc";
 
-type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue" | "sent";
+type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue";
 
 interface Invoice {
   id: string;
@@ -53,7 +53,6 @@ interface Invoice {
 
 const mapApiStatus = (status: string): InvoiceStatus => {
   const s = status.toLowerCase();
-  if (s === "sent") return "sent";
   if (s === "paid") return "paid";
   if (s === "draft") return "draft";
   if (s === "overdue") return "overdue";
@@ -76,7 +75,6 @@ const statusStyles: Record<
 > = {
   draft: { variant: "secondary", label: "Draft" },
   paid: { variant: "default", label: "Paid" },
-  sent: { variant: "outline", label: "Sent" },
   unpaid: { variant: "outline", label: "Unpaid" },
   overdue: { variant: "destructive", label: "Overdue" },
 };
@@ -134,7 +132,6 @@ const InvoiceRow = ({
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent onClick={(e) => e.stopPropagation()}>
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "draft")}>Draft</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "sent")}>Sent</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "paid")}>Paid</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "unpaid")}>Unpaid</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "overdue")}>Overdue</DropdownMenuItem>
@@ -334,7 +331,6 @@ const Income = () => {
   const tabs = [
     { value: "all", label: "All" },
     { value: "draft", label: "Draft" },
-    { value: "sent", label: "Sent" },
     { value: "paid", label: "Paid" },
     { value: "unpaid", label: "Unpaid" },
     { value: "overdue", label: "Overdue" },
@@ -489,7 +485,6 @@ const Income = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="sent">Sent</SelectItem>
                     <SelectItem value="paid">Paid</SelectItem>
                     <SelectItem value="unpaid">Unpaid</SelectItem>
                     <SelectItem value="overdue">Overdue</SelectItem>
