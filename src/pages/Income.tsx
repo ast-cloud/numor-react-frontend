@@ -360,7 +360,13 @@ const Income = () => {
           <Button variant="outline" size="icon" title="Manage Clients" onClick={() => navigate("/sme/income/clients")}>
             <Users className="h-4 w-4" />
           </Button>
-          <CreateInvoiceDialog />
+          <CreateInvoiceDialog onInvoiceCreated={() => {
+            setIsLoading(true);
+            fetchInvoices()
+              .then((data) => setInvoices(data.map(mapApiInvoice)))
+              .catch(() => {})
+              .finally(() => setIsLoading(false));
+          }} />
         </div>
       </div>
 

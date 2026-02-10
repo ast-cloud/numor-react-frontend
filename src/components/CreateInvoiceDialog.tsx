@@ -20,6 +20,10 @@ import { fetchClients, type ClientData } from "@/lib/api/clients";
 import { createInvoice } from "@/lib/api/invoices";
 import { toast } from "@/hooks/use-toast";
 
+interface CreateInvoiceDialogProps {
+  onInvoiceCreated?: () => void;
+}
+
 interface LineItem {
   id: string;
   description: string;
@@ -170,7 +174,7 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
   };
 };
 
-const CreateInvoiceDialog = () => {
+const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<InvoiceFormData>(getInitialFormData());
   const [showPreview, setShowPreview] = useState(false);
@@ -397,6 +401,7 @@ const CreateInvoiceDialog = () => {
       setFormData(getInitialFormData());
       setShowPreview(false);
       setSelectedClientId(null);
+      onInvoiceCreated?.();
     } catch {
       toast({ title: "Error", description: "Failed to save draft. Please try again.", variant: "destructive" });
     } finally {
