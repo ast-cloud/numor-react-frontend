@@ -346,8 +346,82 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
 
   const [confirmingInvoice, setConfirmingInvoice] = useState(false);
 
+  // Union territories where UTGST applies instead of SGST
+  const utgstTerritories = [
+    "Lakshadweep", "Ladakh", "Chandigarh",
+    "Andaman and Nicobar Islands",
+    "Dadra and Nagar Haveli and Daman and Diu",
+  ];
+
+  const buildTaxSummary = (): Record<string, { rate: number; amount: number }> | undefined => {
+    const { seller, clientCountry, lineItems, taxType } = formData;
+    const isCrossBorder = seller.country && clientCountry && seller.country !== clientCountry;
+
+    // Cross-border: zero-rated, no tax summary needed
+    if (isCrossBorder) return undefined;
+
+    if (taxType === "None") return undefined;
+
+    if (taxType === "GST" && seller.country === "India") {
+      const isIntraState = seller.state && formData.clientState && seller.state === formData.clientState;
+
+      if (isIntraState) {
+        // Intra-state: split into CGST + SGST (or UTGST for specific UTs)
+        const isUT = utgstTerritories.includes(seller.state);
+        const secondLabel = isUT ? "UTGST" : "SGST";
+        const summary: Record<string, { rate: number; amount: number }> = {};
+
+        lineItems.forEach((item) => {
+          const halfRate = item.taxPercent / 2;
+          const itemSubtotal = item.quantity * item.rate;
+          const halfAmount = itemSubtotal * (halfRate / 100);
+
+          const cgstKey = `CGST`;
+          const secondKey = secondLabel;
+          summary[cgstKey] = summary[cgstKey] || { rate: halfRate, amount: 0 };
+          summary[cgstKey].amount += halfAmount;
+          summary[secondKey] = summary[secondKey] || { rate: halfRate, amount: 0 };
+          summary[secondKey].amount += halfAmount;
+        });
+
+        // Round amounts
+        Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
+        return summary;
+      } else {
+        // Inter-state: full IGST
+        const summary: Record<string, { rate: number; amount: number }> = {};
+        lineItems.forEach((item) => {
+          const itemSubtotal = item.quantity * item.rate;
+          const amount = itemSubtotal * (item.taxPercent / 100);
+          const key = "IGST";
+          summary[key] = summary[key] || { rate: item.taxPercent, amount: 0 };
+          summary[key].amount += amount;
+        });
+        Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
+        return summary;
+      }
+    }
+
+    // VAT / Sales Tax: single entry
+    if (taxType === "VAT" || taxType === "Sales Tax") {
+      const summary: Record<string, { rate: number; amount: number }> = {};
+      lineItems.forEach((item) => {
+        const itemSubtotal = item.quantity * item.rate;
+        const amount = itemSubtotal * (item.taxPercent / 100);
+        const key = taxType;
+        summary[key] = summary[key] || { rate: item.taxPercent, amount: 0 };
+        summary[key].amount += amount;
+      });
+      Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
+      return summary;
+    }
+
+    return undefined;
+  };
+
   const buildPayload = (status: string): Record<string, unknown> => {
     const isCrossBorder = formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
+    const taxSummary = buildTaxSummary();
     return {
       clientId: selectedClientId || undefined,
       invoiceType: "TAX",
@@ -357,6 +431,7 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
       status,
       taxType: formData.taxType,
       reverseCharge: !!isCrossBorder,
+      ...(taxSummary ? { taxSummary } : {}),
       seller: {
         name: formData.seller.name,
         email: formData.seller.email,
