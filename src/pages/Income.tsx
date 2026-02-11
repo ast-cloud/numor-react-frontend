@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,7 +17,17 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2 } from "lucide-react";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   format,
   parse,
@@ -33,7 +43,7 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
-import { fetchInvoices, updateInvoiceStatus, fetchInvoicePdfStatus, type InvoiceData } from "@/lib/api/invoices";
+import { fetchInvoices, updateInvoiceStatus, fetchInvoicePdfStatus, deleteInvoice, type InvoiceData } from "@/lib/api/invoices";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
@@ -93,11 +103,13 @@ const InvoiceRow = ({
   onClick,
   onStatusChange,
   onDownload,
+  onDelete,
 }: {
   invoice: Invoice;
   onClick: () => void;
   onStatusChange: (invoiceId: string, status: InvoiceStatus) => void;
   onDownload: (invoice: Invoice) => void;
+  onDelete: (invoice: Invoice) => void;
 }) => {
   const { variant, label } = statusStyles[invoice.status];
 
@@ -147,6 +159,14 @@ const InvoiceRow = ({
                 </DropdownMenuItem>
               </>
             )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => onDelete(invoice)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -166,6 +186,7 @@ const Income = () => {
   const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
   const { toast } = useToast();
 
   const loadInvoices = () => {
@@ -237,6 +258,27 @@ const Income = () => {
         setSelectedInvoice({ ...selectedInvoice, status: oldStatus });
       }
       toast({ title: "Error", description: "Failed to update invoice status", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteInvoice = async () => {
+    if (!deleteTarget) return;
+    try {
+      const res = await deleteInvoice(deleteTarget.id);
+      if (res.success) {
+        setInvoices((prev) => prev.filter((inv) => inv.id !== deleteTarget.id));
+        if (selectedInvoice?.id === deleteTarget.id) {
+          setIsPdfDialogOpen(false);
+          setSelectedInvoice(null);
+        }
+        toast({ title: "Invoice deleted", description: `${deleteTarget.invoiceNumber} has been deleted.` });
+      } else {
+        toast({ title: "Error", description: "Failed to delete invoice", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to delete invoice", variant: "destructive" });
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -488,6 +530,7 @@ const Income = () => {
                       onClick={() => handleInvoiceClick(invoice)}
                       onStatusChange={handleStatusChange}
                       onDownload={handleDownloadPdf}
+                      onDelete={(inv) => setDeleteTarget(inv)}
                     />
                   ))
                 ) : (
@@ -542,6 +585,27 @@ const Income = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete invoice {deleteTarget?.invoiceNumber}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={handleDeleteInvoice}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
