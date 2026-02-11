@@ -103,6 +103,22 @@ export interface PdfStatusResponse {
   url?: string;
 }
 
+export async function deleteInvoice(invoiceId: string): Promise<{ success: boolean; data?: { success: boolean; message: string; id: string } }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) throw new Error('Failed to delete invoice');
+  return res.json();
+}
+
 export async function fetchInvoicePdfStatus(invoiceId: string): Promise<PdfStatusResponse> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
