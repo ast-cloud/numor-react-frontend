@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
-import { fetchInvoices, updateInvoiceStatus, type InvoiceData } from "@/lib/api/invoices";
+import { fetchInvoices, updateInvoiceStatus, fetchInvoicePdfStatus, type InvoiceData } from "@/lib/api/invoices";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
@@ -138,11 +138,15 @@ const InvoiceRow = ({
                 <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "overdue")}>Overdue</DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onDownload(invoice)}>
-              <Download className="mr-2 h-4 w-4" />
-              Download PDF
-            </DropdownMenuItem>
+            {invoice.status !== "draft" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onDownload(invoice)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -187,16 +191,25 @@ const Income = () => {
     setIsPdfDialogOpen(true);
   };
 
-  const handleDownloadPdf = (invoice?: Invoice) => {
+  const handleDownloadPdf = async (invoice?: Invoice) => {
     const target = invoice || selectedInvoice;
-    if (target) {
-      const link = document.createElement("a");
-      link.href = target.pdfUrl;
-      link.download = `${target.invoiceNumber}.pdf`;
-      link.target = "_blank";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (!target || target.status === "draft") return;
+
+    try {
+      const res = await fetchInvoicePdfStatus(target.id);
+      if (res.success && res.url) {
+        const link = document.createElement("a");
+        link.href = res.url;
+        link.download = `${target.invoiceNumber}.pdf`;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        toast({ title: "PDF not available", description: res.message || "PDF is not ready yet", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to fetch PDF", variant: "destructive" });
     }
   };
 
@@ -509,10 +522,12 @@ const Income = () => {
                     <SelectItem value="overdue">Overdue</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" onClick={() => handleDownloadPdf()}>
-                  <Download className="h-4 w-4 mr-1.5" />
-                  Download
-                </Button>
+                {selectedInvoice?.status !== "draft" && (
+                  <Button variant="outline" size="sm" onClick={() => handleDownloadPdf()}>
+                    <Download className="h-4 w-4 mr-1.5" />
+                    Download
+                  </Button>
+                )}
               </div>
             </div>
           </DialogHeader>
