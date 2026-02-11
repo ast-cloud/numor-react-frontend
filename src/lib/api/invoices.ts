@@ -95,3 +95,26 @@ export async function createInvoice(payload: Record<string, unknown>): Promise<I
   const json = await res.json();
   return json.data;
 }
+
+export interface PdfStatusResponse {
+  success: boolean;
+  status: string;
+  message?: string;
+  url?: string;
+}
+
+export async function fetchInvoicePdfStatus(invoiceId: string): Promise<PdfStatusResponse> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/pdf`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) throw new Error('Failed to fetch PDF status');
+  return res.json();
+}
