@@ -17,7 +17,7 @@ import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
-import { createInvoice } from "@/lib/api/invoices";
+import { createInvoice, fetchInvoicePdfStatus } from "@/lib/api/invoices";
 import { toast } from "@/hooks/use-toast";
 
 interface CreateInvoiceDialogProps {
@@ -344,11 +344,83 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
     setShowPreview(false);
   };
 
-  const handleConfirmInvoice = () => {
-    console.log("Invoice Confirmed:", formData);
-    setOpen(false);
-    setFormData(getInitialFormData());
-    setShowPreview(false);
+  const [confirmingInvoice, setConfirmingInvoice] = useState(false);
+
+  const buildPayload = (status: string): Record<string, unknown> => {
+    const isCrossBorder = formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
+    return {
+      clientId: selectedClientId || undefined,
+      invoiceType: "TAX",
+      issueDate: formData.invoiceDate ? formData.invoiceDate.toISOString() : undefined,
+      dueDate: formData.dueDate ? formData.dueDate.toISOString() : undefined,
+      currency: formData.currency,
+      status,
+      taxType: formData.taxType,
+      reverseCharge: !!isCrossBorder,
+      seller: {
+        name: formData.seller.name,
+        email: formData.seller.email,
+        phone: formData.seller.phone,
+        streetAddress: formData.seller.streetAddress,
+        city: formData.seller.city,
+        state: formData.seller.state,
+        zipCode: formData.seller.zip,
+        country: formData.seller.country,
+        taxId: formData.seller.taxId,
+      },
+      bankDetails: {
+        bankName: formData.bankName,
+        accountName: formData.accountName,
+        accountNumber: formData.iban,
+        ifsc: formData.ifscCode,
+        swift: formData.swiftBic,
+      },
+      bankAddress: formData.bankAddress,
+      notes: formData.notes,
+      items: formData.lineItems.map((item) => ({
+        name: item.description,
+        description: item.description,
+        quantity: item.quantity,
+        unitType: item.unit,
+        unitPrice: item.rate,
+        taxRate: item.taxPercent,
+        itemTotal: String(calculateLineTotal(item)),
+      })),
+    };
+  };
+
+  const pollPdfStatus = async (invoiceId: string): Promise<void> => {
+    const maxAttempts = 30;
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise((r) => setTimeout(r, 2000));
+      const res = await fetchInvoicePdfStatus(invoiceId);
+      if (res.status === "READY") return;
+      if (res.status === "FAILED" || res.status === "NOT_GENERATED") {
+        throw new Error(res.message || "PDF generation failed");
+      }
+      // PROCESSING or QUEUED — continue polling
+    }
+    throw new Error("PDF generation timed out");
+  };
+
+  const handleConfirmInvoice = async () => {
+    setConfirmingInvoice(true);
+    try {
+      const payload = buildPayload("UNPAID");
+      const data = await createInvoice(payload);
+      await pollPdfStatus(data.id);
+      toast({ title: "Invoice created", description: "Invoice has been created and PDF is ready." });
+      setOpen(false);
+      setFormData(getInitialFormData());
+      setShowPreview(false);
+      setSelectedClientId(null);
+      onInvoiceCreated?.();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to create invoice.";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    } finally {
+      setConfirmingInvoice(false);
+    }
   };
 
   const [savingDraft, setSavingDraft] = useState(false);
@@ -356,45 +428,7 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
   const handleSaveAsDraft = async () => {
     setSavingDraft(true);
     try {
-      const payload: Record<string, unknown> = {
-        clientId: selectedClientId || undefined,
-        invoiceType: "TAX",
-        issueDate: formData.invoiceDate ? formData.invoiceDate.toISOString() : undefined,
-        dueDate: formData.dueDate ? formData.dueDate.toISOString() : undefined,
-        currency: formData.currency,
-        status: "DRAFT",
-        taxType: formData.taxType,
-        seller: {
-          name: formData.seller.name,
-          email: formData.seller.email,
-          phone: formData.seller.phone,
-          streetAddress: formData.seller.streetAddress,
-          city: formData.seller.city,
-          state: formData.seller.state,
-          zipCode: formData.seller.zip,
-          country: formData.seller.country,
-          taxId: formData.seller.taxId,
-        },
-        bankDetails: {
-          bankName: formData.bankName,
-          accountName: formData.accountName,
-          accountNumber: formData.iban,
-          ifsc: formData.ifscCode,
-          swift: formData.swiftBic,
-        },
-        bankAddress: formData.bankAddress,
-        notes: formData.notes,
-        items: formData.lineItems.map((item) => ({
-          name: item.description,
-          description: item.description,
-          quantity: item.quantity,
-          unitType: item.unit,
-          unitPrice: item.rate,
-          taxRate: item.taxPercent,
-          itemTotal: String(calculateLineTotal(item)),
-        })),
-      };
-
+      const payload = buildPayload("DRAFT");
       await createInvoice(payload);
       toast({ title: "Draft saved", description: "Invoice has been saved as a draft." });
       setOpen(false);
@@ -447,8 +481,15 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
               <Button variant="outline" onClick={handleBackToForm}>
                 Back to Edit
               </Button>
-              <Button onClick={handleConfirmInvoice}>
-                Confirm & Create Invoice
+              <Button onClick={handleConfirmInvoice} disabled={confirmingInvoice}>
+                {confirmingInvoice ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  "Confirm & Create Invoice"
+                )}
               </Button>
             </div>
           </div>
