@@ -1180,10 +1180,24 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
                     <span className="text-muted-foreground">Subtotal:</span>
                     <span className="font-medium w-24 text-right">{formData.currency} {calculateSubtotal().toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-end gap-8 text-sm">
-                    <span className="text-muted-foreground">Tax:</span>
-                    <span className="font-medium w-24 text-right">{formData.currency} {calculateTotalTax().toFixed(2)}</span>
-                  </div>
+                  {(() => {
+                    const taxSummary = buildTaxSummary();
+                    if (taxSummary) {
+                      return Object.entries(taxSummary).map(([label, { rate, amount }]) => (
+                        <div key={label} className="flex justify-end gap-8 text-sm">
+                          <span className="text-muted-foreground">{label} ({rate}%):</span>
+                          <span className="font-medium w-24 text-right">{formData.currency} {amount.toFixed(2)}</span>
+                        </div>
+                      ));
+                    }
+                    // Fallback for cross-border or None
+                    return (
+                      <div className="flex justify-end gap-8 text-sm">
+                        <span className="text-muted-foreground">Tax:</span>
+                        <span className="font-medium w-24 text-right">{formData.currency} {calculateTotalTax().toFixed(2)}</span>
+                      </div>
+                    );
+                  })()}
                   <div className="flex justify-end gap-8 text-base font-semibold">
                     <span>Total:</span>
                     <span className="w-24 text-right">{formData.currency} {calculateTotal().toFixed(2)}</span>
