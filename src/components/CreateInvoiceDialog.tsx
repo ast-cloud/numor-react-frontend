@@ -534,7 +534,7 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
           <Plus className="h-5 w-5" />
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn("max-h-[95vh] overflow-hidden p-0", showPreview ? "max-w-[900px]" : "max-w-4xl")}>
+      <DialogContent className={cn("max-h-[95vh] overflow-hidden p-0 w-[95vw]", showPreview ? "max-w-[900px]" : "max-w-4xl")}>
         {showPreview ? (
           <div className="flex flex-col max-h-[95vh]">
             <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
@@ -546,10 +546,8 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
               </DialogTitle>
             </DialogHeader>
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <div className="flex justify-center py-6 bg-muted/30">
-                <div className="flex flex-col gap-6">
-                  <InvoicePreview formData={formData} />
-                </div>
+              <div className="w-full px-4 py-6 bg-muted/30">
+                <InvoicePreview formData={formData} />
               </div>
             </div>
             <div className="flex justify-end gap-3 p-6 border-t flex-shrink-0">
