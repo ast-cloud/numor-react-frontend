@@ -107,7 +107,7 @@ export async function fetchInvoice(invoiceId: string): Promise<InvoiceData> {
 
   if (!res.ok) throw new Error('Failed to fetch invoice');
   const json = await res.json();
-  return json.data;
+  return json.data ?? json;
 }
 
 export async function updateInvoice(invoiceId: string, payload: Record<string, unknown>): Promise<InvoiceData> {
