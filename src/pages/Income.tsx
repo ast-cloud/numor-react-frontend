@@ -43,7 +43,9 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
-import { fetchInvoices, updateInvoiceStatus, fetchInvoicePdfStatus, deleteInvoice, type InvoiceData } from "@/lib/api/invoices";
+import { fetchInvoices, fetchInvoice, updateInvoiceStatus, fetchInvoicePdfStatus, deleteInvoice, type InvoiceData } from "@/lib/api/invoices";
+import InvoicePreviewWrapper from "@/components/InvoicePreview";
+import type { InvoiceFormData } from "@/lib/invoiceTemplateRenderer";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
@@ -184,6 +186,7 @@ const Income = () => {
   const [sortOption, setSortOption] = useState<SortOption>("due_date_desc");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
+  const [previewFormData, setPreviewFormData] = useState<InvoiceFormData | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [rawInvoices, setRawInvoices] = useState<InvoiceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -211,14 +214,65 @@ const Income = () => {
     loadInvoices();
   }, []);
 
-  const handleInvoiceClick = (invoice: Invoice) => {
+  const handleInvoiceClick = async (invoice: Invoice) => {
     if (invoice.status === "draft") {
       setEditDraftId(invoice.id);
       setEditDraftOpen(true);
       return;
     }
     setSelectedInvoice(invoice);
+    setPreviewFormData(null);
     setIsPdfDialogOpen(true);
+    try {
+      const detail = await fetchInvoice(invoice.id);
+      const formData: InvoiceFormData = {
+        invoiceNumber: detail.invoiceNumber || "",
+        invoiceDate: detail.issueDate ? new Date(detail.issueDate) : undefined,
+        dueDate: detail.dueDate ? new Date(detail.dueDate) : undefined,
+        currency: detail.currency || "USD",
+        taxType: detail.taxType || "GST",
+        seller: {
+          logo: "",
+          name: detail.seller?.name || detail.sellerName || "",
+          streetAddress: detail.seller?.streetAddress || "",
+          city: detail.seller?.city || "",
+          state: detail.seller?.state || "",
+          zip: detail.seller?.zipCode || "",
+          country: detail.seller?.country || "",
+          taxId: detail.seller?.taxId || "",
+          email: detail.seller?.email || detail.sellerEmail || "",
+          phone: detail.seller?.phone || "",
+        },
+        clientName: detail.client?.name || "",
+        clientEmail: detail.client?.email || "",
+        clientPhone: detail.client?.phone || "",
+        clientStreetAddress: detail.client?.streetAddress || "",
+        clientCity: detail.client?.city || "",
+        clientState: detail.client?.state || "",
+        clientZip: detail.client?.zipCode || "",
+        clientCountry: detail.client?.country || "",
+        lineItems: (detail.items || []).map((item) => ({
+          id: item.id,
+          description: item.description || item.itemName || "",
+          quantity: parseFloat(item.quantity) || 0,
+          unit: "",
+          rate: parseFloat(item.unitPrice) || 0,
+          taxPercent: parseFloat(item.taxRate) || 0,
+        })),
+        bankName: detail.bankDetails?.bankName || "",
+        accountName: detail.bankDetails?.accountName || "",
+        iban: detail.bankDetails?.accountNumber || "",
+        swiftBic: detail.bankDetails?.swift || "",
+        ifscCode: detail.bankDetails?.ifsc || "",
+        bankAddress: detail.bankAddress || "",
+        notes: detail.notes || "",
+        sacCode: detail.sacCode || "",
+        paymentTerms: detail.paymentTerms || "",
+      };
+      setPreviewFormData(formData);
+    } catch {
+      console.error("Failed to fetch invoice details for preview");
+    }
   };
 
   const handleDownloadPdf = async (invoice?: Invoice) => {
@@ -592,14 +646,16 @@ const Income = () => {
               </div>
             </div>
           </DialogHeader>
-          <div className="flex-1 min-h-0">
-            {selectedInvoice && (
-              <iframe
-                src={selectedInvoice.pdfUrl}
-                className="w-full h-full border rounded-lg"
-                title={`Invoice ${selectedInvoice.invoiceNumber}`}
-              />
-            )}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            {selectedInvoice && previewFormData ? (
+              <div className="w-full px-4 py-6 bg-muted/30">
+                <InvoicePreviewWrapper formData={previewFormData} />
+              </div>
+            ) : selectedInvoice ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>
