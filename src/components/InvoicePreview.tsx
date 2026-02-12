@@ -18,11 +18,8 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
       try {
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (doc?.body) {
-          // Allow time for pagination script to run
-          setTimeout(() => {
-            const height = doc.body.scrollHeight;
-            setIframeHeight(height + 48); // extra padding for page gaps
-          }, 50);
+          const height = doc.body.scrollHeight;
+          setIframeHeight(Math.max(height, 1123));
         }
       } catch {
         // cross-origin fallback
@@ -39,13 +36,12 @@ const InvoicePreview = ({ formData }: InvoicePreviewProps) => {
         ref={iframeRef}
         srcDoc={html}
         title="Invoice Preview"
-        className="rounded-lg"
+        className="bg-white border rounded-lg shadow"
         style={{
-          width: "850px",
+          width: "794px",
           height: `${iframeHeight}px`,
           border: "none",
           overflow: "hidden",
-          background: "#d1d5db",
         }}
         scrolling="no"
       />
