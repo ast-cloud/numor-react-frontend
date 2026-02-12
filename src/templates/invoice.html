@@ -4,18 +4,68 @@
       <meta charset="UTF-8" />
       <title>Invoice</title>
       <style>
-         body {
-         font-family: Arial, Helvetica, sans-serif;
-         font-size: 12px;
-         color: #333;
-         margin: 0;
-         padding: 24px;
+         /* Print / PDF styles */
+         @page {
+           size: A4;
+           margin: 10mm 0 20mm 0;
          }
+
+         body {
+           font-family: Arial, Helvetica, sans-serif;
+           font-size: 12px;
+           color: #333;
+           margin: 0;
+           padding: 0;
+         }
+
+         /* Screen preview: gray background, white A4 pages */
+         @media screen {
+           html, body {
+             background: #d1d5db;
+           }
+           body {
+             padding: 0;
+           }
+           .page {
+             background: white;
+             width: 210mm;
+             min-height: 297mm;
+             padding: 24px;
+             margin: 0 auto;
+             box-sizing: border-box;
+             box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+             position: relative;
+           }
+           .page + .page {
+             margin-top: 24px;
+           }
+           .page-number {
+             position: absolute;
+             bottom: 12px;
+             right: 24px;
+             font-size: 10px;
+             color: #9ca3af;
+           }
+         }
+
+         /* Print: remove screen decoration */
+         @media print {
+           .page {
+             box-shadow: none;
+             margin: 0;
+             padding: 24px;
+             page-break-after: always;
+           }
+           .page:last-child {
+             page-break-after: auto;
+           }
+           .page-number {
+             display: none;
+           }
+         }
+
          .invoice-box {
-         max-width: 900px;
-         margin: auto;
-         border: 1px solid #e5e7eb;
-         padding: 24px;
+           max-width: 100%;
          }
          .header {
          display: flex;
@@ -146,7 +196,7 @@
       </style>
    </head>
    <body>
-      <div class="invoice-box">
+      <div class="invoice-box" id="invoice-content">
          <!-- HEADER -->
          <div class="header">
             <div class="logo">NUMOR</div>
@@ -279,5 +329,44 @@
                </div>
             </div>
       </div>
+      <script>
+        (function() {
+          var PAGE_HEIGHT = 1123; // A4 height in px at 96dpi
+          var PADDING = 24;
+          var content = document.getElementById('invoice-content');
+          if (!content) return;
+          var children = Array.from(content.children);
+          var pages = [];
+          var currentPage = document.createElement('div');
+          currentPage.className = 'page';
+          document.body.appendChild(currentPage);
+
+          children.forEach(function(child) {
+            currentPage.appendChild(child);
+            if (currentPage.scrollHeight > PAGE_HEIGHT - PADDING * 2) {
+              // Move this child to a new page
+              currentPage.removeChild(child);
+              var newPage = document.createElement('div');
+              newPage.className = 'page';
+              document.body.appendChild(newPage);
+              pages.push(currentPage);
+              currentPage = newPage;
+              currentPage.appendChild(child);
+            }
+          });
+          pages.push(currentPage);
+
+          // Remove the original container
+          content.remove();
+
+          // Add page numbers
+          pages.forEach(function(page, i) {
+            var num = document.createElement('div');
+            num.className = 'page-number';
+            num.textContent = 'Page ' + (i + 1) + ' of ' + pages.length;
+            page.appendChild(num);
+          });
+        })();
+      </script>
    </body>
 </html>
