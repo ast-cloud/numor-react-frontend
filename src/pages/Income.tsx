@@ -185,8 +185,11 @@ const Income = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [rawInvoices, setRawInvoices] = useState<InvoiceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
+  const [editDraftId, setEditDraftId] = useState<string | null>(null);
+  const [editDraftOpen, setEditDraftOpen] = useState(false);
   const { toast } = useToast();
 
   const loadInvoices = () => {
@@ -194,6 +197,7 @@ const Income = () => {
     Promise.all([fetchInvoices(), fetchClients()])
       .then(([invoiceData, clientData]) => {
         const clientsMap = new Map(clientData.map((c) => [c.id, c.name]));
+        setRawInvoices(invoiceData);
         setInvoices(invoiceData.map((inv) => mapApiInvoice(inv, clientsMap)));
       })
       .catch((err) => {
@@ -208,6 +212,11 @@ const Income = () => {
   }, []);
 
   const handleInvoiceClick = (invoice: Invoice) => {
+    if (invoice.status === "draft") {
+      setEditDraftId(invoice.id);
+      setEditDraftOpen(true);
+      return;
+    }
     setSelectedInvoice(invoice);
     setIsPdfDialogOpen(true);
   };
@@ -422,6 +431,15 @@ const Income = () => {
             <Users className="h-4 w-4" />
           </Button>
           <CreateInvoiceDialog onInvoiceCreated={loadInvoices} />
+          <CreateInvoiceDialog
+            editInvoiceId={editDraftId}
+            editOpen={editDraftOpen}
+            onEditOpenChange={(open) => {
+              setEditDraftOpen(open);
+              if (!open) setEditDraftId(null);
+            }}
+            onInvoiceCreated={loadInvoices}
+          />
         </div>
       </div>
 

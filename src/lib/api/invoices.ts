@@ -41,6 +41,39 @@ export interface InvoiceData {
   createdAt: string;
   updatedAt: string;
   items: InvoiceItem[];
+  // Extended fields from detail endpoint
+  taxType?: string;
+  reverseCharge?: boolean;
+  sacCode?: string;
+  seller?: {
+    name: string;
+    email: string;
+    phone: string;
+    streetAddress: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    taxId: string;
+  };
+  client?: {
+    name: string;
+    email: string;
+    phone?: string;
+    streetAddress?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  bankDetails?: {
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    ifsc: string;
+    swift: string;
+  };
+  bankAddress?: string;
 }
 
 export async function fetchInvoices(): Promise<InvoiceData[]> {
@@ -58,6 +91,41 @@ export async function fetchInvoices(): Promise<InvoiceData[]> {
   if (!res.ok) throw new Error('Failed to fetch invoices');
   const json = await res.json();
   return json.data ?? [];
+}
+
+export async function fetchInvoice(invoiceId: string): Promise<InvoiceData> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) throw new Error('Failed to fetch invoice');
+  const json = await res.json();
+  return json.data;
+}
+
+export async function updateInvoice(invoiceId: string, payload: Record<string, unknown>): Promise<InvoiceData> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/updateInvoice`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) throw new Error('Failed to update invoice');
+  const json = await res.json();
+  return json.data;
 }
 
 export async function updateInvoiceStatus(invoiceId: string, status: string): Promise<InvoiceData> {
