@@ -256,13 +256,17 @@ const CreateInvoiceDialog = ({ onInvoiceCreated, editInvoiceId, editOpen, onEdit
       Promise.all([fetchInvoice(editInvoiceId), fetchClients()])
         .then(([invoiceData, clientData]) => {
           if (cancelled) return;
+          console.log("Invoice data received:", JSON.stringify(invoiceData));
           setSavedClients(clientData);
-          setFormData(mapInvoiceDataToForm(invoiceData));
+          const mapped = mapInvoiceDataToForm(invoiceData);
+          console.log("Mapped form data:", JSON.stringify(mapped));
+          setFormData(mapped);
           if (invoiceData.clientId) {
             setSelectedClientId(invoiceData.clientId);
           }
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("Failed to load invoice data:", err);
           toast({ title: "Error", description: "Failed to load invoice data", variant: "destructive" });
         })
         .finally(() => setEditLoading(false));
