@@ -485,15 +485,17 @@ const Income = () => {
             <Users className="h-4 w-4" />
           </Button>
           <CreateInvoiceDialog onInvoiceCreated={loadInvoices} />
-          <CreateInvoiceDialog
-            editInvoiceId={editDraftId}
-            editOpen={editDraftOpen}
-            onEditOpenChange={(open) => {
-              setEditDraftOpen(open);
-              if (!open) setEditDraftId(null);
-            }}
-            onInvoiceCreated={loadInvoices}
-          />
+          {editDraftId && (
+            <CreateInvoiceDialog
+              editInvoiceId={editDraftId}
+              editOpen={editDraftOpen}
+              onEditOpenChange={(open) => {
+                setEditDraftOpen(open);
+                if (!open) setEditDraftId(null);
+              }}
+              onInvoiceCreated={loadInvoices}
+            />
+          )}
         </div>
       </div>
 
