@@ -1192,10 +1192,11 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
                     }
                     // Fallback for cross-border or None
                     const taxLabel = formData.taxType && formData.taxType !== 'None' ? formData.taxType : 'Tax';
+                    const isCrossBorder = formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
                     return (
                       <div className="flex justify-end gap-8 text-sm">
-                        <span className="text-muted-foreground">{taxLabel}:</span>
-                        <span className="font-medium w-24 text-right">{formData.currency} {calculateTotalTax().toFixed(2)}</span>
+                        <span className="text-muted-foreground">{taxLabel}{isCrossBorder ? ' (0%)' : ''}:</span>
+                        <span className="font-medium w-24 text-right">{formData.currency} {isCrossBorder ? '0.00' : calculateTotalTax().toFixed(2)}</span>
                       </div>
                     );
                   })()}
