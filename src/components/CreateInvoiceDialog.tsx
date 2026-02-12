@@ -17,11 +17,14 @@ import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
-import { createInvoice, fetchInvoicePdfStatus } from "@/lib/api/invoices";
+import { createInvoice, updateInvoice, fetchInvoicePdfStatus, fetchInvoice, type InvoiceData } from "@/lib/api/invoices";
 import { toast } from "@/hooks/use-toast";
 
 interface CreateInvoiceDialogProps {
   onInvoiceCreated?: () => void;
+  editInvoiceId?: string | null;
+  editOpen?: boolean;
+  onEditOpenChange?: (open: boolean) => void;
 }
 
 interface LineItem {
@@ -174,8 +177,64 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
   };
 };
 
-const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => {
-  const [open, setOpen] = useState(false);
+const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo): InvoiceFormData => {
+  const seller: SellerInfo = inv.seller
+    ? {
+        logo: "",
+        name: inv.seller.name || "",
+        streetAddress: inv.seller.streetAddress || "",
+        city: inv.seller.city || "",
+        state: inv.seller.state || "",
+        zip: inv.seller.zipCode || "",
+        country: inv.seller.country || "",
+        taxId: inv.seller.taxId || "",
+        email: inv.seller.email || "",
+        phone: inv.seller.phone || "",
+      }
+    : orgSeller || { ...emptySellerInfo, name: inv.sellerName || "", email: inv.sellerEmail || "" };
+
+  return {
+    invoiceNumber: inv.invoiceNumber || "",
+    invoiceDate: inv.issueDate ? new Date(inv.issueDate) : new Date(),
+    dueDate: inv.dueDate ? new Date(inv.dueDate) : undefined,
+    currency: inv.currency || "USD",
+    taxType: inv.taxType || (seller.country && countryDefaults[seller.country]?.taxType) || "None",
+    seller,
+    clientName: inv.client?.name || "",
+    clientEmail: inv.client?.email || "",
+    clientStreetAddress: inv.client?.streetAddress || "",
+    clientCity: inv.client?.city || "",
+    clientState: inv.client?.state || "",
+    clientZip: inv.client?.zipCode || "",
+    clientCountry: inv.client?.country || "",
+    lineItems: inv.items?.length
+      ? inv.items.map((item, i) => ({
+          id: String(i + 1),
+          description: item.itemName || item.description || "",
+          quantity: parseFloat(item.quantity) || 1,
+          unit: "Pieces",
+          rate: parseFloat(item.unitPrice) || 0,
+          taxPercent: parseFloat(item.taxRate) || 0,
+        }))
+      : [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
+    bankName: inv.bankDetails?.bankName || "",
+    accountName: inv.bankDetails?.accountName || "",
+    iban: inv.bankDetails?.accountNumber || "",
+    swiftBic: inv.bankDetails?.swift || "",
+    ifscCode: inv.bankDetails?.ifsc || "",
+    bankAddress: inv.bankAddress || "",
+    notes: inv.notes || "",
+  };
+};
+
+const CreateInvoiceDialog = ({ onInvoiceCreated, editInvoiceId, editOpen, onEditOpenChange }: CreateInvoiceDialogProps) => {
+  const isEditMode = !!editInvoiceId;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isEditMode ? (editOpen ?? false) : internalOpen;
+  const setOpen = isEditMode
+    ? (v: boolean) => onEditOpenChange?.(v)
+    : setInternalOpen;
+
   const [formData, setFormData] = useState<InvoiceFormData>(getInitialFormData());
   const [showPreview, setShowPreview] = useState(false);
   const [invoiceDateOpen, setInvoiceDateOpen] = useState(false);
@@ -184,40 +243,59 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
   const [clientExpanded, setClientExpanded] = useState(false);
   const [savedClients, setSavedClients] = useState<ClientData[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
 
   // Fetch organization data and clients when dialog opens
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
 
-    fetchCurrentOrganization()
-      .then((org) => {
-        if (cancelled) return;
-        const seller: SellerInfo = {
-          logo: "",
-          name: org.name || "",
-          streetAddress: org.streetAddress || "",
-          city: org.city || "",
-          state: org.state || "",
-          zip: org.zipCode || "",
-          country: org.country || "",
-          taxId: org.taxId || "",
-          email: org.email || "",
-          phone: org.phone || "",
-        };
-        setFormData(getInitialFormData(seller));
-      })
-      .catch(() => {});
+    // In edit mode, fetch invoice details
+    if (isEditMode && editInvoiceId) {
+      setEditLoading(true);
+      Promise.all([fetchInvoice(editInvoiceId), fetchClients()])
+        .then(([invoiceData, clientData]) => {
+          if (cancelled) return;
+          setSavedClients(clientData);
+          setFormData(mapInvoiceDataToForm(invoiceData));
+          if (invoiceData.clientId) {
+            setSelectedClientId(invoiceData.clientId);
+          }
+        })
+        .catch(() => {
+          toast({ title: "Error", description: "Failed to load invoice data", variant: "destructive" });
+        })
+        .finally(() => setEditLoading(false));
+    } else {
+      fetchCurrentOrganization()
+        .then((org) => {
+          if (cancelled) return;
+          const seller: SellerInfo = {
+            logo: "",
+            name: org.name || "",
+            streetAddress: org.streetAddress || "",
+            city: org.city || "",
+            state: org.state || "",
+            zip: org.zipCode || "",
+            country: org.country || "",
+            taxId: org.taxId || "",
+            email: org.email || "",
+            phone: org.phone || "",
+          };
+          setFormData(getInitialFormData(seller));
+        })
+        .catch(() => {});
 
-    fetchClients()
-      .then((clients) => {
-        if (cancelled) return;
-        setSavedClients(clients);
-      })
-      .catch(() => {});
+      fetchClients()
+        .then((clients) => {
+          if (cancelled) return;
+          setSavedClients(clients);
+        })
+        .catch(() => {});
+    }
 
     return () => { cancelled = true; };
-  }, [open]);
+  }, [open, editInvoiceId, isEditMode]);
 
   const handleClientSelect = (clientId: string) => {
     const client = savedClients.find((c) => c.id === clientId);
@@ -482,9 +560,14 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
     setConfirmingInvoice(true);
     try {
       const payload = buildPayload("UNPAID");
-      const data = await createInvoice(payload);
+      let data: InvoiceData;
+      if (isEditMode && editInvoiceId) {
+        data = await updateInvoice(editInvoiceId, payload);
+      } else {
+        data = await createInvoice(payload);
+      }
       await pollPdfStatus(data.id);
-      toast({ title: "Invoice created", description: "Invoice has been created and PDF is ready." });
+      toast({ title: isEditMode ? "Invoice updated" : "Invoice created", description: "Invoice has been created and PDF is ready." });
       setOpen(false);
       setFormData(getInitialFormData());
       setShowPreview(false);
@@ -504,7 +587,11 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
     setSavingDraft(true);
     try {
       const payload = buildPayload("DRAFT");
-      await createInvoice(payload);
+      if (isEditMode && editInvoiceId) {
+        await updateInvoice(editInvoiceId, payload);
+      } else {
+        await createInvoice(payload);
+      }
       toast({ title: "Draft saved", description: "Invoice has been saved as a draft." });
       setOpen(false);
       setFormData(getInitialFormData());
@@ -529,13 +616,19 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="icon" className="h-9 w-9 rounded-lg">
-          <Plus className="h-5 w-5" />
-        </Button>
-      </DialogTrigger>
+      {!isEditMode && (
+        <DialogTrigger asChild>
+          <Button size="icon" className="h-9 w-9 rounded-lg">
+            <Plus className="h-5 w-5" />
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className={cn("max-h-[95vh] overflow-hidden p-0 w-[95vw]", showPreview ? "max-w-[900px]" : "max-w-4xl")}>
-        {showPreview ? (
+        {editLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : showPreview ? (
           <div className="flex flex-col max-h-[95vh]">
             <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
               <DialogTitle className="text-xl font-semibold flex items-center gap-2">
@@ -561,7 +654,7 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
                     Generating PDF...
                   </>
                 ) : (
-                  "Confirm & Create Invoice"
+                  isEditMode ? "Confirm & Update Invoice" : "Confirm & Create Invoice"
                 )}
               </Button>
             </div>
@@ -569,7 +662,7 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
         ) : (
           <div className="max-h-[95vh] overflow-y-auto px-6">
             <DialogHeader className="py-6">
-              <DialogTitle className="text-xl font-semibold">Create New Invoice</DialogTitle>
+              <DialogTitle className="text-xl font-semibold">{isEditMode ? "Edit Draft Invoice" : "Create New Invoice"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 pb-6">
             {/* Invoice Details */}
