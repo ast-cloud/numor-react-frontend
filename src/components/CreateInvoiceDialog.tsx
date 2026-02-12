@@ -1131,30 +1131,46 @@ const CreateInvoiceDialog = ({ onInvoiceCreated }: CreateInvoiceDialogProps) => 
                       />
                     </div>
                     <div className="col-span-1">
-                      {hasTaxDropdown(formData.seller.country) ? (
-                        <Select 
-                          value={String(item.taxPercent)} 
-                          onValueChange={(value) => handleLineItemChange(item.id, "taxPercent", parseFloat(value))}
-                        >
-                          <SelectTrigger className="w-full h-10 px-2 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent align="end" className="min-w-[70px]">
-                            {getTaxOptions(formData.seller.country).map((tax) => (
-                              <SelectItem key={tax} value={String(tax)} className="text-sm">{tax}%</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={item.taxPercent}
-                          onChange={(e) => handleLineItemChange(item.id, "taxPercent", parseFloat(e.target.value) || 0)}
-                          className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      )}
+                      {(() => {
+                        const isCrossBorder = formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
+                        if (isCrossBorder) {
+                          return (
+                            <Input
+                              type="text"
+                              value="0"
+                              disabled
+                              className="[appearance:textfield] bg-muted"
+                            />
+                          );
+                        }
+                        if (hasTaxDropdown(formData.seller.country)) {
+                          return (
+                            <Select 
+                              value={String(item.taxPercent)} 
+                              onValueChange={(value) => handleLineItemChange(item.id, "taxPercent", parseFloat(value))}
+                            >
+                              <SelectTrigger className="w-full h-10 px-2 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent align="end" className="min-w-[70px]">
+                                {getTaxOptions(formData.seller.country).map((tax) => (
+                                  <SelectItem key={tax} value={String(tax)} className="text-sm">{tax}%</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+                        }
+                        return (
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={item.taxPercent}
+                            onChange={(e) => handleLineItemChange(item.id, "taxPercent", parseFloat(e.target.value) || 0)}
+                            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        );
+                      })()}
                     </div>
                     <div className="col-span-1 text-right font-medium">
                       {calculateLineTotal(item).toFixed(2)}
