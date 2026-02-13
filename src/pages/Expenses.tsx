@@ -674,120 +674,144 @@ const Expenses = () => {
                         </Button>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
-                        <Input
-                          placeholder="Title *"
-                          value={item.title}
-                          onChange={(e) => updateItem(index, "title", e.target.value)}
-                        />
-                        <Input
-                          type="date"
-                          value={item.date}
-                          onChange={(e) => updateItem(index, "date", e.target.value)}
-                        />
-                      </div>
-                      <div className="grid grid-cols-5 gap-3">
-                        <Input
-                          type="number"
-                          step="1"
-                          min="1"
-                          placeholder="Quantity *"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, "quantity", e.target.value)}
-                        />
-                        <div className="relative">
-                          <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Title *</Label>
                           <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="Unit Price *"
-                            className="pl-9"
-                            value={item.unitPrice}
-                            onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
+                            placeholder="Title *"
+                            value={item.title}
+                            onChange={(e) => updateItem(index, "title", e.target.value)}
                           />
                         </div>
-                        <Select value={item.taxType} onValueChange={(value) => updateItem(index, "taxType", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Tax Type" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-popover z-50">
-                            <SelectItem value="GST">GST</SelectItem>
-                            <SelectItem value="VAT">VAT</SelectItem>
-                            <SelectItem value="Sales Tax">Sales Tax</SelectItem>
-                            <SelectItem value="None">None</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {(() => {
-                          const options = getTaxPercentOptions(orgCountry);
-                          const isCustom = customTaxItems.has(index) || (item.taxPercentage !== "" && !options.map(String).includes(item.taxPercentage));
-                          return isCustom ? (
-                            <div className="flex gap-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                max="100"
-                                placeholder="Tax %"
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Date</Label>
+                          <Input
+                            type="date"
+                            value={item.date}
+                            onChange={(e) => updateItem(index, "date", e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-5 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Quantity *</Label>
+                          <Input
+                            type="number"
+                            step="1"
+                            min="1"
+                            placeholder="Qty"
+                            value={item.quantity}
+                            onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Unit Price *</Label>
+                          <div className="relative">
+                            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="Price"
+                              className="pl-9"
+                              value={item.unitPrice}
+                              onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Tax Type</Label>
+                          <Select value={item.taxType} onValueChange={(value) => updateItem(index, "taxType", value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Tax Type" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover z-50">
+                              <SelectItem value="GST">GST</SelectItem>
+                              <SelectItem value="VAT">VAT</SelectItem>
+                              <SelectItem value="Sales Tax">Sales Tax</SelectItem>
+                              <SelectItem value="None">None</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Tax %</Label>
+                          {(() => {
+                            const options = getTaxPercentOptions(orgCountry);
+                            const isCustom = customTaxItems.has(index) || (item.taxPercentage !== "" && !options.map(String).includes(item.taxPercentage));
+                            return isCustom ? (
+                              <div className="flex gap-1">
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  max="100"
+                                  placeholder="Tax %"
+                                  value={item.taxPercentage}
+                                  onChange={(e) => updateItem(index, "taxPercentage", e.target.value)}
+                                  className="flex-1"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-9 w-9 shrink-0"
+                                  title="Back to presets"
+                                  onClick={() => {
+                                    updateItem(index, "taxPercentage", "");
+                                    setCustomTaxItems((prev) => { const next = new Set(prev); next.delete(index); return next; });
+                                  }}
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Select
                                 value={item.taxPercentage}
-                                onChange={(e) => updateItem(index, "taxPercentage", e.target.value)}
-                                className="flex-1"
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 shrink-0"
-                                title="Back to presets"
-                                onClick={() => {
-                                  updateItem(index, "taxPercentage", "");
-                                  setCustomTaxItems((prev) => { const next = new Set(prev); next.delete(index); return next; });
+                                onValueChange={(value) => {
+                                  if (value === "__custom__") {
+                                    setCustomTaxItems((prev) => new Set(prev).add(index));
+                                  } else {
+                                    updateItem(index, "taxPercentage", value);
+                                  }
                                 }}
                               >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <Select
-                              value={item.taxPercentage}
-                              onValueChange={(value) => {
-                                if (value === "__custom__") {
-                                  setCustomTaxItems((prev) => new Set(prev).add(index));
-                                } else {
-                                  updateItem(index, "taxPercentage", value);
-                                }
-                              }}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Tax %" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-popover z-50">
-                                {options.map((pct) => (
-                                  <SelectItem key={pct} value={String(pct)}>
-                                    {pct}%
-                                  </SelectItem>
-                                ))}
-                                <SelectItem value="__custom__">Custom...</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          );
-                        })()}
-                        <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Category *" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-popover z-50">
-                            {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat}>
-                                {cat}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Tax %" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-popover z-50">
+                                  {options.map((pct) => (
+                                    <SelectItem key={pct} value={String(pct)}>
+                                      {pct}%
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="__custom__">Custom...</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            );
+                          })()}
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Category *</Label>
+                          <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Category *" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover z-50">
+                              {categories.map((cat) => (
+                                <SelectItem key={cat} value={cat}>
+                                  {cat}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                      <Input
-                        placeholder="Description (optional)"
-                        value={item.description}
-                        onChange={(e) => updateItem(index, "description", e.target.value)}
-                      />
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Description</Label>
+                        <Input
+                          placeholder="Description (optional)"
+                          value={item.description}
+                          onChange={(e) => updateItem(index, "description", e.target.value)}
+                        />
+                      </div>
                     </div>
                   ))}
                   <Button type="button" variant="outline" size="sm" onClick={addItem} className="w-full">
