@@ -695,6 +695,7 @@ const Expenses = () => {
                           min="1"
                           value={item.quantity}
                           onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                          className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <div className="flex items-center gap-1">
                           <FloatingLabelInput
