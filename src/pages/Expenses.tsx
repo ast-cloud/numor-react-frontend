@@ -104,6 +104,46 @@ const countryTaxDefaults: Record<string, { taxType: string; taxPercent: string }
   "Sweden": { taxType: "VAT", taxPercent: "25" },
 };
 
+// Country-specific tax percentage options
+const expenseTaxPercentOptions: Record<string, number[]> = {
+  "India": [0, 5, 12, 18, 28],
+  "UAE": [0, 5],
+  "UK": [0, 5, 20],
+  "US": [0],
+  "Austria": [0, 10, 13, 20],
+  "Belgium": [0, 6, 12, 21],
+  "Bulgaria": [0, 9, 20],
+  "Croatia": [0, 5, 13, 25],
+  "Cyprus": [0, 5, 9, 19],
+  "Czech Republic": [0, 10, 15, 21],
+  "Denmark": [0, 25],
+  "Estonia": [0, 9, 22],
+  "Finland": [0, 10, 14, 24],
+  "France": [0, 5.5, 10, 20],
+  "Germany": [0, 7, 19],
+  "Greece": [0, 6, 13, 24],
+  "Hungary": [0, 5, 18, 27],
+  "Ireland": [0, 9, 13.5, 23],
+  "Italy": [0, 4, 10, 22],
+  "Latvia": [0, 5, 12, 21],
+  "Lithuania": [0, 5, 9, 21],
+  "Luxembourg": [0, 3, 8, 17],
+  "Malta": [0, 5, 7, 18],
+  "Netherlands": [0, 9, 21],
+  "Poland": [0, 5, 8, 23],
+  "Portugal": [0, 6, 13, 23],
+  "Romania": [0, 5, 9, 19],
+  "Slovakia": [0, 10, 20],
+  "Slovenia": [0, 5, 9.5, 22],
+  "Spain": [0, 4, 10, 21],
+  "Sweden": [0, 6, 12, 25],
+};
+
+const getTaxPercentOptions = (country?: string): number[] => {
+  if (!country) return [0, 5, 12, 18, 20, 25, 28];
+  return expenseTaxPercentOptions[country] || [0, 5, 12, 18, 20, 25, 28];
+};
+
 const createEmptyItem = (orgCountry?: string): ExpenseItem => {
   const defaults = orgCountry ? countryTaxDefaults[orgCountry] : undefined;
   return {
@@ -128,6 +168,7 @@ const Expenses = () => {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [customTaxItems, setCustomTaxItems] = useState<Set<number>>(new Set());
   const [orgCountry, setOrgCountry] = useState<string | undefined>(undefined);
 
   // Fetch org country for tax defaults
@@ -479,6 +520,7 @@ const Expenses = () => {
 
     setExpenses([...newExpenses, ...expenses]);
     setExpenseItems([createEmptyItem(orgCountry)]);
+    setCustomTaxItems(new Set());
     setIsManualDialogOpen(false);
     toast({ title: "Success", description: `${newExpenses.length} expense(s) added successfully` });
   };
@@ -668,20 +710,60 @@ const Expenses = () => {
                             <SelectItem value="None">None</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Select value={item.taxPercentage} onValueChange={(value) => updateItem(index, "taxPercentage", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Tax %" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-popover z-50">
-                            <SelectItem value="0">0%</SelectItem>
-                            <SelectItem value="5">5%</SelectItem>
-                            <SelectItem value="12">12%</SelectItem>
-                            <SelectItem value="18">18%</SelectItem>
-                            <SelectItem value="20">20%</SelectItem>
-                            <SelectItem value="25">25%</SelectItem>
-                            <SelectItem value="28">28%</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {(() => {
+                          const options = getTaxPercentOptions(orgCountry);
+                          const isCustom = customTaxItems.has(index) || (item.taxPercentage !== "" && !options.map(String).includes(item.taxPercentage));
+                          return isCustom ? (
+                            <div className="flex gap-1">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                placeholder="Tax %"
+                                value={item.taxPercentage}
+                                onChange={(e) => updateItem(index, "taxPercentage", e.target.value)}
+                                className="flex-1"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 shrink-0"
+                                title="Back to presets"
+                                onClick={() => {
+                                  updateItem(index, "taxPercentage", "");
+                                  setCustomTaxItems((prev) => { const next = new Set(prev); next.delete(index); return next; });
+                                }}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Select
+                              value={item.taxPercentage}
+                              onValueChange={(value) => {
+                                if (value === "__custom__") {
+                                  setCustomTaxItems((prev) => new Set(prev).add(index));
+                                } else {
+                                  updateItem(index, "taxPercentage", value);
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Tax %" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-popover z-50">
+                                {options.map((pct) => (
+                                  <SelectItem key={pct} value={String(pct)}>
+                                    {pct}%
+                                  </SelectItem>
+                                ))}
+                                <SelectItem value="__custom__">Custom...</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          );
+                        })()}
                         <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Category *" />
