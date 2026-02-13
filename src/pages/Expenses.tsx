@@ -696,16 +696,17 @@ const Expenses = () => {
                           value={item.quantity}
                           onChange={(e) => updateItem(index, "quantity", e.target.value)}
                         />
-                        <div className="relative">
-                          <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                        <div className="flex items-center gap-1">
                           <FloatingLabelInput
                             label="Unit Price *"
                             type="number"
                             step="0.01"
-                            className="pl-9"
                             value={item.unitPrice}
                             onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
                           />
+                          <span className="text-xs text-muted-foreground shrink-0">
+                            {orgCountry === "India" ? "INR" : orgCountry === "UAE" ? "AED" : orgCountry === "US" ? "USD" : orgCountry === "UK" ? "GBP" : ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"].includes(orgCountry || "") ? "EUR" : "USD"}
+                          </span>
                         </div>
                         <Select value={item.taxType} onValueChange={(value) => updateItem(index, "taxType", value)}>
                           <SelectTrigger>
