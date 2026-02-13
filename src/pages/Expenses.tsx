@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay, startOfWeek, startOfMonth, startOfQuarter, endOfDay, isWithinInterval } from "date-fns";
+import { fetchCurrentOrganization } from "@/lib/api/user";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
@@ -68,16 +69,54 @@ const categories = [
   "Other",
 ];
 
-const createEmptyItem = (): ExpenseItem => ({
-  title: "",
-  description: "",
-  quantity: "",
-  unitPrice: "",
-  taxType: "",
-  taxPercentage: "",
-  category: "",
-  date: new Date().toISOString().split("T")[0],
-});
+// Country-to-tax defaults mapping (shared with invoice logic)
+const countryTaxDefaults: Record<string, { taxType: string; taxPercent: string }> = {
+  "India": { taxType: "GST", taxPercent: "18" },
+  "UAE": { taxType: "VAT", taxPercent: "5" },
+  "US": { taxType: "Sales Tax", taxPercent: "" },
+  "UK": { taxType: "VAT", taxPercent: "20" },
+  "Austria": { taxType: "VAT", taxPercent: "20" },
+  "Belgium": { taxType: "VAT", taxPercent: "21" },
+  "Bulgaria": { taxType: "VAT", taxPercent: "20" },
+  "Croatia": { taxType: "VAT", taxPercent: "25" },
+  "Cyprus": { taxType: "VAT", taxPercent: "19" },
+  "Czech Republic": { taxType: "VAT", taxPercent: "21" },
+  "Denmark": { taxType: "VAT", taxPercent: "25" },
+  "Estonia": { taxType: "VAT", taxPercent: "22" },
+  "Finland": { taxType: "VAT", taxPercent: "24" },
+  "France": { taxType: "VAT", taxPercent: "20" },
+  "Germany": { taxType: "VAT", taxPercent: "19" },
+  "Greece": { taxType: "VAT", taxPercent: "24" },
+  "Hungary": { taxType: "VAT", taxPercent: "27" },
+  "Ireland": { taxType: "VAT", taxPercent: "23" },
+  "Italy": { taxType: "VAT", taxPercent: "22" },
+  "Latvia": { taxType: "VAT", taxPercent: "21" },
+  "Lithuania": { taxType: "VAT", taxPercent: "21" },
+  "Luxembourg": { taxType: "VAT", taxPercent: "17" },
+  "Malta": { taxType: "VAT", taxPercent: "18" },
+  "Netherlands": { taxType: "VAT", taxPercent: "21" },
+  "Poland": { taxType: "VAT", taxPercent: "23" },
+  "Portugal": { taxType: "VAT", taxPercent: "23" },
+  "Romania": { taxType: "VAT", taxPercent: "19" },
+  "Slovakia": { taxType: "VAT", taxPercent: "20" },
+  "Slovenia": { taxType: "VAT", taxPercent: "22" },
+  "Spain": { taxType: "VAT", taxPercent: "21" },
+  "Sweden": { taxType: "VAT", taxPercent: "25" },
+};
+
+const createEmptyItem = (orgCountry?: string): ExpenseItem => {
+  const defaults = orgCountry ? countryTaxDefaults[orgCountry] : undefined;
+  return {
+    title: "",
+    description: "",
+    quantity: "",
+    unitPrice: "",
+    taxType: defaults?.taxType || "",
+    taxPercentage: defaults?.taxPercent || "",
+    category: "",
+    date: new Date().toISOString().split("T")[0],
+  };
+};
 
 const Expenses = () => {
   const { toast } = useToast();
@@ -89,6 +128,27 @@ const Expenses = () => {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [orgCountry, setOrgCountry] = useState<string | undefined>(undefined);
+
+  // Fetch org country for tax defaults
+  useEffect(() => {
+    fetchCurrentOrganization()
+      .then((org) => {
+        const country = org.country || undefined;
+        setOrgCountry(country);
+        // Prefill the initial empty item with org defaults
+        if (country && countryTaxDefaults[country]) {
+          setExpenseItems((prev) =>
+            prev.map((item) =>
+              !item.taxType && !item.taxPercentage
+                ? { ...item, taxType: countryTaxDefaults[country].taxType, taxPercentage: countryTaxDefaults[country].taxPercent }
+                : item
+            )
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Filtering & Sorting state
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
@@ -369,7 +429,7 @@ const Expenses = () => {
   };
 
   const addItem = () => {
-    setExpenseItems([...expenseItems, createEmptyItem()]);
+    setExpenseItems([...expenseItems, createEmptyItem(orgCountry)]);
   };
 
   const removeItem = (index: number) => {
@@ -418,7 +478,7 @@ const Expenses = () => {
     }));
 
     setExpenses([...newExpenses, ...expenses]);
-    setExpenseItems([createEmptyItem()]);
+    setExpenseItems([createEmptyItem(orgCountry)]);
     setIsManualDialogOpen(false);
     toast({ title: "Success", description: `${newExpenses.length} expense(s) added successfully` });
   };
