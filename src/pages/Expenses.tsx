@@ -657,25 +657,36 @@ const Expenses = () => {
                             onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
                           />
                         </div>
-                        <Input
-                          placeholder="Tax Type"
-                          value={item.taxType}
-                          onChange={(e) => updateItem(index, "taxType", e.target.value)}
-                        />
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="100"
-                          placeholder="Tax %"
-                          value={item.taxPercentage}
-                          onChange={(e) => updateItem(index, "taxPercentage", e.target.value)}
-                        />
+                        <Select value={item.taxType} onValueChange={(value) => updateItem(index, "taxType", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Tax Type" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover z-50">
+                            <SelectItem value="GST">GST</SelectItem>
+                            <SelectItem value="VAT">VAT</SelectItem>
+                            <SelectItem value="Sales Tax">Sales Tax</SelectItem>
+                            <SelectItem value="None">None</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={item.taxPercentage} onValueChange={(value) => updateItem(index, "taxPercentage", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Tax %" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover z-50">
+                            <SelectItem value="0">0%</SelectItem>
+                            <SelectItem value="5">5%</SelectItem>
+                            <SelectItem value="12">12%</SelectItem>
+                            <SelectItem value="18">18%</SelectItem>
+                            <SelectItem value="20">20%</SelectItem>
+                            <SelectItem value="25">25%</SelectItem>
+                            <SelectItem value="28">28%</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Category *" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-popover z-50">
                             {categories.map((cat) => (
                               <SelectItem key={cat} value={cat}>
                                 {cat}
