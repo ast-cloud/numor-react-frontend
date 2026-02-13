@@ -774,8 +774,8 @@ const Expenses = () => {
                           );
                         })()}
                         <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Category *" />
+                          <SelectTrigger className="truncate">
+                            <SelectValue placeholder="Category *" className="truncate" />
                           </SelectTrigger>
                           <SelectContent className="bg-popover z-50">
                             {categories.map((cat) => (
