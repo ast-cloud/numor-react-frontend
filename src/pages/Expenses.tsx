@@ -732,7 +732,7 @@ const Expenses = () => {
                                 max="100"
                                 value={item.taxPercentage}
                                 onChange={(e) => updateItem(index, "taxPercentage", e.target.value)}
-                                className="flex-1"
+                                className="flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                               <Button
                                 type="button"
@@ -777,9 +777,9 @@ const Expenses = () => {
                           <SelectTrigger className="truncate">
                             <SelectValue placeholder="Category *" className="truncate" />
                           </SelectTrigger>
-                          <SelectContent className="bg-popover z-50">
+                          <SelectContent className="bg-popover z-50 min-w-[200px]">
                             {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat}>
+                              <SelectItem key={cat} value={cat} className="whitespace-normal">
                                 {cat}
                               </SelectItem>
                             ))}
