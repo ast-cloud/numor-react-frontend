@@ -637,7 +637,13 @@ const Expenses = () => {
 
         {/* Quick Action Buttons */}
         <div className="flex items-center gap-2">
-          <Dialog open={isManualDialogOpen} onOpenChange={setIsManualDialogOpen}>
+          <Dialog open={isManualDialogOpen} onOpenChange={(open) => {
+              setIsManualDialogOpen(open);
+              if (!open) {
+                setExpenseItems([createEmptyItem(orgCountry)]);
+                setCustomTaxItems(new Set());
+              }
+            }}>
             <DialogTrigger asChild>
               <Button variant="default" size="sm" className="gap-2">
                 <PenLine className="w-4 h-4" />
