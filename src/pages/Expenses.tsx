@@ -698,13 +698,7 @@ const Expenses = () => {
           quantity: String(item.quantity || 1),
           unitType: "pcs",
           unitPrice: String(item.unitPrice || item.unit_price_before_tax || 0),
-          taxRate: (() => {
-            const raw = item.taxPercent ?? item.tax_percentage ?? "";
-            if (raw === "" || raw === null || raw === undefined) return "";
-            const num = Number(raw);
-            // If value is between 0 and 1 (exclusive), it's likely a decimal fraction — convert to percentage
-            return String(num > 0 && num < 1 ? num * 100 : num);
-          })(),
+          taxRate: String(item.taxPercent ?? item.tax_percentage ?? ""),
           itemPrice: String(item.totalPrice || ""),
         }));
 
