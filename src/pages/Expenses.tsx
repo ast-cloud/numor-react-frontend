@@ -60,6 +60,37 @@ type ExpenseItem = {
   date: string;
 };
 
+// Bill upload form types
+type BillCommon = {
+  merchant: string;
+  billDate: string;
+  totalAmount: string;
+  category: string;
+  paymentMethod: string;
+};
+
+type BillItem = {
+  name: string;
+  quantity: string;
+  unitType: string;
+  unitPrice: string;
+  taxRate: string;
+  itemPrice: string;
+};
+
+type DialogMode = "default" | "bill";
+
+const paymentMethods = ["Cash", "Credit Card", "Debit Card", "Bank Transfer", "UPI", "Cheque", "Other"];
+
+const createEmptyBillItem = (): BillItem => ({
+  name: "",
+  quantity: "1",
+  unitType: "pcs",
+  unitPrice: "",
+  taxRate: "",
+  itemPrice: "",
+});
+
 const categories = [
   "Food & Dining",
   "Transportation",
@@ -171,6 +202,15 @@ const Expenses = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [customTaxItems, setCustomTaxItems] = useState<Set<number>>(new Set());
   const [orgCountry, setOrgCountry] = useState<string | undefined>(undefined);
+  const [dialogMode, setDialogMode] = useState<DialogMode>("default");
+  const [billCommon, setBillCommon] = useState<BillCommon>({
+    merchant: "",
+    billDate: new Date().toISOString().split("T")[0],
+    totalAmount: "",
+    category: "",
+    paymentMethod: "",
+  });
+  const [billItems, setBillItems] = useState<BillItem[]>([createEmptyBillItem()]);
 
   // Fetch org country for tax defaults
   useEffect(() => {
@@ -526,6 +566,50 @@ const Expenses = () => {
     toast({ title: "Success", description: `${newExpenses.length} expense(s) added successfully` });
   };
 
+  const handleBillSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!billCommon.merchant.trim()) {
+      toast({ title: "Error", description: "Please enter merchant name", variant: "destructive" });
+      return;
+    }
+
+    const incompleteItems = billItems
+      .map((item, index) => {
+        const missing: string[] = [];
+        if (!item.name.trim()) missing.push("name");
+        if (!item.quantity.trim()) missing.push("quantity");
+        if (!item.unitPrice.trim()) missing.push("unit price");
+        return { index: index + 1, missing };
+      })
+      .filter((item) => item.missing.length > 0);
+
+    if (incompleteItems.length > 0) {
+      const errorMessage = incompleteItems.map((item) => `Item ${item.index}: missing ${item.missing.join(", ")}`).join("; ");
+      toast({ title: "Error", description: `Please fill required fields. ${errorMessage}`, variant: "destructive" });
+      return;
+    }
+
+    const newExpenses: Expense[] = billItems.map((item, index) => ({
+      id: `${Date.now()}-${index}`,
+      title: item.name,
+      description: `From: ${billCommon.merchant}`,
+      quantity: parseFloat(item.quantity) || 1,
+      unitPrice: parseFloat(item.unitPrice) || 0,
+      taxType: "",
+      taxPercentage: parseFloat(item.taxRate) || 0,
+      category: billCommon.category || "Other",
+      date: billCommon.billDate,
+    }));
+
+    setExpenses([...newExpenses, ...expenses]);
+    setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
+    setBillItems([createEmptyBillItem()]);
+    setDialogMode("default");
+    setIsManualDialogOpen(false);
+    toast({ title: "Success", description: `${newExpenses.length} expense(s) added from bill` });
+  };
+
   const handleEditExpense = (expense: Expense) => {
     setEditingExpense(expense);
     setIsEditDialogOpen(true);
@@ -607,19 +691,26 @@ const Expenses = () => {
           }
         }
 
-        // Map parsed items to form items
-        const prefillItems: ExpenseItem[] = items.map((item: any) => ({
-          title: item.itemName || item.name || "",
-          description: parsedData.merchant ? `From: ${parsedData.merchant}` : "",
+        // Map parsed items to bill items
+        const prefillBillItems: BillItem[] = items.map((item: any) => ({
+          name: item.itemName || item.name || "",
           quantity: String(item.quantity || 1),
+          unitType: "pcs",
           unitPrice: String(item.unitPrice || item.unit_price_before_tax || 0),
-          taxType: String(item.tax_type || ""),
-          taxPercentage: String(item.tax_percentage || ""),
-          category: parsedData.category && categories.includes(parsedData.category) ? parsedData.category : "",
-          date: expenseDate,
+          taxRate: String(item.tax_percentage || ""),
+          itemPrice: String(item.totalPrice || ""),
         }));
 
-        setExpenseItems(prefillItems);
+        // Set bill common fields
+        setBillCommon({
+          merchant: parsedData.merchant || "",
+          billDate: expenseDate,
+          totalAmount: String(parsedData.totalAmount || ""),
+          category: parsedData.category && categories.includes(parsedData.category) ? parsedData.category : "",
+          paymentMethod: parsedData.paymentMethod || "",
+        });
+        setBillItems(prefillBillItems);
+        setDialogMode("bill");
         toast({ title: "Success", description: `Parsed ${items.length} item(s) from the bill` });
       } else {
         toast({ title: "Error", description: "Failed to parse bill data", variant: "destructive" });
@@ -652,6 +743,9 @@ const Expenses = () => {
               if (!open) {
                 setExpenseItems([createEmptyItem(orgCountry)]);
                 setCustomTaxItems(new Set());
+                setDialogMode("default");
+                setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
+                setBillItems([createEmptyBillItem()]);
               }
             }}>
             <DialogTrigger asChild>
@@ -665,67 +759,54 @@ const Expenses = () => {
                 <DialogTitle>Add Expense</DialogTitle>
               </DialogHeader>
 
-              {/* Upload Receipt Section */}
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="bill-upload"
-                />
-                <label htmlFor="bill-upload" className="cursor-pointer">
-                  {isUploading ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin" />
-                      <p className="text-foreground font-medium">Processing receipt...</p>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-foreground font-medium">Upload Receipt / Bill</p>
-                      <p className="text-muted-foreground text-xs mt-1">Drop image here or click to upload — auto-fills the form below</p>
-                    </>
-                  )}
-                </label>
-              </div>
+              {dialogMode === "default" && (
+                <>
+                  {/* Upload Receipt Section */}
+                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="bill-upload"
+                    />
+                    <label htmlFor="bill-upload" className="cursor-pointer">
+                      {isUploading ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin" />
+                          <p className="text-foreground font-medium">Processing receipt...</p>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-foreground font-medium">Upload Receipt / Bill</p>
+                          <p className="text-muted-foreground text-xs mt-1">Upload image to auto-parse bill details</p>
+                        </>
+                      )}
+                    </label>
+                  </div>
 
-              <div className="relative flex items-center gap-3 my-1">
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-xs text-muted-foreground">or enter manually</span>
-                <div className="flex-1 h-px bg-border" />
-              </div>
+                  <div className="relative flex items-center gap-3 my-1">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-xs text-muted-foreground">or add a quick expense</span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
 
-              <form onSubmit={handleManualSubmit} className="space-y-4">
-                <div className="space-y-3">
-                  <Label>Expense Items</Label>
-                  {expenseItems.map((item, index) => (
-                    <div key={index} className="p-4 border border-border rounded-lg bg-muted/30 space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-muted-foreground">Item {index + 1}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => removeItem(index)}
-                          disabled={expenseItems.length === 1}
-                        >
-                          <Trash2 className="w-4 h-4 text-muted-foreground" />
-                        </Button>
-                      </div>
+                  {/* Quick Single Expense Form */}
+                  <form onSubmit={handleManualSubmit} className="space-y-4">
+                    <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <FloatingLabelInput
                           label="Title *"
-                          value={item.title}
-                          onChange={(e) => updateItem(index, "title", e.target.value)}
+                          value={expenseItems[0].title}
+                          onChange={(e) => updateItem(0, "title", e.target.value)}
                         />
                         <FloatingLabelInput
                           label="Date"
                           type="date"
-                          value={item.date}
-                          onChange={(e) => updateItem(index, "date", e.target.value)}
+                          value={expenseItems[0].date}
+                          onChange={(e) => updateItem(0, "date", e.target.value)}
                         />
                       </div>
                       <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1.2fr 1fr 0.7fr 1.3fr' }}>
@@ -734,8 +815,8 @@ const Expenses = () => {
                           type="number"
                           step="1"
                           min="1"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                          value={expenseItems[0].quantity}
+                          onChange={(e) => updateItem(0, "quantity", e.target.value)}
                           className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <div className="flex items-center gap-1">
@@ -743,15 +824,15 @@ const Expenses = () => {
                             label="Unit Price *"
                             type="number"
                             step="0.01"
-                            value={item.unitPrice}
-                            onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
+                            value={expenseItems[0].unitPrice}
+                            onChange={(e) => updateItem(0, "unitPrice", e.target.value)}
                             className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <span className="text-xs text-muted-foreground shrink-0">
                             {orgCountry === "India" ? "INR" : orgCountry === "UAE" ? "AED" : orgCountry === "US" ? "USD" : orgCountry === "UK" ? "GBP" : ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"].includes(orgCountry || "") ? "EUR" : "USD"}
                           </span>
                         </div>
-                        <Select value={item.taxType} onValueChange={(value) => updateItem(index, "taxType", value)}>
+                        <Select value={expenseItems[0].taxType} onValueChange={(value) => updateItem(0, "taxType", value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Tax Type" />
                           </SelectTrigger>
@@ -764,7 +845,7 @@ const Expenses = () => {
                         </Select>
                         {(() => {
                           const options = getTaxPercentOptions(orgCountry);
-                          const isCustom = customTaxItems.has(index) || (item.taxPercentage !== "" && !options.map(String).includes(item.taxPercentage));
+                          const isCustom = customTaxItems.has(0) || (expenseItems[0].taxPercentage !== "" && !options.map(String).includes(expenseItems[0].taxPercentage));
                           return isCustom ? (
                             <div className="flex gap-1">
                               <FloatingLabelInput
@@ -773,8 +854,8 @@ const Expenses = () => {
                                 step="0.01"
                                 min="0"
                                 max="100"
-                                value={item.taxPercentage}
-                                onChange={(e) => updateItem(index, "taxPercentage", e.target.value)}
+                                value={expenseItems[0].taxPercentage}
+                                onChange={(e) => updateItem(0, "taxPercentage", e.target.value)}
                                 className="flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                               <Button
@@ -784,8 +865,8 @@ const Expenses = () => {
                                 className="h-10 w-10 shrink-0"
                                 title="Back to presets"
                                 onClick={() => {
-                                  updateItem(index, "taxPercentage", "");
-                                  setCustomTaxItems((prev) => { const next = new Set(prev); next.delete(index); return next; });
+                                  updateItem(0, "taxPercentage", "");
+                                  setCustomTaxItems((prev) => { const next = new Set(prev); next.delete(0); return next; });
                                 }}
                               >
                                 <X className="w-3 h-3" />
@@ -793,12 +874,12 @@ const Expenses = () => {
                             </div>
                           ) : (
                             <Select
-                              value={item.taxPercentage}
+                              value={expenseItems[0].taxPercentage}
                               onValueChange={(value) => {
                                 if (value === "__custom__") {
-                                  setCustomTaxItems((prev) => new Set(prev).add(index));
+                                  setCustomTaxItems((prev) => new Set(prev).add(0));
                                 } else {
-                                  updateItem(index, "taxPercentage", value);
+                                  updateItem(0, "taxPercentage", value);
                                 }
                               }}
                             >
@@ -816,7 +897,7 @@ const Expenses = () => {
                             </Select>
                           );
                         })()}
-                        <Select value={item.category} onValueChange={(value) => updateItem(index, "category", value)}>
+                        <Select value={expenseItems[0].category} onValueChange={(value) => updateItem(0, "category", value)}>
                           <SelectTrigger className="truncate">
                             <SelectValue placeholder="Category *" className="truncate" />
                           </SelectTrigger>
@@ -831,31 +912,208 @@ const Expenses = () => {
                       </div>
                       <FloatingLabelInput
                         label="Description (optional)"
-                        value={item.description}
-                        onChange={(e) => updateItem(index, "description", e.target.value)}
+                        value={expenseItems[0].description}
+                        onChange={(e) => updateItem(0, "description", e.target.value)}
                       />
                     </div>
-                  ))}
-                  <Button type="button" variant="outline" size="sm" onClick={addItem} className="w-full">
-                    <Plus className="w-4 h-4 mr-2" /> Add Another Item
-                  </Button>
-                </div>
 
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setIsManualDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="flex-1">
-                    <Plus className="w-4 h-4 mr-2" /> Add{" "}
-                    {expenseItems.length > 1 ? `${expenseItems.length} Expenses` : "Expense"}
-                  </Button>
-                </div>
-              </form>
+                    <div className="flex gap-3 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => setIsManualDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" className="flex-1">
+                        <Plus className="w-4 h-4 mr-2" /> Add Expense
+                      </Button>
+                    </div>
+                  </form>
+                </>
+              )}
+
+              {dialogMode === "bill" && (
+                <>
+                  {/* Bill Upload Form - Common Fields */}
+                  <form onSubmit={handleBillSubmit} className="space-y-4">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Bill Details</Label>
+                      <div className="p-4 border border-border rounded-lg bg-muted/30 space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <FloatingLabelInput
+                            label="Merchant *"
+                            value={billCommon.merchant}
+                            onChange={(e) => setBillCommon({ ...billCommon, merchant: e.target.value })}
+                          />
+                          <FloatingLabelInput
+                            label="Bill Date"
+                            type="date"
+                            value={billCommon.billDate}
+                            onChange={(e) => setBillCommon({ ...billCommon, billDate: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex items-center gap-1">
+                            <FloatingLabelInput
+                              label="Total Amount"
+                              type="number"
+                              step="0.01"
+                              value={billCommon.totalAmount}
+                              onChange={(e) => setBillCommon({ ...billCommon, totalAmount: e.target.value })}
+                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <span className="text-xs text-muted-foreground shrink-0">
+                              {orgCountry === "India" ? "INR" : orgCountry === "UAE" ? "AED" : orgCountry === "US" ? "USD" : orgCountry === "UK" ? "GBP" : ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"].includes(orgCountry || "") ? "EUR" : "USD"}
+                            </span>
+                          </div>
+                          <Select value={billCommon.category} onValueChange={(value) => setBillCommon({ ...billCommon, category: value })}>
+                            <SelectTrigger className="truncate">
+                              <SelectValue placeholder="Category" className="truncate" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover z-50 min-w-[200px]">
+                              {categories.map((cat) => (
+                                <SelectItem key={cat} value={cat} className="whitespace-normal">
+                                  {cat}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={billCommon.paymentMethod} onValueChange={(value) => setBillCommon({ ...billCommon, paymentMethod: value })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Payment Method" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover z-50">
+                              {paymentMethods.map((method) => (
+                                <SelectItem key={method} value={method}>{method}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bill Items */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Items</Label>
+                      {billItems.map((item, index) => (
+                        <div key={index} className="p-4 border border-border rounded-lg bg-muted/30 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-muted-foreground">Item {index + 1}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => {
+                                if (billItems.length > 1) {
+                                  setBillItems(billItems.filter((_, i) => i !== index));
+                                }
+                              }}
+                              disabled={billItems.length === 1}
+                            >
+                              <Trash2 className="w-4 h-4 text-muted-foreground" />
+                            </Button>
+                          </div>
+                          <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 0.7fr 0.7fr 1fr 0.7fr 1fr' }}>
+                            <FloatingLabelInput
+                              label="Name *"
+                              value={item.name}
+                              onChange={(e) => {
+                                const updated = [...billItems];
+                                updated[index] = { ...updated[index], name: e.target.value };
+                                setBillItems(updated);
+                              }}
+                            />
+                            <FloatingLabelInput
+                              label="Qty *"
+                              type="number"
+                              step="1"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const updated = [...billItems];
+                                updated[index] = { ...updated[index], quantity: e.target.value };
+                                setBillItems(updated);
+                              }}
+                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <FloatingLabelInput
+                              label="Unit"
+                              value={item.unitType}
+                              onChange={(e) => {
+                                const updated = [...billItems];
+                                updated[index] = { ...updated[index], unitType: e.target.value };
+                                setBillItems(updated);
+                              }}
+                            />
+                            <FloatingLabelInput
+                              label="Unit Price *"
+                              type="number"
+                              step="0.01"
+                              value={item.unitPrice}
+                              onChange={(e) => {
+                                const updated = [...billItems];
+                                updated[index] = { ...updated[index], unitPrice: e.target.value };
+                                setBillItems(updated);
+                              }}
+                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <FloatingLabelInput
+                              label="Tax %"
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              value={item.taxRate}
+                              onChange={(e) => {
+                                const updated = [...billItems];
+                                updated[index] = { ...updated[index], taxRate: e.target.value };
+                                setBillItems(updated);
+                              }}
+                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <FloatingLabelInput
+                              label="Item Price"
+                              type="number"
+                              step="0.01"
+                              value={item.itemPrice}
+                              onChange={(e) => {
+                                const updated = [...billItems];
+                                updated[index] = { ...updated[index], itemPrice: e.target.value };
+                                setBillItems(updated);
+                              }}
+                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      <Button type="button" variant="outline" size="sm" onClick={() => setBillItems([...billItems, createEmptyBillItem()])} className="w-full">
+                        <Plus className="w-4 h-4 mr-2" /> Add Another Item
+                      </Button>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          setDialogMode("default");
+                          setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
+                          setBillItems([createEmptyBillItem()]);
+                        }}
+                      >
+                        ← Back
+                      </Button>
+                      <Button type="submit" className="flex-1">
+                        <Plus className="w-4 h-4 mr-2" /> Add {billItems.length > 1 ? `${billItems.length} Expenses` : "Expense"}
+                      </Button>
+                    </div>
+                  </form>
+                </>
+              )}
             </DialogContent>
           </Dialog>
 
