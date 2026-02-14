@@ -1018,7 +1018,7 @@ const Expenses = () => {
                               <Trash2 className="w-4 h-4 text-muted-foreground" />
                             </Button>
                           </div>
-                          <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 0.7fr 0.7fr 1fr 0.7fr 1fr' }}>
+                          <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 0.7fr 0.7fr 1fr 1.1fr 1fr' }}>
                             <FloatingLabelInput
                               label="Name *"
                               value={item.name}
