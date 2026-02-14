@@ -30,7 +30,8 @@ import { fetchCurrentOrganization } from "@/lib/api/user";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
-const OCR_API_URL = "https://dda4eae2447e.ngrok-free.app/api/expenses/ocr/uploadExpenseForAI";
+import { config } from "@/lib/config";
+import { getToken } from "@/lib/api/authToken";
 
 type SortField = "date" | "totalPrice" | "category";
 type SortOrder = "asc" | "desc";
@@ -561,8 +562,13 @@ const Expenses = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch(OCR_API_URL, {
+      const token = getToken();
+      const response = await fetch(`${config.backendHost}/api/expenses/parseExpense`, {
         method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Accept: "application/json",
+        },
         body: formData,
       });
 
@@ -585,22 +591,28 @@ const Expenses = () => {
           return;
         }
 
-        // Parse date from the response (format: "MM/DD/YYYY")
+        // Parse date - backend returns YYYY-MM-DD format
         let expenseDate = new Date().toISOString().split("T")[0];
         if (parsedData.expenseDate) {
-          const dateParts = parsedData.expenseDate.split("/");
-          if (dateParts.length === 3) {
-            const [day, month, year] = dateParts;
-            expenseDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+          // Handle YYYY-MM-DD directly
+          if (/^\d{4}-\d{2}-\d{2}$/.test(parsedData.expenseDate)) {
+            expenseDate = parsedData.expenseDate;
+          } else {
+            // Fallback for other formats like MM/DD/YYYY
+            const dateParts = parsedData.expenseDate.split("/");
+            if (dateParts.length === 3) {
+              const [day, month, year] = dateParts;
+              expenseDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+            }
           }
         }
 
-        // Map OCR items to form items
+        // Map parsed items to form items
         const prefillItems: ExpenseItem[] = items.map((item: any) => ({
-          title: item.name || "",
+          title: item.itemName || item.name || "",
           description: parsedData.merchant ? `From: ${parsedData.merchant}` : "",
           quantity: String(item.quantity || 1),
-          unitPrice: String(item.unit_price_before_tax || 0),
+          unitPrice: String(item.unitPrice || item.unit_price_before_tax || 0),
           taxType: String(item.tax_type || ""),
           taxPercentage: String(item.tax_percentage || ""),
           category: parsedData.category && categories.includes(parsedData.category) ? parsedData.category : "",
