@@ -11,7 +11,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  PenLine,
   Upload,
   Plus,
   IndianRupee,
@@ -163,7 +162,7 @@ const Expenses = () => {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
-  const [isOCRDialogOpen, setIsOCRDialogOpen] = useState(false);
+  
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([createEmptyItem()]);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -557,7 +556,6 @@ const Expenses = () => {
     }
 
     setIsUploading(true);
-    setIsOCRDialogOpen(false);
 
     try {
       const formData = new FormData();
@@ -610,7 +608,6 @@ const Expenses = () => {
         }));
 
         setExpenseItems(prefillItems);
-        setIsManualDialogOpen(true);
         toast({ title: "Success", description: `Parsed ${items.length} item(s) from the bill` });
       } else {
         toast({ title: "Error", description: "Failed to parse bill data", variant: "destructive" });
@@ -636,7 +633,7 @@ const Expenses = () => {
           <p className="text-muted-foreground mt-1">Track and manage your business expenses.</p>
         </div>
 
-        {/* Quick Action Buttons */}
+        {/* Quick Action Button */}
         <div className="flex items-center gap-2">
           <Dialog open={isManualDialogOpen} onOpenChange={(open) => {
               setIsManualDialogOpen(open);
@@ -647,15 +644,47 @@ const Expenses = () => {
             }}>
             <DialogTrigger asChild>
               <Button variant="default" size="sm" className="gap-2">
-                <PenLine className="w-4 h-4" />
-                <span className="hidden sm:inline">Manual Entry</span>
-                <span className="sm:hidden">Add</span>
+                <Plus className="w-4 h-4" />
+                <span>Add Expense</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add Expenses</DialogTitle>
+                <DialogTitle>Add Expense</DialogTitle>
               </DialogHeader>
+
+              {/* Upload Receipt Section */}
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="bill-upload"
+                />
+                <label htmlFor="bill-upload" className="cursor-pointer">
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin" />
+                      <p className="text-foreground font-medium">Processing receipt...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-foreground font-medium">Upload Receipt / Bill</p>
+                      <p className="text-muted-foreground text-xs mt-1">Drop image here or click to upload — auto-fills the form below</p>
+                    </>
+                  )}
+                </label>
+              </div>
+
+              <div className="relative flex items-center gap-3 my-1">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground">or enter manually</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
               <form onSubmit={handleManualSubmit} className="space-y-4">
                 <div className="space-y-3">
                   <Label>Expense Items</Label>
@@ -818,39 +847,8 @@ const Expenses = () => {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={isOCRDialogOpen} onOpenChange={setIsOCRDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2" disabled={isUploading}>
-                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                <span className="hidden sm:inline">{isUploading ? "Processing..." : "Upload Bill"}</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Upload Bill for OCR</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="bill-upload"
-                  />
-                  <label htmlFor="bill-upload" className="cursor-pointer">
-                    <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                    <p className="text-foreground font-medium">Drop your bill here or click to upload</p>
-                    <p className="text-muted-foreground text-sm mt-1">Supports JPG, PNG and other image formats</p>
-                  </label>
-                </div>
-                <Button variant="outline" className="w-full" onClick={() => setIsOCRDialogOpen(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+
+
         </div>
       </div>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
