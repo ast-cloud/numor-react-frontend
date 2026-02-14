@@ -1039,15 +1039,32 @@ const Expenses = () => {
                               }}
                               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <FloatingLabelInput
-                              label="Unit"
+                            <Select
                               value={item.unitType}
-                              onChange={(e) => {
+                              onValueChange={(value) => {
                                 const updated = [...billItems];
-                                updated[index] = { ...updated[index], unitType: e.target.value };
+                                updated[index] = { ...updated[index], unitType: value };
                                 setBillItems(updated);
                               }}
-                            />
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Unit" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-popover z-50">
+                                <SelectItem value="pcs">Pcs</SelectItem>
+                                <SelectItem value="kg">Kg</SelectItem>
+                                <SelectItem value="g">g</SelectItem>
+                                <SelectItem value="ltr">Ltr</SelectItem>
+                                <SelectItem value="ml">ml</SelectItem>
+                                <SelectItem value="m">m</SelectItem>
+                                <SelectItem value="ft">ft</SelectItem>
+                                <SelectItem value="box">Box</SelectItem>
+                                <SelectItem value="pack">Pack</SelectItem>
+                                <SelectItem value="unit">Unit</SelectItem>
+                                <SelectItem value="hrs">Hrs</SelectItem>
+                                <SelectItem value="sqft">Sq ft</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FloatingLabelInput
                               label="Unit Price *"
                               type="number"
@@ -1061,7 +1078,7 @@ const Expenses = () => {
                               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <FloatingLabelInput
-                              label="Tax %"
+                              label={`${orgCountry && countryTaxDefaults[orgCountry] ? countryTaxDefaults[orgCountry].taxType : "Tax"} %`}
                               type="number"
                               step="0.01"
                               min="0"
