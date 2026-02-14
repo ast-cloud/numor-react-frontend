@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -201,6 +201,7 @@ const Expenses = () => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [customTaxItems, setCustomTaxItems] = useState<Set<number>>(new Set());
+  const [customTaxBillItems, setCustomTaxBillItems] = useState<Set<number>>(new Set());
   const [orgCountry, setOrgCountry] = useState<string | undefined>(undefined);
   const [dialogMode, setDialogMode] = useState<DialogMode>("default");
   const [billCommon, setBillCommon] = useState<BillCommon>({
@@ -697,7 +698,7 @@ const Expenses = () => {
           quantity: String(item.quantity || 1),
           unitType: "pcs",
           unitPrice: String(item.unitPrice || item.unit_price_before_tax || 0),
-          taxRate: String(item.tax_percentage || ""),
+          taxRate: String(item.taxPercent ?? item.tax_percentage ?? ""),
           itemPrice: String(item.totalPrice || ""),
         }));
 
@@ -743,6 +744,7 @@ const Expenses = () => {
               if (!open) {
                 setExpenseItems([createEmptyItem(orgCountry)]);
                 setCustomTaxItems(new Set());
+                setCustomTaxBillItems(new Set());
                 setDialogMode("default");
                 setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
                 setBillItems([createEmptyBillItem()]);
@@ -1077,20 +1079,68 @@ const Expenses = () => {
                               }}
                               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <FloatingLabelInput
-                              label={`${orgCountry && countryTaxDefaults[orgCountry] ? countryTaxDefaults[orgCountry].taxType : "Tax"} %`}
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              max="100"
-                              value={item.taxRate}
-                              onChange={(e) => {
-                                const updated = [...billItems];
-                                updated[index] = { ...updated[index], taxRate: e.target.value };
-                                setBillItems(updated);
-                              }}
-                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
+                            {(() => {
+                              const taxLabel = orgCountry && countryTaxDefaults[orgCountry] ? countryTaxDefaults[orgCountry].taxType : "Tax";
+                              const options = getTaxPercentOptions(orgCountry);
+                              const isCustom = customTaxBillItems.has(index) || (item.taxRate !== "" && !options.map(String).includes(item.taxRate));
+                              return isCustom ? (
+                                <div className="flex gap-1 items-end">
+                                  <FloatingLabelInput
+                                    label={`${taxLabel} %`}
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    value={item.taxRate}
+                                    onChange={(e) => {
+                                      const updated = [...billItems];
+                                      updated[index] = { ...updated[index], taxRate: e.target.value };
+                                      setBillItems(updated);
+                                    }}
+                                    className="flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 shrink-0"
+                                    title="Back to presets"
+                                    onClick={() => {
+                                      const updated = [...billItems];
+                                      updated[index] = { ...updated[index], taxRate: "" };
+                                      setBillItems(updated);
+                                      setCustomTaxBillItems((prev) => { const next = new Set(prev); next.delete(index); return next; });
+                                    }}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Select
+                                  value={item.taxRate}
+                                  onValueChange={(value) => {
+                                    if (value === "__custom__") {
+                                      setCustomTaxBillItems((prev) => new Set(prev).add(index));
+                                    } else {
+                                      const updated = [...billItems];
+                                      updated[index] = { ...updated[index], taxRate: value };
+                                      setBillItems(updated);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder={`${taxLabel} %`} />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-popover z-50">
+                                    {options.map((opt) => (
+                                      <SelectItem key={opt} value={String(opt)}>{opt}%</SelectItem>
+                                    ))}
+                                    <SelectSeparator />
+                                    <SelectItem value="__custom__">Custom...</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              );
+                            })()}
                             <FloatingLabelInput
                               label="Item Price"
                               type="number"
