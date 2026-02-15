@@ -1449,7 +1449,7 @@ const Expenses = () => {
                           <span className="font-semibold text-foreground">
                             {summaryStats.totalSpend.toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
-                          <span className="text-muted-foreground">Total</span>
+                          <span className="text-muted-foreground">Total Expenses</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="font-semibold text-foreground">
