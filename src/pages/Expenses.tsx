@@ -105,6 +105,18 @@ const categories = [
   "Other",
 ];
 
+// Country-to-currency mapping
+const countryCurrency: Record<string, string> = {
+  "India": "INR", "UAE": "AED", "US": "USD", "UK": "GBP",
+  "Austria": "EUR", "Belgium": "EUR", "Bulgaria": "EUR", "Croatia": "EUR",
+  "Cyprus": "EUR", "Czech Republic": "EUR", "Denmark": "EUR", "Estonia": "EUR",
+  "Finland": "EUR", "France": "EUR", "Germany": "EUR", "Greece": "EUR",
+  "Hungary": "EUR", "Ireland": "EUR", "Italy": "EUR", "Latvia": "EUR",
+  "Lithuania": "EUR", "Luxembourg": "EUR", "Malta": "EUR", "Netherlands": "EUR",
+  "Poland": "EUR", "Portugal": "EUR", "Romania": "EUR", "Slovakia": "EUR",
+  "Slovenia": "EUR", "Spain": "EUR", "Sweden": "EUR",
+};
+
 // Country-to-tax defaults mapping (shared with invoice logic)
 const countryTaxDefaults: Record<string, { taxType: string; taxPercent: string }> = {
   "India": { taxType: "GST", taxPercent: "18" },
@@ -1391,16 +1403,15 @@ const Expenses = () => {
                     {/* Left: Stats */}
                     <div className="flex items-center gap-4 flex-wrap text-sm">
                       <div className="flex items-center gap-1.5">
-                        <IndianRupee className="w-3.5 h-3.5 text-primary" />
                         <span className="font-semibold text-foreground">
-                          {summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          {summaryStats.totalSpend.toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
                         <span className="text-muted-foreground">Total</span>
                       </div>
                       <span className="text-border hidden sm:inline">|</span>
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-foreground">
-                          {summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          {summaryStats.totalTax.toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
                         <span className="text-muted-foreground">{orgCountry === "India" ? "GST" : "Tax"}</span>
                       </div>
