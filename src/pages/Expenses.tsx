@@ -413,64 +413,41 @@ const Expenses = () => {
     }
   };
 
-  // Calculate summary stats for filtered expenses
+  // Calculate summary stats from API expenses
   const summaryStats = useMemo(() => {
-    if (filteredAndSortedExpenses.length === 0) {
-      return {
-        totalSpend: 0,
-        transactionCount: 0,
-        averageSpend: 0,
-        topCategory: null,
-        highestExpense: { amount: 0, title: "" },
-        totalTax: 0,
-        taxByType: {} as Record<string, number>,
-      };
-    }
+    const receipts = filteredApiExpenses;
+    const totalSpend = receipts.reduce((sum, r) => sum + parseFloat(r.totalAmount), 0);
+    const receiptCount = receipts.length;
+    const averageSpend = receiptCount > 0 ? totalSpend / receiptCount : 0;
 
-    const totalSpend = filteredAndSortedExpenses.reduce((sum, exp) => sum + exp.quantity * exp.unitPrice, 0);
-    const transactionCount = filteredAndSortedExpenses.length;
-    const averageSpend = totalSpend / transactionCount;
+    // Total claimable tax from all items across all receipts
+    let totalTax = 0;
+    receipts.forEach((r) => {
+      r.items.forEach((item) => {
+        const taxRate = parseFloat(item.taxRate) || 0;
+        if (taxRate > 0) {
+          const unitPrice = parseFloat(item.unitPrice) || 0;
+          const qty = parseFloat(item.quantity) || 1;
+          totalTax += (unitPrice * qty * taxRate) / 100;
+        }
+      });
+    });
 
-    // Find top category by spend
+    // Top category
     const categorySpend: Record<string, number> = {};
-    filteredAndSortedExpenses.forEach((exp) => {
-      const amount = exp.quantity * exp.unitPrice;
-      categorySpend[exp.category] = (categorySpend[exp.category] || 0) + amount;
+    receipts.forEach((r) => {
+      categorySpend[r.category || "Other"] = (categorySpend[r.category || "Other"] || 0) + parseFloat(r.totalAmount);
     });
     const topCategory = Object.entries(categorySpend).sort((a, b) => b[1] - a[1])[0];
 
-    // Find highest single expense
-    const highestExpense = filteredAndSortedExpenses.reduce(
-      (max, exp) => {
-        const amount = exp.quantity * exp.unitPrice;
-        return amount > max.amount ? { amount, title: exp.title } : max;
-      },
-      { amount: 0, title: "" },
-    );
-
-    // Calculate tax summary
-    let totalTax = 0;
-    const taxByType: Record<string, number> = {};
-    filteredAndSortedExpenses.forEach((exp) => {
-      if (exp.taxPercentage > 0) {
-        const baseAmount = exp.quantity * exp.unitPrice;
-        const taxAmount = baseAmount * (exp.taxPercentage / 100);
-        totalTax += taxAmount;
-        const taxType = exp.taxType || "Other";
-        taxByType[taxType] = (taxByType[taxType] || 0) + taxAmount;
-      }
-    });
-
     return {
       totalSpend,
-      transactionCount,
+      receiptCount,
       averageSpend,
-      topCategory: topCategory ? { name: topCategory[0], amount: topCategory[1] } : null,
-      highestExpense,
       totalTax,
-      taxByType,
+      topCategory: topCategory ? { name: topCategory[0], amount: topCategory[1] } : null,
     };
-  }, [filteredAndSortedExpenses]);
+  }, [filteredApiExpenses]);
 
   const [shouldOpenCustomPopover, setShouldOpenCustomPopover] = useState(false);
 
@@ -1621,7 +1598,39 @@ const Expenses = () => {
               <p className="text-muted-foreground">Loading expenses...</p>
             </div>
           ) : apiExpenses.length > 0 ? (
-            selectedReceipt ? (
+            <>
+              {/* Summary Insight Cards */}
+              {!selectedReceipt && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Total Expenses</p>
+                    <p className="text-xl font-bold text-foreground">
+                      ₹{summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{getTimeRangeLabel()}</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Claimable Tax</p>
+                    <p className="text-xl font-bold text-foreground">
+                      ₹{summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Input tax credit</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Receipts</p>
+                    <p className="text-xl font-bold text-foreground">{summaryStats.receiptCount}</p>
+                    <p className="text-xs text-muted-foreground">Avg ₹{summaryStats.averageSpend.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Top Category</p>
+                    <p className="text-xl font-bold text-foreground truncate">{summaryStats.topCategory?.name || "—"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {summaryStats.topCategory ? `₹${summaryStats.topCategory.amount.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : "No data"}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {selectedReceipt ? (
               /* Item Detail View */
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -1691,7 +1700,8 @@ const Expenses = () => {
                   </div>
                 )}
               </div>
-            )
+            )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
