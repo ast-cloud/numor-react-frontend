@@ -88,7 +88,7 @@ const billPaymentMethods = ["Card", "UPI", "Cash", "Bank Transfer"];
 const createEmptyBillItem = (): BillItem => ({
   name: "",
   quantity: "1",
-  unitType: "pcs",
+  unitType: "Units",
   unitPrice: "",
   taxRate: "",
   itemPrice: "",
@@ -179,7 +179,7 @@ const getTaxPercentOptions = (country?: string): number[] => {
   return expenseTaxPercentOptions[country] || [0, 5, 12, 18, 20, 25, 28];
 };
 
-const unitTypes = ["Pcs", "Kg", "g", "Ltr", "ml", "m", "ft", "Box", "Pack", "Unit", "Hrs", "Sq ft"];
+const unitTypes = ["Kg", "g", "Ltr", "ml", "m", "ft", "Box", "Pack", "Units", "Hrs", "Sq ft"];
 
 const quickPaymentMethods = ["Card", "UPI", "Cash"];
 
@@ -189,7 +189,7 @@ const createEmptyItem = (orgCountry?: string): ExpenseItem => {
     title: "",
     merchant: "",
     quantity: "",
-    unitType: "Pcs",
+    unitType: "Units",
     unitPrice: "",
     taxType: defaults?.taxType || "",
     taxPercentage: defaults?.taxPercent || "",
@@ -705,7 +705,7 @@ const Expenses = () => {
         const prefillBillItems: BillItem[] = items.map((item: any) => ({
           name: item.itemName || item.name || "",
           quantity: String(item.quantity || 1),
-          unitType: item.unitType || "pcs",
+          unitType: item.unitType || "Units",
           unitPrice: String(item.unitPrice ?? item.unit_price_before_tax ?? 0),
           taxRate: String(item.taxRate ?? item.taxPercent ?? item.tax_percentage ?? ""),
           itemPrice: String(item.total ?? item.totalPrice ?? item.itemPrice ?? ""),
@@ -1088,18 +1088,9 @@ const Expenses = () => {
                                 <SelectValue placeholder="Unit" />
                               </SelectTrigger>
                               <SelectContent className="bg-popover z-50">
-                                <SelectItem value="pcs">Pcs</SelectItem>
-                                <SelectItem value="kg">Kg</SelectItem>
-                                <SelectItem value="g">g</SelectItem>
-                                <SelectItem value="ltr">Ltr</SelectItem>
-                                <SelectItem value="ml">ml</SelectItem>
-                                <SelectItem value="m">m</SelectItem>
-                                <SelectItem value="ft">ft</SelectItem>
-                                <SelectItem value="box">Box</SelectItem>
-                                <SelectItem value="pack">Pack</SelectItem>
-                                <SelectItem value="unit">Unit</SelectItem>
-                                <SelectItem value="hrs">Hrs</SelectItem>
-                                <SelectItem value="sqft">Sq ft</SelectItem>
+                                {unitTypes.map((u) => (
+                                  <SelectItem key={u} value={u}>{u}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FloatingLabelInput
