@@ -1386,33 +1386,37 @@ const Expenses = () => {
             <>
               {/* Summary Insight Cards */}
               {!selectedReceipt && (
-                <div className="rounded-lg bg-muted/30 p-5 mb-6 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="rounded-xl border border-border/50 bg-card p-5 mb-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     {/* Left: Stats */}
-                    <div className="space-y-2">
-                      <div className="flex items-baseline gap-2">
-                        <IndianRupee className="w-4 h-4 text-muted-foreground shrink-0 relative top-[2px]" />
-                        <span className="text-2xl font-bold text-foreground">
-                          {summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    <div className="flex items-center gap-6 flex-wrap">
+                      <div className="flex items-center gap-1.5 text-sm">
+                        <span className="text-muted-foreground">Total</span>
+                        <span className="font-semibold text-foreground">
+                          ₹{summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
-                        <span className="text-sm text-muted-foreground">Expenses</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <IndianRupee className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span className="font-medium text-foreground">
-                          {summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      <div className="h-4 w-px bg-border" />
+                      <div className="flex items-center gap-1.5 text-sm">
+                        <span className="text-muted-foreground">{orgCountry === "India" ? "GST" : "Tax"}</span>
+                        <span className="font-semibold text-foreground">
+                          ₹{summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
-                        <span className="text-muted-foreground">{orgCountry === "India" ? "GST" : "Tax"} Claimable</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{summaryStats.receiptCount} Receipt{summaryStats.receiptCount !== 1 ? "s" : ""}</span>
-                        {summaryStats.topCategory && (
-                          <>
-                            <span>·</span>
-                            <span>Top: {summaryStats.topCategory.name}</span>
-                          </>
-                        )}
+                      <div className="h-4 w-px bg-border" />
+                      <div className="flex items-center gap-1.5 text-sm">
+                        <span className="text-muted-foreground">Receipts</span>
+                        <span className="font-semibold text-foreground">{summaryStats.receiptCount}</span>
                       </div>
+                      {summaryStats.topCategory && (
+                        <>
+                          <div className="h-4 w-px bg-border" />
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <span className="text-muted-foreground">Top</span>
+                            <span className="font-semibold text-foreground">{summaryStats.topCategory.name}</span>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Right: Filters */}
