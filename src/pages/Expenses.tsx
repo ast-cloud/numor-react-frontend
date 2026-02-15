@@ -1601,32 +1601,25 @@ const Expenses = () => {
             <>
               {/* Summary Insight Cards */}
               {!selectedReceipt && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Total Expenses</p>
-                    <p className="text-xl font-bold text-foreground">
-                      ₹{summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{getTimeRangeLabel()}</p>
+                <div className="rounded-lg bg-muted/30 p-5 mb-6 flex flex-wrap items-center gap-x-8 gap-y-3">
+                  <div className="space-y-0.5">
+                    <p className="text-xs text-muted-foreground">Total Expenses</p>
+                    <p className="text-lg font-semibold text-foreground">₹{summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
-                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Claimable Tax</p>
-                    <p className="text-xl font-bold text-foreground">
-                      ₹{summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Input tax credit</p>
+                  <div className="w-px h-8 bg-border hidden sm:block" />
+                  <div className="space-y-0.5">
+                    <p className="text-xs text-muted-foreground">Claimable Tax</p>
+                    <p className="text-lg font-semibold text-foreground">₹{summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
-                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Receipts</p>
-                    <p className="text-xl font-bold text-foreground">{summaryStats.receiptCount}</p>
-                    <p className="text-xs text-muted-foreground">Avg ₹{summaryStats.averageSpend.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                  <div className="w-px h-8 bg-border hidden sm:block" />
+                  <div className="space-y-0.5">
+                    <p className="text-xs text-muted-foreground">Receipts</p>
+                    <p className="text-lg font-semibold text-foreground">{summaryStats.receiptCount} <span className="text-xs font-normal text-muted-foreground">avg ₹{summaryStats.averageSpend.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span></p>
                   </div>
-                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Top Category</p>
-                    <p className="text-xl font-bold text-foreground truncate">{summaryStats.topCategory?.name || "—"}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {summaryStats.topCategory ? `₹${summaryStats.topCategory.amount.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : "No data"}
-                    </p>
+                  <div className="w-px h-8 bg-border hidden sm:block" />
+                  <div className="space-y-0.5">
+                    <p className="text-xs text-muted-foreground">Top Category</p>
+                    <p className="text-lg font-semibold text-foreground truncate max-w-[140px]">{summaryStats.topCategory?.name || "—"}</p>
                   </div>
                 </div>
               )}
