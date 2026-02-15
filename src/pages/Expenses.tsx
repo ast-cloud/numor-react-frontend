@@ -1467,7 +1467,7 @@ const Expenses = () => {
                         <>
                           <span className="text-border hidden sm:inline">|</span>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-muted-foreground">Top:</span>
+                            <span className="text-muted-foreground">Top Category:</span>
                             <span className="font-semibold text-foreground">{summaryStats.topCategory.name}</span>
                           </div>
                         </>
