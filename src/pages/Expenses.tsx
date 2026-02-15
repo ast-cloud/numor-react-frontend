@@ -705,10 +705,10 @@ const Expenses = () => {
         const prefillBillItems: BillItem[] = items.map((item: any) => ({
           name: item.itemName || item.name || "",
           quantity: String(item.quantity || 1),
-          unitType: "pcs",
-          unitPrice: String(item.unitPrice || item.unit_price_before_tax || 0),
-          taxRate: String(item.taxPercent ?? item.tax_percentage ?? ""),
-          itemPrice: String(item.totalPrice || ""),
+          unitType: item.unitType || "pcs",
+          unitPrice: String(item.unitPrice ?? item.unit_price_before_tax ?? 0),
+          taxRate: String(item.taxRate ?? item.taxPercent ?? item.tax_percentage ?? ""),
+          itemPrice: String(item.total ?? item.totalPrice ?? item.itemPrice ?? ""),
         }));
 
         // Set bill common fields
