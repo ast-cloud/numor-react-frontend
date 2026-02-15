@@ -83,6 +83,7 @@ type BillItem = {
 type DialogMode = "default" | "bill";
 
 const paymentMethods = ["Cash", "Credit Card", "Debit Card", "Bank Transfer", "UPI", "Cheque", "Other"];
+const billPaymentMethods = ["Card", "UPI", "Cash", "Bank Transfer"];
 
 const createEmptyBillItem = (): BillItem => ({
   name: "",
@@ -992,28 +993,40 @@ const Expenses = () => {
                               {orgCountry === "India" ? "INR" : orgCountry === "UAE" ? "AED" : orgCountry === "US" ? "USD" : orgCountry === "UK" ? "GBP" : ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"].includes(orgCountry || "") ? "EUR" : "USD"}
                             </span>
                           </div>
-                          <Select value={billCommon.category} onValueChange={(value) => setBillCommon({ ...billCommon, category: value })}>
-                            <SelectTrigger className="truncate">
-                              <SelectValue placeholder="Category" className="truncate" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-popover z-50 min-w-[200px]">
-                              {categories.map((cat) => (
-                                <SelectItem key={cat} value={cat} className="whitespace-normal">
-                                  {cat}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Select value={billCommon.paymentMethod} onValueChange={(value) => setBillCommon({ ...billCommon, paymentMethod: value })}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Payment Method" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-popover z-50">
-                              {paymentMethods.map((method) => (
-                                <SelectItem key={method} value={method}>{method}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="relative">
+                            <Select value={billCommon.category} onValueChange={(value) => setBillCommon({ ...billCommon, category: value })}>
+                              <SelectTrigger className="truncate h-10 pt-4 pb-1">
+                                <SelectValue placeholder=" " className="truncate" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-popover z-50 min-w-[200px]">
+                                {categories.map((cat) => (
+                                  <SelectItem key={cat} value={cat} className="whitespace-normal">
+                                    {cat}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <span className={cn(
+                              "absolute left-3 transition-all duration-200 pointer-events-none text-muted-foreground",
+                              billCommon.category ? "top-1 text-[10px] font-medium" : "top-1/2 -translate-y-1/2 text-sm"
+                            )}>Category</span>
+                          </div>
+                          <div className="relative">
+                            <Select value={billCommon.paymentMethod} onValueChange={(value) => setBillCommon({ ...billCommon, paymentMethod: value })}>
+                              <SelectTrigger className="h-10 pt-4 pb-1">
+                                <SelectValue placeholder=" " />
+                              </SelectTrigger>
+                              <SelectContent className="bg-popover z-50">
+                                {billPaymentMethods.map((method) => (
+                                  <SelectItem key={method} value={method}>{method}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <span className={cn(
+                              "absolute left-3 transition-all duration-200 pointer-events-none text-muted-foreground",
+                              billCommon.paymentMethod ? "top-1 text-[10px] font-medium" : "top-1/2 -translate-y-1/2 text-sm"
+                            )}>Payment Method</span>
+                          </div>
                         </div>
                       </div>
                     </div>
