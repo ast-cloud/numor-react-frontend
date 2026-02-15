@@ -1601,6 +1601,16 @@ const Expenses = () => {
             ) : (
               /* Receipt List View */
               <div className="space-y-2">
+                {/* Column Header */}
+                <div className="flex items-center justify-between px-4 py-2 text-xs text-muted-foreground font-medium">
+                  <span>Receipt</span>
+                  <button
+                    className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+                    onClick={() => handleSort("totalPrice")}
+                  >
+                    Amount {getSortIcon("totalPrice")}
+                  </button>
+                </div>
                 {filteredApiExpenses.length > 0 ? (
                   filteredApiExpenses.map((receipt) => (
                     <div
