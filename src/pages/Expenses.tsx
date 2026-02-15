@@ -550,7 +550,7 @@ const Expenses = () => {
     }
   };
 
-  const handleManualSubmit = (e: React.FormEvent) => {
+  const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check if ALL items have their required fields filled
@@ -577,23 +577,65 @@ const Expenses = () => {
       return;
     }
 
-    const newExpenses: Expense[] = expenseItems.map((item, index) => ({
-      id: `${Date.now()}-${index}`,
-      title: item.title,
-      description: item.merchant ? `Merchant: ${item.merchant}` : "",
-      quantity: parseFloat(item.quantity),
-      unitPrice: parseFloat(item.unitPrice),
-      taxType: item.taxType,
-      taxPercentage: parseFloat(item.taxPercentage) || 0,
-      category: item.category,
-      date: item.date,
-    }));
+    // Build payload matching confirmAndSaveExpense API
+    const item = expenseItems[0];
+    const unitPrice = parseFloat(item.unitPrice) || 0;
+    const quantity = parseFloat(item.quantity) || 1;
+    const taxRate = parseFloat(item.taxPercentage) || 0;
+    const itemTotal = unitPrice * quantity * (1 + taxRate / 100);
 
-    setExpenses([...newExpenses, ...expenses]);
-    setExpenseItems([createEmptyItem(orgCountry)]);
-    setCustomTaxItems(new Set());
-    setIsManualDialogOpen(false);
-    toast({ title: "Success", description: `${newExpenses.length} expense(s) added successfully` });
+    const payload = {
+      merchant: item.merchant || item.title,
+      expenseDate: item.date,
+      totalAmount: itemTotal,
+      category: item.category || "Other",
+      paymentMethod: (item.paymentMethod || "CASH").toUpperCase(),
+      receiptUrl: null,
+      ocrExtracted: false,
+      ocrConfidence: null,
+      items: expenseItems.map((ei) => {
+        const qty = parseFloat(ei.quantity) || 1;
+        const up = parseFloat(ei.unitPrice) || 0;
+        const tax = parseFloat(ei.taxPercentage) || 0;
+        return {
+          name: ei.title,
+          quantity: qty,
+          unitPrice: up,
+          unitType: (ei.unitType || "Units").toUpperCase(),
+          taxRate: tax,
+          total: qty * up * (1 + tax / 100),
+        };
+      }),
+    };
+
+    try {
+      const token = getToken();
+      const res = await fetch(`${config.backendHost}/api/expenses/confirmAndSaveExpense`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        toast({ title: "Error", description: result.message || "Failed to save expense", variant: "destructive" });
+        return;
+      }
+
+      await loadExpenses();
+
+      setExpenseItems([createEmptyItem(orgCountry)]);
+      setCustomTaxItems(new Set());
+      setIsManualDialogOpen(false);
+      toast({ title: "Success", description: "Expense saved successfully" });
+    } catch (error) {
+      console.error("Save expense error:", error);
+      toast({ title: "Error", description: "Network error. Please try again.", variant: "destructive" });
+    }
   };
 
   const handleBillSubmit = async (e: React.FormEvent) => {
