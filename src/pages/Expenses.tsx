@@ -824,7 +824,7 @@ const Expenses = () => {
                           onChange={(e) => updateItem(0, "date", e.target.value)}
                         />
                       </div>
-                      <div className="grid gap-3" style={{ gridTemplateColumns: '0.7fr 0.8fr 1.2fr 0.6fr 0.8fr 1fr 1fr' }}>
+                      <div className="grid gap-3" style={{ gridTemplateColumns: '0.7fr 0.8fr 1.2fr 1.2fr 1fr 1fr' }}>
                         <FloatingLabelInput
                           label="Qty *"
                           type="number"
@@ -857,16 +857,12 @@ const Expenses = () => {
                             {orgCountry === "India" ? "INR" : orgCountry === "UAE" ? "AED" : orgCountry === "US" ? "USD" : orgCountry === "UK" ? "GBP" : ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"].includes(orgCountry || "") ? "EUR" : "USD"}
                           </span>
                         </div>
-                        <div className="flex items-center justify-center">
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {orgCountry && countryTaxDefaults[orgCountry] ? countryTaxDefaults[orgCountry].taxType : "Tax"}
-                          </span>
-                        </div>
                         {(() => {
+                          const taxLabel = orgCountry && countryTaxDefaults[orgCountry] ? countryTaxDefaults[orgCountry].taxType : "Tax";
                           const options = getTaxPercentOptions(orgCountry);
                           const isCustom = customTaxItems.has(0) || (expenseItems[0].taxPercentage !== "" && !options.map(String).includes(expenseItems[0].taxPercentage));
                           return isCustom ? (
-                            <div className="flex gap-1">
+                            <div className="flex items-center gap-1">
                               <FloatingLabelInput
                                 label="Tax %"
                                 type="number"
@@ -877,6 +873,7 @@ const Expenses = () => {
                                 onChange={(e) => updateItem(0, "taxPercentage", e.target.value)}
                                 className="flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
+                              <span className="text-xs font-medium text-muted-foreground shrink-0">{taxLabel}</span>
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -892,28 +889,31 @@ const Expenses = () => {
                               </Button>
                             </div>
                           ) : (
-                            <Select
-                              value={expenseItems[0].taxPercentage}
-                              onValueChange={(value) => {
-                                if (value === "__custom__") {
-                                  setCustomTaxItems((prev) => new Set(prev).add(0));
-                                } else {
-                                  updateItem(0, "taxPercentage", value);
-                                }
-                              }}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Tax %" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-popover z-50">
-                                {options.map((pct) => (
-                                  <SelectItem key={pct} value={String(pct)}>
-                                    {pct}%
-                                  </SelectItem>
-                                ))}
-                                <SelectItem value="__custom__">Custom...</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-1">
+                              <Select
+                                value={expenseItems[0].taxPercentage}
+                                onValueChange={(value) => {
+                                  if (value === "__custom__") {
+                                    setCustomTaxItems((prev) => new Set(prev).add(0));
+                                  } else {
+                                    updateItem(0, "taxPercentage", value);
+                                  }
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Tax %" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-popover z-50">
+                                  {options.map((pct) => (
+                                    <SelectItem key={pct} value={String(pct)}>
+                                      {pct}%
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="__custom__">Custom...</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <span className="text-xs font-medium text-muted-foreground shrink-0">{taxLabel}</span>
+                            </div>
                           );
                         })()}
                         <Select value={expenseItems[0].category} onValueChange={(value) => updateItem(0, "category", value)}>
