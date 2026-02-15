@@ -1567,7 +1567,7 @@ const Expenses = () => {
                 <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-1">
                   <h3 className="text-lg font-semibold text-foreground">{selectedReceipt.merchant}</h3>
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                    <span>Date: {new Date(selectedReceipt.expenseDate).toLocaleDateString()}</span>
+                    <span>Date: {format(new Date(selectedReceipt.expenseDate), "MMM d, yyyy")}</span>
                     <span>Total: ₹{parseFloat(selectedReceipt.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     <span>Category: {selectedReceipt.category || "—"}</span>
                     <span>Payment: {selectedReceipt.paymentMethod || "—"}</span>
@@ -1611,7 +1611,7 @@ const Expenses = () => {
                       <div className="space-y-0.5">
                         <p className="font-medium text-foreground">{receipt.merchant}</p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(receipt.expenseDate).toLocaleDateString()} · {receipt.items.length} item{receipt.items.length !== 1 ? "s" : ""} · {receipt.category || "Uncategorized"}
+                          {format(new Date(receipt.expenseDate), "MMM d, yyyy")} · {receipt.items.length} item{receipt.items.length !== 1 ? "s" : ""} · {receipt.category || "Uncategorized"}
                         </p>
                       </div>
                       <p className="text-base font-semibold text-foreground">
