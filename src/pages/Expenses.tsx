@@ -1350,7 +1350,7 @@ const Expenses = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Unit Price (₹) *</Label>
+                  <Label>Unit Price ({countryCurrency[orgCountry || ""] || "USD"}) *</Label>
                   <div className="relative">
                     <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -1610,7 +1610,7 @@ const Expenses = () => {
                   <h3 className="text-lg font-semibold text-foreground">{selectedReceipt.merchant}</h3>
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <span>Date: {format(new Date(selectedReceipt.expenseDate), "MMM d, yyyy")}</span>
-                    <span>Total: ₹{parseFloat(selectedReceipt.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span>Total: {parseFloat(selectedReceipt.totalAmount).toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     <span>Category: {selectedReceipt.category || "—"}</span>
                     <span>Payment: {selectedReceipt.paymentMethod || "—"}</span>
                   </div>
@@ -1667,7 +1667,7 @@ const Expenses = () => {
                         </p>
                       </div>
                       <p className="text-base font-semibold text-foreground">
-                        ₹{parseFloat(receipt.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {parseFloat(receipt.totalAmount).toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
                   ))
