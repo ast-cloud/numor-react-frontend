@@ -51,12 +51,14 @@ type Expense = {
 
 type ExpenseItem = {
   title: string;
-  description: string;
+  merchant: string;
   quantity: string;
+  unitType: string;
   unitPrice: string;
   taxType: string;
   taxPercentage: string;
   category: string;
+  paymentMethod: string;
   date: string;
 };
 
@@ -176,16 +178,22 @@ const getTaxPercentOptions = (country?: string): number[] => {
   return expenseTaxPercentOptions[country] || [0, 5, 12, 18, 20, 25, 28];
 };
 
+const unitTypes = ["Pcs", "Kg", "g", "Ltr", "ml", "m", "ft", "Box", "Pack", "Unit", "Hrs", "Sq ft"];
+
+const quickPaymentMethods = ["Card", "UPI", "Cash"];
+
 const createEmptyItem = (orgCountry?: string): ExpenseItem => {
   const defaults = orgCountry ? countryTaxDefaults[orgCountry] : undefined;
   return {
     title: "",
-    description: "",
+    merchant: "",
     quantity: "",
+    unitType: "Pcs",
     unitPrice: "",
     taxType: defaults?.taxType || "",
     taxPercentage: defaults?.taxPercent || "",
     category: "",
+    paymentMethod: "",
     date: new Date().toISOString().split("T")[0],
   };
 };
@@ -551,7 +559,7 @@ const Expenses = () => {
     const newExpenses: Expense[] = expenseItems.map((item, index) => ({
       id: `${Date.now()}-${index}`,
       title: item.title,
-      description: item.description,
+      description: item.merchant ? `Merchant: ${item.merchant}` : "",
       quantity: parseFloat(item.quantity),
       unitPrice: parseFloat(item.unitPrice),
       taxType: item.taxType,
@@ -798,11 +806,16 @@ const Expenses = () => {
                   {/* Quick Single Expense Form */}
                   <form onSubmit={handleManualSubmit} className="space-y-4">
                     <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-3 gap-3">
                         <FloatingLabelInput
                           label="Title *"
                           value={expenseItems[0].title}
                           onChange={(e) => updateItem(0, "title", e.target.value)}
+                        />
+                        <FloatingLabelInput
+                          label="Merchant"
+                          value={expenseItems[0].merchant}
+                          onChange={(e) => updateItem(0, "merchant", e.target.value)}
                         />
                         <FloatingLabelInput
                           label="Date"
@@ -811,9 +824,9 @@ const Expenses = () => {
                           onChange={(e) => updateItem(0, "date", e.target.value)}
                         />
                       </div>
-                      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1.2fr 1fr 0.7fr 1.3fr' }}>
+                      <div className="grid gap-3" style={{ gridTemplateColumns: '0.7fr 0.8fr 1.2fr 0.6fr 0.8fr 1fr 1fr' }}>
                         <FloatingLabelInput
-                          label="Quantity *"
+                          label="Qty *"
                           type="number"
                           step="1"
                           min="1"
@@ -821,6 +834,16 @@ const Expenses = () => {
                           onChange={(e) => updateItem(0, "quantity", e.target.value)}
                           className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
+                        <Select value={expenseItems[0].unitType} onValueChange={(value) => updateItem(0, "unitType", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Unit" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover z-50">
+                            {unitTypes.map((u) => (
+                              <SelectItem key={u} value={u}>{u}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <div className="flex items-center gap-1">
                           <FloatingLabelInput
                             label="Unit Price *"
@@ -834,17 +857,11 @@ const Expenses = () => {
                             {orgCountry === "India" ? "INR" : orgCountry === "UAE" ? "AED" : orgCountry === "US" ? "USD" : orgCountry === "UK" ? "GBP" : ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"].includes(orgCountry || "") ? "EUR" : "USD"}
                           </span>
                         </div>
-                        <Select value={expenseItems[0].taxType} onValueChange={(value) => updateItem(0, "taxType", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Tax Type" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-popover z-50">
-                            <SelectItem value="GST">GST</SelectItem>
-                            <SelectItem value="VAT">VAT</SelectItem>
-                            <SelectItem value="Sales Tax">Sales Tax</SelectItem>
-                            <SelectItem value="None">None</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center justify-center">
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {orgCountry && countryTaxDefaults[orgCountry] ? countryTaxDefaults[orgCountry].taxType : "Tax"}
+                          </span>
+                        </div>
                         {(() => {
                           const options = getTaxPercentOptions(orgCountry);
                           const isCustom = customTaxItems.has(0) || (expenseItems[0].taxPercentage !== "" && !options.map(String).includes(expenseItems[0].taxPercentage));
@@ -911,12 +928,17 @@ const Expenses = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        <Select value={expenseItems[0].paymentMethod} onValueChange={(value) => updateItem(0, "paymentMethod", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Payment" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover z-50">
+                            {quickPaymentMethods.map((pm) => (
+                              <SelectItem key={pm} value={pm}>{pm}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <FloatingLabelInput
-                        label="Description (optional)"
-                        value={expenseItems[0].description}
-                        onChange={(e) => updateItem(0, "description", e.target.value)}
-                      />
                     </div>
 
                     <div className="flex gap-3 pt-2">
