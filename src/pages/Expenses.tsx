@@ -221,6 +221,7 @@ const Expenses = () => {
     paymentMethod: "",
   });
   const [billItems, setBillItems] = useState<BillItem[]>([createEmptyBillItem()]);
+  const [ocrMeta, setOcrMeta] = useState<{ ocrExtracted: boolean; ocrConfidence: number | null; receiptUrl: string | null }>({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
 
   // Fetch org country for tax defaults
   useEffect(() => {
@@ -576,7 +577,7 @@ const Expenses = () => {
     toast({ title: "Success", description: `${newExpenses.length} expense(s) added successfully` });
   };
 
-  const handleBillSubmit = (e: React.FormEvent) => {
+  const handleBillSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!billCommon.merchant.trim()) {
@@ -600,24 +601,67 @@ const Expenses = () => {
       return;
     }
 
-    const newExpenses: Expense[] = billItems.map((item, index) => ({
-      id: `${Date.now()}-${index}`,
-      title: item.name,
-      description: `From: ${billCommon.merchant}`,
-      quantity: parseFloat(item.quantity) || 1,
-      unitPrice: parseFloat(item.unitPrice) || 0,
-      taxType: "",
-      taxPercentage: parseFloat(item.taxRate) || 0,
+    const payload = {
+      merchant: billCommon.merchant,
+      expenseDate: billCommon.billDate,
+      totalAmount: parseFloat(billCommon.totalAmount) || 0,
       category: billCommon.category || "Other",
-      date: billCommon.billDate,
-    }));
+      paymentMethod: (billCommon.paymentMethod || "CASH").toUpperCase(),
+      receiptUrl: ocrMeta.receiptUrl,
+      ocrExtracted: ocrMeta.ocrExtracted,
+      ocrConfidence: ocrMeta.ocrConfidence,
+      items: billItems.map((item) => ({
+        name: item.name,
+        quantity: parseFloat(item.quantity) || 1,
+        unitPrice: parseFloat(item.unitPrice) || 0,
+        unitType: (item.unitType || "Units").toUpperCase(),
+        taxRate: parseFloat(item.taxRate) || 0,
+        total: parseFloat(item.itemPrice) || 0,
+      })),
+    };
 
-    setExpenses([...newExpenses, ...expenses]);
-    setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
-    setBillItems([createEmptyBillItem()]);
-    setDialogMode("default");
-    setIsManualDialogOpen(false);
-    toast({ title: "Success", description: `${newExpenses.length} expense(s) added from bill` });
+    try {
+      const token = getToken();
+      const res = await fetch(`${config.backendHost}/api/expenses/confirmAndSaveExpense`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        toast({ title: "Error", description: result.message || "Failed to save expense", variant: "destructive" });
+        return;
+      }
+
+      // Also add to local state for immediate UI update
+      const newExpenses: Expense[] = billItems.map((item, index) => ({
+        id: `${Date.now()}-${index}`,
+        title: item.name,
+        description: `From: ${billCommon.merchant}`,
+        quantity: parseFloat(item.quantity) || 1,
+        unitPrice: parseFloat(item.unitPrice) || 0,
+        taxType: "",
+        taxPercentage: parseFloat(item.taxRate) || 0,
+        category: billCommon.category || "Other",
+        date: billCommon.billDate,
+      }));
+      setExpenses([...newExpenses, ...expenses]);
+
+      setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
+      setBillItems([createEmptyBillItem()]);
+      setOcrMeta({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
+      setDialogMode("default");
+      setIsManualDialogOpen(false);
+      toast({ title: "Success", description: `${newExpenses.length} expense(s) saved successfully` });
+    } catch (error) {
+      console.error("Save expense error:", error);
+      toast({ title: "Error", description: "Network error. Please try again.", variant: "destructive" });
+    }
   };
 
   const handleEditExpense = (expense: Expense) => {
@@ -720,6 +764,11 @@ const Expenses = () => {
           paymentMethod: parsedData.paymentMethod || "",
         });
         setBillItems(prefillBillItems);
+        setOcrMeta({
+          ocrExtracted: !!parsedData.ocrExtracted,
+          ocrConfidence: result.data.confidence ?? parsedData.confidence ?? null,
+          receiptUrl: parsedData.receiptUrl || null,
+        });
         setDialogMode("bill");
         toast({ title: "Success", description: `Parsed ${items.length} item(s) from the bill` });
       } else {
@@ -757,6 +806,7 @@ const Expenses = () => {
                 setDialogMode("default");
                 setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
                 setBillItems([createEmptyBillItem()]);
+                setOcrMeta({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
               }
             }}>
             <DialogTrigger asChild>
