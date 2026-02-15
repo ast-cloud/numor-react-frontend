@@ -1401,21 +1401,22 @@ const Expenses = () => {
                 <div className="rounded-lg border border-border bg-muted/20 p-4 mb-6 space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     {/* Left: Stats */}
-                    <div className="flex items-center gap-4 flex-wrap text-sm">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-foreground">
-                          {summaryStats.totalSpend.toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </span>
-                        <span className="text-muted-foreground">Total</span>
+                    <div className="flex items-start gap-6 flex-wrap text-sm">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-foreground">
+                            {summaryStats.totalSpend.toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
+                          <span className="text-muted-foreground">Total</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-foreground">
+                            {summaryStats.totalTax.toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
+                          <span className="text-muted-foreground">{orgCountry === "India" ? "GST" : "Tax"} Claimable</span>
+                        </div>
                       </div>
-                      <span className="text-border hidden sm:inline">|</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-foreground">
-                          {summaryStats.totalTax.toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </span>
-                        <span className="text-muted-foreground">{orgCountry === "India" ? "GST" : "Tax"}</span>
-                      </div>
-                      <span className="text-border hidden sm:inline">|</span>
+                      <span className="text-border hidden sm:inline mt-1">|</span>
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-foreground">{summaryStats.receiptCount}</span>
                         <span className="text-muted-foreground">Receipt{summaryStats.receiptCount !== 1 ? "s" : ""}</span>
