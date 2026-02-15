@@ -305,50 +305,32 @@ const Expenses = () => {
 
   const hasExpenses = expenses.length > 0 || apiExpenses.length > 0;
 
-  // Filter and sort expenses
-  const filteredAndSortedExpenses = useMemo(() => {
-    let result = [...expenses];
+  // Filter and sort API expenses (receipts)
+  const filteredApiExpenses = useMemo(() => {
+    let result = [...apiExpenses];
 
     // Apply category filter
     if (categoryFilter.length > 0) {
-      result = result.filter((exp) => categoryFilter.includes(exp.category));
+      result = result.filter((r) => categoryFilter.includes(r.category));
     }
 
     // Apply time range filter
     const dateRange = getDateRange();
     if (dateRange) {
-      result = result.filter((exp) => {
-        const expenseDate = new Date(exp.date);
-        return isWithinInterval(expenseDate, { start: dateRange.start, end: dateRange.end });
+      result = result.filter((r) => {
+        const d = new Date(r.expenseDate);
+        return isWithinInterval(d, { start: dateRange.start, end: dateRange.end });
       });
-    }
-
-    // Apply unit price filter
-    if (unitPriceMin) {
-      const min = parseFloat(unitPriceMin);
-      if (!isNaN(min)) {
-        result = result.filter((exp) => exp.unitPrice >= min);
-      }
-    }
-    if (unitPriceMax) {
-      const max = parseFloat(unitPriceMax);
-      if (!isNaN(max)) {
-        result = result.filter((exp) => exp.unitPrice <= max);
-      }
     }
 
     // Apply total price filter
     if (totalPriceMin) {
       const min = parseFloat(totalPriceMin);
-      if (!isNaN(min)) {
-        result = result.filter((exp) => exp.quantity * exp.unitPrice >= min);
-      }
+      if (!isNaN(min)) result = result.filter((r) => parseFloat(r.totalAmount) >= min);
     }
     if (totalPriceMax) {
       const max = parseFloat(totalPriceMax);
-      if (!isNaN(max)) {
-        result = result.filter((exp) => exp.quantity * exp.unitPrice <= max);
-      }
+      if (!isNaN(max)) result = result.filter((r) => parseFloat(r.totalAmount) <= max);
     }
 
     // Apply sorting
@@ -356,13 +338,13 @@ const Expenses = () => {
       let comparison = 0;
       switch (sortField) {
         case "date":
-          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+          comparison = new Date(a.expenseDate).getTime() - new Date(b.expenseDate).getTime();
           break;
         case "totalPrice":
-          comparison = a.quantity * a.unitPrice - b.quantity * b.unitPrice;
+          comparison = parseFloat(a.totalAmount) - parseFloat(b.totalAmount);
           break;
         case "category":
-          comparison = a.category.localeCompare(b.category);
+          comparison = (a.category || "").localeCompare(b.category || "");
           break;
       }
       return sortOrder === "asc" ? comparison : -comparison;
@@ -370,17 +352,44 @@ const Expenses = () => {
 
     return result;
   }, [
-    expenses,
+    apiExpenses,
     categoryFilter,
     timeRangePreset,
     customDateRange,
-    unitPriceMin,
-    unitPriceMax,
     totalPriceMin,
     totalPriceMax,
     sortField,
     sortOrder,
   ]);
+
+  // Filter and sort local expenses (legacy)
+  const filteredAndSortedExpenses = useMemo(() => {
+    let result = [...expenses];
+    if (categoryFilter.length > 0) {
+      result = result.filter((exp) => categoryFilter.includes(exp.category));
+    }
+    const dateRange = getDateRange();
+    if (dateRange) {
+      result = result.filter((exp) => {
+        const expenseDate = new Date(exp.date);
+        return isWithinInterval(expenseDate, { start: dateRange.start, end: dateRange.end });
+      });
+    }
+    if (unitPriceMin) { const min = parseFloat(unitPriceMin); if (!isNaN(min)) result = result.filter((exp) => exp.unitPrice >= min); }
+    if (unitPriceMax) { const max = parseFloat(unitPriceMax); if (!isNaN(max)) result = result.filter((exp) => exp.unitPrice <= max); }
+    if (totalPriceMin) { const min = parseFloat(totalPriceMin); if (!isNaN(min)) result = result.filter((exp) => exp.quantity * exp.unitPrice >= min); }
+    if (totalPriceMax) { const max = parseFloat(totalPriceMax); if (!isNaN(max)) result = result.filter((exp) => exp.quantity * exp.unitPrice <= max); }
+    result.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "date": comparison = new Date(a.date).getTime() - new Date(b.date).getTime(); break;
+        case "totalPrice": comparison = a.quantity * a.unitPrice - b.quantity * b.unitPrice; break;
+        case "category": comparison = a.category.localeCompare(b.category); break;
+      }
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+    return result;
+  }, [expenses, categoryFilter, timeRangePreset, customDateRange, unitPriceMin, unitPriceMax, totalPriceMin, totalPriceMax, sortField, sortOrder]);
 
   const getTimeRangeLabel = () => {
     switch (timeRangePreset) {
@@ -1657,23 +1666,30 @@ const Expenses = () => {
             ) : (
               /* Receipt List View */
               <div className="space-y-2">
-                {apiExpenses.map((receipt) => (
-                  <div
-                    key={receipt.id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => setSelectedReceipt(receipt)}
-                  >
-                    <div className="space-y-0.5">
-                      <p className="font-medium text-foreground">{receipt.merchant}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(receipt.expenseDate).toLocaleDateString()} · {receipt.items.length} item{receipt.items.length !== 1 ? "s" : ""} · {receipt.category || "Uncategorized"}
+                {filteredApiExpenses.length > 0 ? (
+                  filteredApiExpenses.map((receipt) => (
+                    <div
+                      key={receipt.id}
+                      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => setSelectedReceipt(receipt)}
+                    >
+                      <div className="space-y-0.5">
+                        <p className="font-medium text-foreground">{receipt.merchant}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(receipt.expenseDate).toLocaleDateString()} · {receipt.items.length} item{receipt.items.length !== 1 ? "s" : ""} · {receipt.category || "Uncategorized"}
+                        </p>
+                      </div>
+                      <p className="text-base font-semibold text-foreground">
+                        ₹{parseFloat(receipt.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
-                    <p className="text-base font-semibold text-foreground">
-                      ₹{parseFloat(receipt.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <p className="text-muted-foreground">No receipts match the current filters</p>
+                    <Button variant="link" onClick={clearFilters} className="mt-2">Clear all filters</Button>
                   </div>
-                ))}
+                )}
               </div>
             )
           ) : (
