@@ -1375,221 +1375,6 @@ const Expenses = () => {
       {/* Expense List */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-            {hasExpenses && (
-              <div className="flex items-center gap-2 flex-wrap justify-end">
-                {/* Date Filter - Separate */}
-                <Select value={timeRangePreset} onValueChange={(v) => handleTimeRangeChange(v as TimeRangePreset)}>
-                  <SelectTrigger className="h-8 text-xs w-auto gap-1.5">
-                    <CalendarIcon className="w-3 h-3" />
-                    <SelectValue placeholder="All Time" />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="this_week">This Week</SelectItem>
-                    <SelectItem value="this_month">This Month</SelectItem>
-                    <SelectItem value="this_quarter">This Quarter</SelectItem>
-                    <SelectItem value="custom">Custom Range</SelectItem>
-                  </SelectContent>
-                </Select>
-                {timeRangePreset === "custom" && (
-                  <Popover
-                    open={isCustomDatePopoverOpen}
-                    onOpenChange={(open) => {
-                      setIsCustomDatePopoverOpen(open);
-                      if (open) {
-                        setTempCustomDateRange(customDateRange);
-                      }
-                    }}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={cn("h-8 text-xs gap-1.5", !customDateRange && "text-muted-foreground")}
-                      >
-                        <CalendarIcon className="w-3 h-3" />
-                        {customDateRange?.from ? (
-                          customDateRange.to ? (
-                            <>
-                              {format(customDateRange.from, "MMM d")} - {format(customDateRange.to, "MMM d")}
-                            </>
-                          ) : (
-                            format(customDateRange.from, "MMM d, y")
-                          )
-                        ) : (
-                          <span>Pick dates</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <div className="flex flex-col">
-                        <Calendar
-                          initialFocus
-                          mode="range"
-                          defaultMonth={tempCustomDateRange?.from}
-                          selected={tempCustomDateRange}
-                          onSelect={setTempCustomDateRange}
-                          numberOfMonths={2}
-                          className="pointer-events-auto"
-                        />
-                        <div className="p-2 border-t border-border flex justify-end">
-                          <Button
-                            size="sm"
-                            className="h-7 px-3 text-xs"
-                            onClick={handleApplyCustomDateRange}
-                            disabled={!tempCustomDateRange?.from}
-                          >
-                            Apply
-                          </Button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                )}
-
-                {/* Generic Filters */}
-                <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-                      <Filter className="w-3 h-3" />
-                      Filters
-                      {activeFilterCount > 0 && (
-                        <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                          {activeFilterCount}
-                        </span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-4" align="end">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium">Filters</h4>
-                        {hasActiveFilters && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              clearFilters();
-                              setIsFilterPopoverOpen(false);
-                            }}
-                            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                          >
-                            Clear all
-                          </Button>
-                        )}
-                      </div>
-
-                      {/* Category Filter */}
-                      <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Categories</Label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {categories.map((cat) => (
-                            <Button
-                              key={cat}
-                              variant="ghost"
-                              size="sm"
-                              className={cn(
-                                "h-7 px-2.5 text-xs",
-                                categoryFilter.includes(cat)
-                                  ? "bg-primary/15 text-primary hover:bg-primary/20"
-                                  : "text-muted-foreground hover:text-foreground",
-                              )}
-                              onClick={() => toggleCategoryFilter(cat)}
-                            >
-                              {cat}
-                            </Button>
-                          ))}
-                        </div>
-                        {categoryFilter.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs px-2 text-muted-foreground"
-                            onClick={() => setCategoryFilter([])}
-                          >
-                            Clear categories
-                          </Button>
-                        )}
-                      </div>
-
-                      {/* Unit Price Range */}
-                      <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Unit Price Range</Label>
-                        <div className="flex items-center gap-2">
-                          <div className="relative flex-1">
-                            <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              placeholder="Min"
-                              value={unitPriceMin}
-                              onChange={(e) => setUnitPriceMin(e.target.value)}
-                              className="h-8 pl-6 text-xs"
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground">to</span>
-                          <div className="relative flex-1">
-                            <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              placeholder="Max"
-                              value={unitPriceMax}
-                              onChange={(e) => setUnitPriceMax(e.target.value)}
-                              className="h-8 pl-6 text-xs"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Total Price Range */}
-                      <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Total Price Range</Label>
-                        <div className="flex items-center gap-2">
-                          <div className="relative flex-1">
-                            <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              placeholder="Min"
-                              value={totalPriceMin}
-                              onChange={(e) => setTotalPriceMin(e.target.value)}
-                              className="h-8 pl-6 text-xs"
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground">to</span>
-                          <div className="relative flex-1">
-                            <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              placeholder="Max"
-                              value={totalPriceMax}
-                              onChange={(e) => setTotalPriceMax(e.target.value)}
-                              className="h-8 pl-6 text-xs"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button size="sm" className="w-full h-8 text-xs" onClick={() => setIsFilterPopoverOpen(false)}>
-                        Apply Filters
-                      </Button>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-
-                {hasActiveFilters && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    Clear all
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
         </CardHeader>
         <CardContent>
           {isLoadingExpenses ? (
@@ -1601,29 +1386,156 @@ const Expenses = () => {
             <>
               {/* Summary Insight Cards */}
               {!selectedReceipt && (
-                <div className="rounded-lg bg-muted/30 p-5 mb-6 space-y-3">
-                  <div className="flex items-baseline gap-2">
-                    <IndianRupee className="w-4 h-4 text-muted-foreground shrink-0 relative top-[2px]" />
-                    <span className="text-2xl font-bold text-foreground">
-                      {summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </span>
-                    <span className="text-sm text-muted-foreground">Expenses</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <IndianRupee className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="font-medium text-foreground">
-                      {summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </span>
-                    <span className="text-muted-foreground">{orgCountry === "India" ? "GST" : "Tax"} Claimable</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>{summaryStats.receiptCount} Receipt{summaryStats.receiptCount !== 1 ? "s" : ""}</span>
-                    {summaryStats.topCategory && (
-                      <>
-                        <span>·</span>
-                        <span>Top: {summaryStats.topCategory.name}</span>
-                      </>
-                    )}
+                <div className="rounded-lg bg-muted/30 p-5 mb-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    {/* Left: Stats */}
+                    <div className="space-y-2">
+                      <div className="flex items-baseline gap-2">
+                        <IndianRupee className="w-4 h-4 text-muted-foreground shrink-0 relative top-[2px]" />
+                        <span className="text-2xl font-bold text-foreground">
+                          {summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </span>
+                        <span className="text-sm text-muted-foreground">Expenses</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <IndianRupee className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span className="font-medium text-foreground">
+                          {summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </span>
+                        <span className="text-muted-foreground">{orgCountry === "India" ? "GST" : "Tax"} Claimable</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>{summaryStats.receiptCount} Receipt{summaryStats.receiptCount !== 1 ? "s" : ""}</span>
+                        {summaryStats.topCategory && (
+                          <>
+                            <span>·</span>
+                            <span>Top: {summaryStats.topCategory.name}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right: Filters */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Select value={timeRangePreset} onValueChange={(v) => handleTimeRangeChange(v as TimeRangePreset)}>
+                        <SelectTrigger className="h-8 text-xs w-auto gap-1.5">
+                          <CalendarIcon className="w-3 h-3" />
+                          <SelectValue placeholder="All Time" />
+                        </SelectTrigger>
+                        <SelectContent align="end">
+                          <SelectItem value="all">All Time</SelectItem>
+                          <SelectItem value="today">Today</SelectItem>
+                          <SelectItem value="this_week">This Week</SelectItem>
+                          <SelectItem value="this_month">This Month</SelectItem>
+                          <SelectItem value="this_quarter">This Quarter</SelectItem>
+                          <SelectItem value="custom">Custom Range</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {timeRangePreset === "custom" && (
+                        <Popover
+                          open={isCustomDatePopoverOpen}
+                          onOpenChange={(open) => {
+                            setIsCustomDatePopoverOpen(open);
+                            if (open) setTempCustomDateRange(customDateRange);
+                          }}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={cn("h-8 text-xs gap-1.5", !customDateRange && "text-muted-foreground")}
+                            >
+                              <CalendarIcon className="w-3 h-3" />
+                              {customDateRange?.from ? (
+                                customDateRange.to ? (
+                                  <>{format(customDateRange.from, "MMM d")} - {format(customDateRange.to, "MMM d")}</>
+                                ) : (
+                                  format(customDateRange.from, "MMM d, y")
+                                )
+                              ) : (
+                                <span>Pick dates</span>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="end">
+                            <div className="flex flex-col">
+                              <Calendar
+                                initialFocus
+                                mode="range"
+                                defaultMonth={tempCustomDateRange?.from}
+                                selected={tempCustomDateRange}
+                                onSelect={setTempCustomDateRange}
+                                numberOfMonths={2}
+                                className="pointer-events-auto"
+                              />
+                              <div className="p-2 border-t border-border flex justify-end">
+                                <Button size="sm" className="h-7 px-3 text-xs" onClick={handleApplyCustomDateRange} disabled={!tempCustomDateRange?.from}>
+                                  Apply
+                                </Button>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                            <Filter className="w-3 h-3" />
+                            Filters
+                            {activeFilterCount > 0 && (
+                              <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                                {activeFilterCount}
+                              </span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-4" align="end">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-medium">Filters</h4>
+                              {hasActiveFilters && (
+                                <Button variant="ghost" size="sm" onClick={() => { clearFilters(); setIsFilterPopoverOpen(false); }} className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground">
+                                  Clear all
+                                </Button>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">Categories</Label>
+                              <div className="flex flex-wrap gap-1.5">
+                                {categories.map((cat) => (
+                                  <Button key={cat} variant="ghost" size="sm" className={cn("h-7 px-2.5 text-xs", categoryFilter.includes(cat) ? "bg-primary/15 text-primary hover:bg-primary/20" : "text-muted-foreground hover:text-foreground")} onClick={() => toggleCategoryFilter(cat)}>
+                                    {cat}
+                                  </Button>
+                                ))}
+                              </div>
+                              {categoryFilter.length > 0 && (
+                                <Button variant="ghost" size="sm" className="h-6 text-xs px-2 text-muted-foreground" onClick={() => setCategoryFilter([])}>Clear categories</Button>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-muted-foreground">Total Price Range</Label>
+                              <div className="flex items-center gap-2">
+                                <div className="relative flex-1">
+                                  <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                                  <Input type="number" placeholder="Min" value={totalPriceMin} onChange={(e) => setTotalPriceMin(e.target.value)} className="h-8 pl-6 text-xs" />
+                                </div>
+                                <span className="text-xs text-muted-foreground">to</span>
+                                <div className="relative flex-1">
+                                  <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                                  <Input type="number" placeholder="Max" value={totalPriceMax} onChange={(e) => setTotalPriceMax(e.target.value)} className="h-8 pl-6 text-xs" />
+                                </div>
+                              </div>
+                            </div>
+                            <Button size="sm" className="w-full h-8 text-xs" onClick={() => setIsFilterPopoverOpen(false)}>Apply Filters</Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      {hasActiveFilters && (
+                        <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground">
+                          Clear all
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
