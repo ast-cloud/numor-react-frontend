@@ -32,6 +32,7 @@ import { DateRange } from "react-day-picker";
 
 import { config } from "@/lib/config";
 import { getToken } from "@/lib/api/authToken";
+import { fetchExpenses, type ExpenseAPI } from "@/lib/api/expenses";
 
 type SortField = "date" | "totalPrice" | "category";
 type SortOrder = "asc" | "desc";
@@ -202,6 +203,9 @@ const createEmptyItem = (orgCountry?: string): ExpenseItem => {
 const Expenses = () => {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [apiExpenses, setApiExpenses] = useState<ExpenseAPI[]>([]);
+  const [isLoadingExpenses, setIsLoadingExpenses] = useState(true);
+  const [selectedReceipt, setSelectedReceipt] = useState<ExpenseAPI | null>(null);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
   
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -243,6 +247,23 @@ const Expenses = () => {
       .catch(() => {});
   }, []);
 
+  // Fetch expenses from API
+  const loadExpenses = async () => {
+    setIsLoadingExpenses(true);
+    try {
+      const data = await fetchExpenses();
+      setApiExpenses(data);
+    } catch (error) {
+      console.error("Failed to fetch expenses:", error);
+    } finally {
+      setIsLoadingExpenses(false);
+    }
+  };
+
+  useEffect(() => {
+    loadExpenses();
+  }, []);
+
   // Filtering & Sorting state
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("all");
@@ -282,7 +303,7 @@ const Expenses = () => {
     }
   };
 
-  const hasExpenses = expenses.length > 0;
+  const hasExpenses = expenses.length > 0 || apiExpenses.length > 0;
 
   // Filter and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
@@ -638,26 +659,15 @@ const Expenses = () => {
         return;
       }
 
-      // Also add to local state for immediate UI update
-      const newExpenses: Expense[] = billItems.map((item, index) => ({
-        id: `${Date.now()}-${index}`,
-        title: item.name,
-        description: `From: ${billCommon.merchant}`,
-        quantity: parseFloat(item.quantity) || 1,
-        unitPrice: parseFloat(item.unitPrice) || 0,
-        taxType: "",
-        taxPercentage: parseFloat(item.taxRate) || 0,
-        category: billCommon.category || "Other",
-        date: billCommon.billDate,
-      }));
-      setExpenses([...newExpenses, ...expenses]);
+      // Refetch expenses from API
+      await loadExpenses();
 
       setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
       setBillItems([createEmptyBillItem()]);
       setOcrMeta({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
       setDialogMode("default");
       setIsManualDialogOpen(false);
-      toast({ title: "Success", description: `${newExpenses.length} expense(s) saved successfully` });
+      toast({ title: "Success", description: "Expense saved successfully" });
     } catch (error) {
       console.error("Save expense error:", error);
       toast({ title: "Error", description: "Network error. Please try again.", variant: "destructive" });
@@ -1596,245 +1606,76 @@ const Expenses = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {hasExpenses ? (
-            <>
-              {/* Summary Strip - Always visible when there are expenses */}
-              <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border">
-                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-2">
-                  <span className="font-medium">{getTimeRangeLabel()} Summary</span>
-                  <span>
-                    {summaryStats.transactionCount} transaction{summaryStats.transactionCount !== 1 ? "s" : ""}
-                  </span>
+          {isLoadingExpenses ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+              <p className="text-muted-foreground">Loading expenses...</p>
+            </div>
+          ) : apiExpenses.length > 0 ? (
+            selectedReceipt ? (
+              /* Item Detail View */
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedReceipt(null)} className="gap-1">
+                    ← Back to Receipts
+                  </Button>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Spend</p>
-                    <p className="text-base font-semibold text-foreground flex items-center">
-                      <IndianRupee className="w-3.5 h-3.5" />
-                      {summaryStats.totalSpend.toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </p>
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Tax</p>
-                    <p className="text-base font-semibold text-foreground flex items-center">
-                      <IndianRupee className="w-3.5 h-3.5" />
-                      {summaryStats.totalTax.toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </p>
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Tax Breakdown</p>
-                    <div className="text-xs font-medium text-foreground">
-                      {Object.keys(summaryStats.taxByType).length > 0 ? (
-                        Object.entries(summaryStats.taxByType).map(([type, amount]) => (
-                          <span key={type} className="flex items-center gap-1">
-                            {type}: <IndianRupee className="w-2.5 h-2.5" />
-                            {amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground">N/A</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg / Transaction</p>
-                    <p className="text-base font-semibold text-foreground flex items-center">
-                      {summaryStats.transactionCount > 0 ? (
-                        <>
-                          <IndianRupee className="w-3.5 h-3.5" />
-                          {summaryStats.averageSpend.toLocaleString("en-IN", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground">N/A</span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Top Category</p>
-                    <p className="text-sm font-medium text-foreground truncate" title={summaryStats.topCategory?.name}>
-                      {summaryStats.topCategory?.name || "N/A"}
-                    </p>
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Highest Expense</p>
-                    <p
-                      className="text-sm font-medium text-foreground truncate"
-                      title={summaryStats.highestExpense.title}
-                    >
-                      {summaryStats.highestExpense.title || "N/A"}
-                    </p>
+                <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-1">
+                  <h3 className="text-lg font-semibold text-foreground">{selectedReceipt.merchant}</h3>
+                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    <span>Date: {new Date(selectedReceipt.expenseDate).toLocaleDateString()}</span>
+                    <span>Total: ₹{parseFloat(selectedReceipt.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span>Category: {selectedReceipt.category || "—"}</span>
+                    <span>Payment: {selectedReceipt.paymentMethod || "—"}</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Applied Filters Row */}
-              {hasActiveFilters && (
-                <div className="mb-4 flex items-center gap-2 flex-wrap">
-                  <span className="text-xs text-muted-foreground">Applied filters:</span>
-                  {categoryFilter.map((cat) => (
-                    <Button
-                      key={cat}
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                      onClick={() => toggleCategoryFilter(cat)}
-                    >
-                      {cat}
-                      <X className="h-3 w-3" />
-                    </Button>
-                  ))}
-                  {timeRangePreset !== "all" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                      onClick={() => {
-                        setTimeRangePreset("all");
-                        setCustomDateRange(undefined);
-                      }}
-                    >
-                      Time period: {getTimeRangeLabel()}
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                  {(unitPriceMin || unitPriceMax) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                      onClick={() => {
-                        setUnitPriceMin("");
-                        setUnitPriceMax("");
-                      }}
-                    >
-                      Unit price: ₹{unitPriceMin || "0"} - ₹{unitPriceMax || "∞"}
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                  {(totalPriceMin || totalPriceMax) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2.5 text-xs bg-muted/50 gap-1.5"
-                      onClick={() => {
-                        setTotalPriceMin("");
-                        setTotalPriceMax("");
-                      }}
-                    >
-                      Total price: ₹{totalPriceMin || "0"} - ₹{totalPriceMax || "∞"}
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              )}
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 font-medium hover:bg-transparent"
-                        onClick={() => handleSort("date")}
-                      >
-                        Date {getSortIcon("date")}
-                      </Button>
-                    </TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 font-medium hover:bg-transparent"
-                        onClick={() => handleSort("category")}
-                      >
-                        Category {getSortIcon("category")}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
-                    <TableHead>Tax Type</TableHead>
-                    <TableHead className="text-right">Tax %</TableHead>
-                    <TableHead className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 font-medium hover:bg-transparent ml-auto"
-                        onClick={() => handleSort("totalPrice")}
-                      >
-                        Total Price {getSortIcon("totalPrice")}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAndSortedExpenses.length > 0 ? (
-                    filteredAndSortedExpenses.map((expense) => (
-                      <TableRow key={expense.id}>
-                        <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-                        <TableCell className="font-medium">{expense.title}</TableCell>
-                        <TableCell className="text-muted-foreground">{expense.description || "-"}</TableCell>
-                        <TableCell>{expense.category}</TableCell>
-                        <TableCell className="text-right">{expense.quantity}</TableCell>
-                        <TableCell className="text-right">₹{expense.unitPrice.toFixed(2)}</TableCell>
-                        <TableCell>{expense.taxType || "-"}</TableCell>
-                        <TableCell className="text-right">
-                          {expense.taxPercentage != null && expense.taxPercentage !== 0
-                            ? `${expense.taxPercentage}%`
-                            : "-"}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          ₹{(expense.quantity * expense.unitPrice).toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleEditExpense(expense)}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive"
-                              onClick={() => handleDeleteExpense(expense.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={10} className="h-32 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <p className="text-muted-foreground">No expenses match the current filters</p>
-                          <Button variant="link" onClick={clearFilters} className="mt-2">
-                            Clear all filters
-                          </Button>
-                        </div>
-                      </TableCell>
+                      <TableHead>Item Name</TableHead>
+                      <TableHead className="text-right">Qty</TableHead>
+                      <TableHead>Unit Type</TableHead>
+                      <TableHead className="text-right">Unit Price</TableHead>
+                      <TableHead className="text-right">Tax Rate</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedReceipt.items.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.itemName}</TableCell>
+                        <TableCell className="text-right">{item.quantity}</TableCell>
+                        <TableCell>{item.unitType}</TableCell>
+                        <TableCell className="text-right">₹{parseFloat(item.unitPrice).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                        <TableCell className="text-right">{parseFloat(item.taxRate) > 0 ? `${item.taxRate}%` : "—"}</TableCell>
+                        <TableCell className="text-right font-medium">₹{parseFloat(item.totalPrice).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              /* Receipt List View */
+              <div className="space-y-2">
+                {apiExpenses.map((receipt) => (
+                  <div
+                    key={receipt.id}
+                    className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => setSelectedReceipt(receipt)}
+                  >
+                    <div className="space-y-0.5">
+                      <p className="font-medium text-foreground">{receipt.merchant}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(receipt.expenseDate).toLocaleDateString()} · {receipt.items.length} item{receipt.items.length !== 1 ? "s" : ""} · {receipt.category || "Uncategorized"}
+                      </p>
+                    </div>
+                    <p className="text-base font-semibold text-foreground">
+                      ₹{parseFloat(receipt.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
