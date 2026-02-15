@@ -1632,9 +1632,9 @@ const Expenses = () => {
                         <TableCell className="font-medium">{item.itemName}</TableCell>
                         <TableCell className="text-right">{item.quantity}</TableCell>
                         <TableCell>{item.unitType}</TableCell>
-                        <TableCell className="text-right">₹{parseFloat(item.unitPrice).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                        <TableCell className="text-right">{parseFloat(item.unitPrice).toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                         <TableCell className="text-right">{parseFloat(item.taxRate) > 0 ? `${item.taxRate}%` : "—"}</TableCell>
-                        <TableCell className="text-right font-medium">₹{parseFloat(item.totalPrice).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                        <TableCell className="text-right font-medium">{parseFloat(item.totalPrice).toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
