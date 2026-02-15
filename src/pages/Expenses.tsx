@@ -1601,25 +1601,29 @@ const Expenses = () => {
             <>
               {/* Summary Insight Cards */}
               {!selectedReceipt && (
-                <div className="rounded-lg bg-muted/30 p-5 mb-6 flex flex-wrap items-center gap-x-8 gap-y-3">
-                  <div className="space-y-0.5">
-                    <p className="text-xs text-muted-foreground">Total Expenses</p>
-                    <p className="text-lg font-semibold text-foreground">₹{summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <div className="rounded-lg bg-muted/30 p-5 mb-6 space-y-3">
+                  <div className="flex items-baseline gap-2">
+                    <IndianRupee className="w-4 h-4 text-muted-foreground shrink-0 relative top-[2px]" />
+                    <span className="text-2xl font-bold text-foreground">
+                      {summaryStats.totalSpend.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </span>
+                    <span className="text-sm text-muted-foreground">Expenses</span>
                   </div>
-                  <div className="w-px h-8 bg-border hidden sm:block" />
-                  <div className="space-y-0.5">
-                    <p className="text-xs text-muted-foreground">Claimable Tax</p>
-                    <p className="text-lg font-semibold text-foreground">₹{summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <IndianRupee className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="font-medium text-foreground">
+                      {summaryStats.totalTax.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </span>
+                    <span className="text-muted-foreground">{orgCountry === "India" ? "GST" : "Tax"} Claimable</span>
                   </div>
-                  <div className="w-px h-8 bg-border hidden sm:block" />
-                  <div className="space-y-0.5">
-                    <p className="text-xs text-muted-foreground">Receipts</p>
-                    <p className="text-lg font-semibold text-foreground">{summaryStats.receiptCount} <span className="text-xs font-normal text-muted-foreground">avg ₹{summaryStats.averageSpend.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span></p>
-                  </div>
-                  <div className="w-px h-8 bg-border hidden sm:block" />
-                  <div className="space-y-0.5">
-                    <p className="text-xs text-muted-foreground">Top Category</p>
-                    <p className="text-lg font-semibold text-foreground truncate max-w-[140px]">{summaryStats.topCategory?.name || "—"}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{summaryStats.receiptCount} Receipt{summaryStats.receiptCount !== 1 ? "s" : ""}</span>
+                    {summaryStats.topCategory && (
+                      <>
+                        <span>·</span>
+                        <span>Top: {summaryStats.topCategory.name}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
