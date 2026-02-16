@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,6 +47,7 @@ import { fetchInvoices, fetchInvoice, updateInvoiceStatus, fetchInvoicePdfStatus
 import InvoicePreviewWrapper from "@/components/InvoicePreview";
 import type { InvoiceFormData } from "@/lib/invoiceTemplateRenderer";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
+import { fetchCurrentOrganization } from "@/lib/api/user";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
@@ -90,6 +91,25 @@ const statusStyles: Record<
   paid: { variant: "default", label: "Paid" },
   unpaid: { variant: "outline", label: "Unpaid" },
   overdue: { variant: "destructive", label: "Overdue" },
+};
+
+const COUNTRY_CURRENCY: Record<string, string> = {
+  India: "INR", UAE: "AED", US: "USD", UK: "GBP",
+  Austria: "EUR", Belgium: "EUR", France: "EUR", Germany: "EUR",
+  Italy: "EUR", Netherlands: "EUR", Spain: "EUR", Sweden: "EUR",
+};
+
+const formatCurrencyVal = (amount: number, currency = "USD") => {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString()}`;
+  }
 };
 
 const formatCurrency = (amount: number) => {
@@ -193,7 +213,14 @@ const Income = () => {
   const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
   const [editDraftId, setEditDraftId] = useState<string | null>(null);
   const [editDraftOpen, setEditDraftOpen] = useState(false);
+  const [orgCountry, setOrgCountry] = useState<string>("US");
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchCurrentOrganization()
+      .then((org) => setOrgCountry(org.country || "US"))
+      .catch(() => {});
+  }, []);
 
   const loadInvoices = () => {
     setIsLoading(true);
@@ -426,6 +453,27 @@ const Income = () => {
     return sortInvoices(filtered);
   };
 
+  const currency = COUNTRY_CURRENCY[orgCountry] || "USD";
+
+  const summaryStats = useMemo(() => {
+    const filtered = filterInvoices(activeTab);
+    const totalIncome = filtered.reduce((sum, inv) => sum + inv.amount, 0);
+    const paidInvoices = filtered.filter((inv) => inv.status === "paid");
+    const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+    const unpaidInvoices = filtered.filter((inv) => inv.status === "unpaid" || inv.status === "overdue");
+    const totalUnpaid = unpaidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+    const invoiceCount = filtered.length;
+
+    // Top client by revenue
+    const clientRevenue: Record<string, number> = {};
+    filtered.forEach((inv) => {
+      clientRevenue[inv.clientName] = (clientRevenue[inv.clientName] || 0) + inv.amount;
+    });
+    const topClient = Object.entries(clientRevenue).sort((a, b) => b[1] - a[1])[0];
+
+    return { totalIncome, totalPaid, totalUnpaid, invoiceCount, topClient: topClient ? { name: topClient[0], amount: topClient[1] } : null };
+  }, [invoices, activeTab, timeRangePreset, customDateRange, sortOption]);
+
   const getTimeRangeLabel = () => {
     switch (timeRangePreset) {
       case "today":
@@ -592,27 +640,65 @@ const Income = () => {
           <div className="flex items-center justify-center h-32">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : (
-          tabs.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value} className="mt-6">
-              <div className="bg-card rounded-lg border border-border overflow-hidden">
-                {filterInvoices(tab.value).length > 0 ? (
-                  filterInvoices(tab.value).map((invoice) => (
-                    <InvoiceRow
-                      key={invoice.id}
-                      invoice={invoice}
-                      onClick={() => handleInvoiceClick(invoice)}
-                      onStatusChange={handleStatusChange}
-                      onDownload={handleDownloadPdf}
-                      onDelete={(inv) => setDeleteTarget(inv)}
-                    />
-                  ))
-                ) : (
-                  <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
+        ) : invoices.length > 0 ? (
+          <>
+            {/* Summary Card */}
+            <div className="rounded-lg border border-border bg-muted/20 p-4 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalIncome, currency)}</span>
+                    <span className="text-muted-foreground">Total Income</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalPaid, currency)}</span>
+                    <span className="text-muted-foreground">Paid</span>
+                  </div>
+                </div>
+                <span className="text-border hidden sm:inline mt-1">|</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalUnpaid, currency)}</span>
+                  <span className="text-muted-foreground">Outstanding</span>
+                </div>
+                <span className="text-border hidden sm:inline">|</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-foreground">{summaryStats.invoiceCount}</span>
+                  <span className="text-muted-foreground">Invoice{summaryStats.invoiceCount !== 1 ? "s" : ""}</span>
+                </div>
+                {summaryStats.topClient && (
+                  <>
+                    <span className="text-border hidden sm:inline">|</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground">Top Client:</span>
+                      <span className="font-semibold text-foreground">{summaryStats.topClient.name}</span>
+                    </div>
+                  </>
                 )}
               </div>
-            </TabsContent>
-          ))
+            </div>
+            {tabs.map((tab) => (
+              <TabsContent key={tab.value} value={tab.value} className="mt-6">
+                <div className="bg-card rounded-lg border border-border overflow-hidden">
+                  {filterInvoices(tab.value).length > 0 ? (
+                    filterInvoices(tab.value).map((invoice) => (
+                      <InvoiceRow
+                        key={invoice.id}
+                        invoice={invoice}
+                        onClick={() => handleInvoiceClick(invoice)}
+                        onStatusChange={handleStatusChange}
+                        onDownload={handleDownloadPdf}
+                        onDelete={(inv) => setDeleteTarget(inv)}
+                      />
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
+                  )}
+                </div>
+              </TabsContent>
+            ))}
+          </>
+        ) : (
+          <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
         )}
       </Tabs>
 
