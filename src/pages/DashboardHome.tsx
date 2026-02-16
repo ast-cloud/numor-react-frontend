@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -14,6 +14,8 @@ import { TrendingUp, TrendingDown, DollarSign, FileText, CalendarIcon, X, Pencil
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDashboardData, formatCurrency } from "@/hooks/use-dashboard-data";
 import {
   ExpensesByCategoryWidget,
   RevenueOverTimeWidget,
@@ -26,15 +28,20 @@ import {
   WidgetType,
   TimeRangeConfig,
 } from "@/components/dashboard/widgets";
+import {
+  filterExpenses,
+  filterInvoices,
+  computeStats,
+  processRevenueOverTime,
+  processExpensesOverTime,
+  processExpensesByCategory,
+  processIncomeVsExpenses,
+  processCashFlow,
+  processTopClients,
+  processPaymentStatus,
+} from "@/components/dashboard/widgets/widgetDataProcessors";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
-
-const stats = [
-  { title: "Total Revenue", value: "$45,231", change: "+20.1%", trend: "up", icon: DollarSign },
-  { title: "Expenses", value: "$12,234", change: "+4.5%", trend: "up", icon: TrendingDown },
-  { title: "Net Income", value: "$32,997", change: "+15.2%", trend: "up", icon: TrendingUp },
-  { title: "Pending Invoices", value: "12", change: "-2", trend: "down", icon: FileText },
-];
 
 const DashboardHome = () => {
   const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("this_month");
@@ -47,12 +54,35 @@ const DashboardHome = () => {
     "expenses-by-category",
   ]);
 
+  const { expenses, invoices, clients, country, isLoading, isError } = useDashboardData();
+
+  const timeRangeConfig: TimeRangeConfig = {
+    preset: timeRangePreset,
+    customRange: customDateRange,
+  };
+
+  const filteredExpenses = useMemo(() => filterExpenses(expenses, timeRangeConfig), [expenses, timeRangePreset, customDateRange]);
+  const filteredInvoices = useMemo(() => filterInvoices(invoices, timeRangeConfig), [invoices, timeRangePreset, customDateRange]);
+
+  const stats = useMemo(
+    () => computeStats(filteredExpenses, filteredInvoices, expenses, invoices, timeRangeConfig),
+    [filteredExpenses, filteredInvoices, expenses, invoices, timeRangePreset, customDateRange]
+  );
+
+  const widgetData = useMemo(() => ({
+    revenueOverTime: processRevenueOverTime(filteredInvoices, timeRangeConfig),
+    expensesOverTime: processExpensesOverTime(filteredExpenses, timeRangeConfig),
+    expensesByCategory: processExpensesByCategory(filteredExpenses),
+    incomeVsExpenses: processIncomeVsExpenses(filteredInvoices, filteredExpenses, timeRangeConfig),
+    cashFlow: processCashFlow(filteredInvoices, filteredExpenses, timeRangeConfig),
+    topClients: processTopClients(filteredInvoices, clients),
+    paymentStatus: processPaymentStatus(filteredInvoices),
+  }), [filteredExpenses, filteredInvoices, clients, timeRangePreset, customDateRange]);
+
   const handleTimeRangeChange = (value: TimeRangePreset) => {
     setTimeRangePreset(value);
     if (value === "custom") {
-      setTimeout(() => {
-        setIsCustomDatePopoverOpen(true);
-      }, 100);
+      setTimeout(() => setIsCustomDatePopoverOpen(true), 100);
     } else {
       setCustomDateRange(undefined);
     }
@@ -65,9 +95,7 @@ const DashboardHome = () => {
 
   const handleOpenChange = (open: boolean) => {
     setIsCustomDatePopoverOpen(open);
-    if (open) {
-      setTempDateRange(customDateRange);
-    }
+    if (open) setTempDateRange(customDateRange);
   };
 
   const clearDateFilter = () => {
@@ -85,33 +113,71 @@ const DashboardHome = () => {
     setActiveWidgets(activeWidgets.filter((w) => w !== widgetType));
   };
 
-  const timeRangeConfig: TimeRangeConfig = {
-    preset: timeRangePreset,
-    customRange: customDateRange,
+  const formatVal = (amount: number) => formatCurrency(amount, country);
+
+  const changeLabel = (preset: TimeRangePreset) => {
+    switch (preset) {
+      case "today": return "vs yesterday";
+      case "this_week": return "vs last week";
+      case "this_month": return "vs last month";
+      case "this_quarter": return "vs last quarter";
+      default: return "";
+    }
   };
 
+  const statCards = [
+    {
+      title: "Total Revenue",
+      value: formatVal(stats.totalRevenue),
+      change: stats.revenueChange !== null ? `${stats.revenueChange >= 0 ? "+" : ""}${stats.revenueChange.toFixed(1)}%` : null,
+      trend: (stats.revenueChange ?? 0) >= 0 ? "up" : "down",
+      icon: DollarSign,
+    },
+    {
+      title: "Expenses",
+      value: formatVal(stats.totalExpenses),
+      change: stats.expensesChange !== null ? `${stats.expensesChange >= 0 ? "+" : ""}${stats.expensesChange.toFixed(1)}%` : null,
+      trend: (stats.expensesChange ?? 0) >= 0 ? "up" : "down",
+      icon: TrendingDown,
+    },
+    {
+      title: "Net Income",
+      value: formatVal(stats.netIncome),
+      change: stats.netIncomeChange !== null ? `${stats.netIncomeChange >= 0 ? "+" : ""}${stats.netIncomeChange.toFixed(1)}%` : null,
+      trend: (stats.netIncomeChange ?? 0) >= 0 ? "up" : "down",
+      icon: TrendingUp,
+    },
+    {
+      title: "Pending Invoices",
+      value: String(stats.pendingInvoices),
+      change: stats.pendingChange !== null ? `${stats.pendingChange >= 0 ? "+" : ""}${stats.pendingChange}` : null,
+      trend: (stats.pendingChange ?? 0) <= 0 ? "up" : "down",
+      icon: FileText,
+    },
+  ];
+
   const renderWidget = (type: WidgetType) => {
-    const props = {
+    const baseProps = {
       onRemove: () => handleRemoveWidget(type),
       isEditMode,
-      timeRange: timeRangeConfig,
+      country,
     };
 
     switch (type) {
       case "expenses-by-category":
-        return <ExpensesByCategoryWidget key={type} {...props} />;
+        return <ExpensesByCategoryWidget key={type} {...baseProps} data={widgetData.expensesByCategory} />;
       case "revenue-over-time":
-        return <RevenueOverTimeWidget key={type} {...props} />;
+        return <RevenueOverTimeWidget key={type} {...baseProps} data={widgetData.revenueOverTime} />;
       case "income-vs-expenses":
-        return <IncomeVsExpensesWidget key={type} {...props} />;
+        return <IncomeVsExpensesWidget key={type} {...baseProps} data={widgetData.incomeVsExpenses} />;
       case "cash-flow":
-        return <CashFlowWidget key={type} {...props} />;
+        return <CashFlowWidget key={type} {...baseProps} data={widgetData.cashFlow} />;
       case "top-clients":
-        return <TopClientsWidget key={type} {...props} />;
+        return <TopClientsWidget key={type} {...baseProps} data={widgetData.topClients} />;
       case "payment-status":
-        return <PaymentStatusWidget key={type} {...props} />;
+        return <PaymentStatusWidget key={type} {...baseProps} data={widgetData.paymentStatus} />;
       case "expenses-over-time":
-        return <ExpensesOverTimeWidget key={type} {...props} />;
+        return <ExpensesOverTimeWidget key={type} {...baseProps} data={widgetData.expensesOverTime} />;
       default:
         return null;
     }
@@ -188,24 +254,39 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* Stats Grid - Always visible, not customizable */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              <p className={`text-xs mt-1 ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}>
-                {stat.change} from last month
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-4 rounded" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-7 w-28 mb-1" />
+                  <Skeleton className="h-3 w-20" />
+                </CardContent>
+              </Card>
+            ))
+          : statCards.map((stat) => (
+              <Card key={stat.title}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className="w-4 h-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                  {stat.change && (
+                    <p className={`text-xs mt-1 ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}>
+                      {stat.change} {changeLabel(timeRangePreset)}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
       </div>
 
       {/* Edit Mode Controls */}
@@ -258,7 +339,19 @@ const DashboardHome = () => {
         "grid grid-cols-1 lg:grid-cols-2 gap-6",
         isEditMode && "ring-2 ring-dashed ring-primary/20 p-4 rounded-lg bg-primary/5"
       )}>
-        {activeWidgets.length === 0 ? (
+        {isLoading ? (
+          Array.from({ length: 2 }).map((_, i) => (
+            <Card key={i} className="h-80">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-3 w-56" />
+              </CardHeader>
+              <CardContent className="h-56 flex items-center justify-center">
+                <Skeleton className="h-full w-full rounded" />
+              </CardContent>
+            </Card>
+          ))
+        ) : activeWidgets.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center h-40 text-muted-foreground">
             <p>No widgets added yet.</p>
             <p className="text-sm">Click "Add Widget" to get started.</p>
