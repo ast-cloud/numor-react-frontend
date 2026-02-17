@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, ArrowLeft, Loader2 } from "lucide-react";
-import { fetchClients, createClient, updateClient, type ClientData } from "@/lib/api/clients";
+import { fetchClients, createClient, updateClient, deleteClient, type ClientData } from "@/lib/api/clients";
 import ClientCard from "@/components/clients/ClientCard";
 
 export interface Client {
@@ -167,12 +167,21 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
     setEditingClientId(null);
   };
 
-  const handleDeleteClient = (id: string) => {
-    setClients(clients.filter(c => c.id !== id));
-    toast({
-      title: "Client removed",
-      description: "Client has been removed from your list.",
-    });
+  const handleDeleteClient = async (id: string) => {
+    try {
+      await deleteClient(id);
+      setClients(clients.filter(c => c.id !== id));
+      toast({
+        title: "Client removed",
+        description: "Client has been removed from your list.",
+      });
+    } catch {
+      toast({
+        title: "Delete failed",
+        description: "Could not delete client. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
