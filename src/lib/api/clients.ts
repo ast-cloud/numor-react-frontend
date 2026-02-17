@@ -101,3 +101,18 @@ export async function updateClient(clientId: string, payload: UpdateClientPayloa
 
   if (!res.ok) throw new Error('Failed to update client');
 }
+
+export async function deleteClient(clientId: string): Promise<void> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/clients/${clientId}/deleteClient`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) throw new Error('Failed to delete client');
+}
