@@ -58,6 +58,10 @@ export interface CreateClientPayload {
   email?: string | null;
   phone?: string | null;
   address?: string | null;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
   country?: string | null;
   companyType?: string | null;
   taxSystem?: string | null;

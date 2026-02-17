@@ -105,15 +105,14 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
     setIsSaving(true);
     try {
       if (isNewClient) {
-        const address = [client.streetAddress, client.city, client.state, client.country]
-          .filter(Boolean)
-          .join(", ") || null;
-
         const created = await createClient({
           name: client.name,
           email: client.email || null,
           phone: client.phone || null,
-          address,
+          streetAddress: client.streetAddress || null,
+          city: client.city || null,
+          state: client.state || null,
+          zipCode: client.zipCode || null,
           country: client.country || null,
         });
 
