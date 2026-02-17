@@ -166,7 +166,7 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
     clientState: "",
     clientZip: "",
     clientCountry: "",
-    lineItems: [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
+    lineItems: [{ id: "1", description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 }],
     bankName: "",
     accountName: "",
     iban: "",
@@ -212,11 +212,11 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo): Invoice
           id: String(i + 1),
           description: item.itemName || item.description || "",
           quantity: parseFloat(item.quantity) || 1,
-          unit: "Pieces",
+          unit: "Units",
           rate: parseFloat(item.unitPrice) || 0,
           taxPercent: parseFloat(item.taxRate) || 0,
         }))
-      : [{ id: "1", description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
+      : [{ id: "1", description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 }],
     bankName: inv.bankDetails?.bankName || "",
     accountName: inv.bankDetails?.accountName || "",
     iban: inv.bankDetails?.accountNumber || "",
@@ -384,7 +384,7 @@ const CreateInvoiceDialog = ({ onInvoiceCreated, editInvoiceId, editOpen, onEdit
     const newId = String(formData.lineItems.length + 1);
     setFormData((prev) => ({
       ...prev,
-      lineItems: [...prev.lineItems, { id: newId, description: "", quantity: 1, unit: "Pieces", rate: 0, taxPercent: 5 }],
+      lineItems: [...prev.lineItems, { id: newId, description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 }],
     }));
   };
 
@@ -1197,7 +1197,6 @@ const CreateInvoiceDialog = ({ onInvoiceCreated, editInvoiceId, editOpen, onEdit
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Pieces">Pieces</SelectItem>
                           <SelectItem value="Units">Units</SelectItem>
                           <SelectItem value="Hours">Hours</SelectItem>
                           <SelectItem value="Days">Days</SelectItem>
