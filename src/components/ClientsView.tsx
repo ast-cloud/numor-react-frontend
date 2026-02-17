@@ -71,7 +71,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
       email: "",
       phone: "",
     };
-    setClients([...clients, newClient]);
+    setClients([newClient, ...clients]);
     backupRef.current = { ...newClient };
     setEditingClientId(newClient.id);
   };
