@@ -1627,7 +1627,7 @@ const Expenses = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedReceipt.items.map((item) => (
+                    {(selectedReceipt.items || []).map((item) => (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">{item.itemName}</TableCell>
                         <TableCell className="text-right">{item.quantity}</TableCell>
