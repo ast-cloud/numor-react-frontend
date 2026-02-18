@@ -62,21 +62,45 @@ const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => {
-  const handleWheel = React.useCallback((e: React.WheelEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    const { scrollTop, scrollHeight, clientHeight } = target;
-    const atTop = scrollTop <= 0 && e.deltaY < 0;
-    const atBottom = scrollTop + clientHeight >= scrollHeight - 1 && e.deltaY > 0;
-    if (atTop || atBottom) {
-      e.stopPropagation();
-      window.scrollBy({ top: e.deltaY, behavior: "auto" });
-    }
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Find the scrollable viewport inside the content
+      const viewport = el.querySelector('[data-radix-select-viewport]') as HTMLElement | null;
+      if (!viewport) {
+        // No viewport or not scrollable, propagate to page
+        const scrollableParent = document.scrollingElement || document.documentElement;
+        scrollableParent.scrollTop += e.deltaY;
+        return;
+      }
+
+      const { scrollTop, scrollHeight, clientHeight } = viewport;
+      const atTop = scrollTop <= 0 && e.deltaY < 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1 && e.deltaY > 0;
+
+      if (atTop || atBottom) {
+        e.preventDefault();
+        const scrollableParent = document.scrollingElement || document.documentElement;
+        scrollableParent.scrollTop += e.deltaY;
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
   }, []);
 
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
-        ref={ref}
+        ref={(node) => {
+          contentRef.current = node;
+          if (typeof ref === 'function') ref(node);
+          else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        }}
         className={cn(
           "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
           position === "popper" &&
@@ -93,7 +117,6 @@ const SelectContent = React.forwardRef<
             position === "popper" &&
               "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
           )}
-          onWheel={handleWheel}
         >
           {children}
         </SelectPrimitive.Viewport>
