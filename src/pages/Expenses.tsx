@@ -1663,7 +1663,7 @@ const Expenses = () => {
                       <div className="space-y-0.5">
                         <p className="font-medium text-foreground">{receipt.merchant}</p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(receipt.expenseDate), "MMM d, yyyy")} · {receipt.items.length} item{receipt.items.length !== 1 ? "s" : ""} · {receipt.category || "Uncategorized"}
+                          {format(new Date(receipt.expenseDate), "MMM d, yyyy")} · {(receipt.items || []).length} item{(receipt.items || []).length !== 1 ? "s" : ""} · {receipt.category || "Uncategorized"}
                         </p>
                       </div>
                       <p className="text-base font-semibold text-foreground">
