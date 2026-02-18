@@ -435,7 +435,7 @@ const Expenses = () => {
     // Total claimable tax from all items across all receipts
     let totalTax = 0;
     receipts.forEach((r) => {
-      r.items.forEach((item) => {
+      (r.items || []).forEach((item) => {
         const taxRate = parseFloat(item.taxRate) || 0;
         if (taxRate > 0) {
           const unitPrice = parseFloat(item.unitPrice) || 0;
