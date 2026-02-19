@@ -1191,7 +1191,11 @@ const Expenses = () => {
                               value={item.quantity}
                               onChange={(e) => {
                                 const updated = [...billItems];
-                                updated[index] = { ...updated[index], quantity: e.target.value };
+                                const newQty = e.target.value;
+                                const qty = parseFloat(newQty) || 1;
+                                const up = parseFloat(updated[index].unitPrice) || 0;
+                                const tax = parseFloat(updated[index].taxRate) || 0;
+                                updated[index] = { ...updated[index], quantity: newQty, itemPrice: String(Math.round((qty * up * (1 + tax / 100)) * 100) / 100) };
                                 setBillItems(updated);
                               }}
                               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -1220,7 +1224,11 @@ const Expenses = () => {
                               value={item.unitPrice}
                               onChange={(e) => {
                                 const updated = [...billItems];
-                                updated[index] = { ...updated[index], unitPrice: e.target.value };
+                                const newUp = e.target.value;
+                                const qty = parseFloat(updated[index].quantity) || 1;
+                                const up = parseFloat(newUp) || 0;
+                                const tax = parseFloat(updated[index].taxRate) || 0;
+                                updated[index] = { ...updated[index], unitPrice: newUp, itemPrice: String(Math.round((qty * up * (1 + tax / 100)) * 100) / 100) };
                                 setBillItems(updated);
                               }}
                               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -1240,7 +1248,11 @@ const Expenses = () => {
                                     value={item.taxRate}
                                     onChange={(e) => {
                                       const updated = [...billItems];
-                                      updated[index] = { ...updated[index], taxRate: e.target.value };
+                                      const newTaxRate = e.target.value;
+                                      const qty = parseFloat(updated[index].quantity) || 1;
+                                      const up = parseFloat(updated[index].unitPrice) || 0;
+                                      const tax = parseFloat(newTaxRate) || 0;
+                                      updated[index] = { ...updated[index], taxRate: newTaxRate, itemPrice: String(Math.round((qty * up * (1 + tax / 100)) * 100) / 100) };
                                       setBillItems(updated);
                                     }}
                                     className="flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -1269,7 +1281,10 @@ const Expenses = () => {
                                       setCustomTaxBillItems((prev) => new Set(prev).add(index));
                                     } else {
                                       const updated = [...billItems];
-                                      updated[index] = { ...updated[index], taxRate: value };
+                                      const qty = parseFloat(updated[index].quantity) || 1;
+                                      const up = parseFloat(updated[index].unitPrice) || 0;
+                                      const tax = parseFloat(value) || 0;
+                                      updated[index] = { ...updated[index], taxRate: value, itemPrice: String(Math.round((qty * up * (1 + tax / 100)) * 100) / 100) };
                                       setBillItems(updated);
                                     }
                                   }}
