@@ -194,6 +194,26 @@ const getTaxPercentOptions = (country?: string): number[] => {
 
 const unitTypes = ["Kg", "g", "Ltr", "ml", "m", "ft", "Box", "Pack", "Units", "Hrs", "Sq ft"];
 
+// Map OCR/backend unit type values to valid dropdown values
+const normalizeUnitType = (raw?: string): string => {
+  if (!raw) return "Units";
+  const lower = raw.toLowerCase();
+  const mapping: Record<string, string> = {
+    each: "Units", unit: "Units", units: "Units", pcs: "Units", piece: "Units", pieces: "Units", nos: "Units", no: "Units",
+    kg: "Kg", kgs: "Kg", kilogram: "Kg", kilograms: "Kg",
+    g: "g", gm: "g", gms: "g", gram: "g", grams: "g",
+    ltr: "Ltr", l: "Ltr", litre: "Ltr", liter: "Ltr", litres: "Ltr", liters: "Ltr",
+    ml: "ml", millilitre: "ml", milliliter: "ml",
+    m: "m", meter: "m", meters: "m", metre: "m", metres: "m",
+    ft: "ft", feet: "ft", foot: "ft",
+    box: "Box", boxes: "Box",
+    pack: "Pack", packs: "Pack", packet: "Pack", packets: "Pack",
+    hrs: "Hrs", hr: "Hrs", hour: "Hrs", hours: "Hrs",
+    "sq ft": "Sq ft", sqft: "Sq ft",
+  };
+  return mapping[lower] || (unitTypes.find(u => u.toLowerCase() === lower) ? unitTypes.find(u => u.toLowerCase() === lower)! : "Units");
+};
+
 const quickPaymentMethods = ["Card", "UPI", "Cash"];
 
 const createEmptyItem = (orgCountry?: string): ExpenseItem => {
@@ -799,7 +819,7 @@ const Expenses = () => {
         const prefillBillItems: BillItem[] = items.map((item: any) => ({
           name: item.itemName || item.name || "",
           quantity: String(item.quantity || 1),
-          unitType: item.unitType || "Units",
+          unitType: normalizeUnitType(item.unitType),
           unitPrice: String(item.unitPrice ?? item.unit_price_before_tax ?? 0),
           taxRate: String(item.taxRate ?? item.taxPercent ?? item.tax_percentage ?? ""),
           itemPrice: String(item.total ?? item.totalPrice ?? item.itemPrice ?? ""),
@@ -1631,7 +1651,7 @@ const Expenses = () => {
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">{item.itemName}</TableCell>
                         <TableCell className="text-right">{item.quantity}</TableCell>
-                        <TableCell>{item.unitType}</TableCell>
+                        <TableCell>{normalizeUnitType(item.unitType)}</TableCell>
                         <TableCell className="text-right">{parseFloat(item.unitPrice).toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                         <TableCell className="text-right">{parseFloat(item.taxRate) > 0 ? `${item.taxRate}%` : "—"}</TableCell>
                         <TableCell className="text-right font-medium">{parseFloat(item.totalPrice).toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
