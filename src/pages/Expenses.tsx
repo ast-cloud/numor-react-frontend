@@ -279,6 +279,14 @@ const Expenses = () => {
       .catch(() => {});
   }, []);
 
+  // Recalculate bill total when any item price changes
+  useEffect(() => {
+    if (dialogMode === "bill") {
+      const total = billItems.reduce((sum, item) => sum + (parseFloat(item.itemPrice) || 0), 0);
+      setBillCommon((prev) => ({ ...prev, totalAmount: String(Math.round(total * 100) / 100) }));
+    }
+  }, [billItems, dialogMode]);
+
   // Fetch expenses from API
   const loadExpenses = async () => {
     setIsLoadingExpenses(true);
