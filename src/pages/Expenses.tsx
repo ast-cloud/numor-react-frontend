@@ -214,7 +214,7 @@ const normalizeUnitType = (raw?: string): string => {
   return mapping[lower] || (unitTypes.find(u => u.toLowerCase() === lower) ? unitTypes.find(u => u.toLowerCase() === lower)! : "Units");
 };
 
-const quickPaymentMethods = ["Card", "UPI", "Cash"];
+const quickPaymentMethods = ["Card", "UPI", "Cash", "Bank Transfer"];
 
 const createEmptyItem = (orgCountry?: string): ExpenseItem => {
   const defaults = orgCountry ? countryTaxDefaults[orgCountry] : undefined;
