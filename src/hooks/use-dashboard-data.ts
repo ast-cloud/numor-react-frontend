@@ -37,6 +37,9 @@ export const getCurrencyForCountry = (country: string): string => {
 export const formatCurrency = (amount: number, country: string): string => {
   const currency = getCurrencyForCountry(country);
   try {
+    if (currency === "AED") {
+      return `د.إ ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
     return new Intl.NumberFormat(undefined, {
       style: "currency",
       currency,
