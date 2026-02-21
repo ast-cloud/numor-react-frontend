@@ -6,6 +6,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
 import { CAProfileProvider } from "@/hooks/use-ca-profile";
+import ChatBot from "@/components/ChatBot";
 
 const DashboardContent = () => {
   const { theme, toggleTheme } = useTheme();
@@ -69,6 +70,7 @@ const DashboardContent = () => {
           {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
       </div>
+      <ChatBot />
     </div>
   );
 };
