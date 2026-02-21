@@ -3,6 +3,8 @@ import { MessageCircle, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { config } from "@/lib/config";
+import { getToken } from "@/lib/api/authToken";
 
 interface Message {
   id: string;
@@ -48,17 +50,33 @@ const ChatBot = () => {
     setInput("");
     setIsLoading(true);
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const token = getToken();
+      const res = await fetch(`${config.backendHost}/api/chatbot/chat/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ message: userMessage.content }),
+      });
 
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      content: "Sample AI reply",
-      role: "assistant",
-    };
+      const data = await res.json();
 
-    setMessages((prev) => [...prev, assistantMessage]);
-    setIsLoading(false);
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: data.reply || "Sorry, I couldn't process that.",
+        role: "assistant",
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { id: (Date.now() + 1).toString(), content: "Something went wrong. Please try again.", role: "assistant" },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
