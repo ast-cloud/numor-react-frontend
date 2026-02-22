@@ -444,6 +444,11 @@ const CreateInvoiceDialog = ({ onInvoiceCreated, editInvoiceId, editOpen, onEdit
 
     if (taxType === "None") return undefined;
 
+    // Calculate overall subtotal and total tax for effective rate
+    const subtotal = lineItems.reduce((sum, item) => sum + item.quantity * item.rate, 0);
+    const totalTax = lineItems.reduce((sum, item) => sum + item.quantity * item.rate * (item.taxPercent / 100), 0);
+    const effectiveRate = subtotal > 0 ? Math.round((totalTax * 100 / subtotal) * 100) / 100 : 0;
+
     if (taxType === "GST" && seller.country === "India") {
       const isIntraState = seller.state && formData.clientState && seller.state === formData.clientState;
 
@@ -451,51 +456,34 @@ const CreateInvoiceDialog = ({ onInvoiceCreated, editInvoiceId, editOpen, onEdit
         // Intra-state: split into CGST + SGST (or UTGST for specific UTs)
         const isUT = utgstTerritories.includes(seller.state);
         const secondLabel = isUT ? "UTGST" : "SGST";
-        const summary: Record<string, { rate: number; amount: number }> = {};
+        const halfRate = Math.round((effectiveRate / 2) * 100) / 100;
+        let totalCgst = 0;
+        let totalSecond = 0;
 
         lineItems.forEach((item) => {
-          const halfRate = item.taxPercent / 2;
           const itemSubtotal = item.quantity * item.rate;
-          const halfAmount = itemSubtotal * (halfRate / 100);
-
-          const cgstKey = `CGST`;
-          const secondKey = secondLabel;
-          summary[cgstKey] = summary[cgstKey] || { rate: halfRate, amount: 0 };
-          summary[cgstKey].amount += halfAmount;
-          summary[secondKey] = summary[secondKey] || { rate: halfRate, amount: 0 };
-          summary[secondKey].amount += halfAmount;
+          const halfAmount = itemSubtotal * (item.taxPercent / 2 / 100);
+          totalCgst += halfAmount;
+          totalSecond += halfAmount;
         });
 
-        // Round amounts
-        Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
-        return summary;
+        return {
+          CGST: { rate: halfRate, amount: Math.round(totalCgst * 100) / 100 },
+          [secondLabel]: { rate: halfRate, amount: Math.round(totalSecond * 100) / 100 },
+        };
       } else {
         // Inter-state: full IGST
-        const summary: Record<string, { rate: number; amount: number }> = {};
-        lineItems.forEach((item) => {
-          const itemSubtotal = item.quantity * item.rate;
-          const amount = itemSubtotal * (item.taxPercent / 100);
-          const key = "IGST";
-          summary[key] = summary[key] || { rate: item.taxPercent, amount: 0 };
-          summary[key].amount += amount;
-        });
-        Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
-        return summary;
+        return {
+          IGST: { rate: effectiveRate, amount: Math.round(totalTax * 100) / 100 },
+        };
       }
     }
 
     // VAT / Sales Tax: single entry
     if (taxType === "VAT" || taxType === "Sales Tax") {
-      const summary: Record<string, { rate: number; amount: number }> = {};
-      lineItems.forEach((item) => {
-        const itemSubtotal = item.quantity * item.rate;
-        const amount = itemSubtotal * (item.taxPercent / 100);
-        const key = taxType;
-        summary[key] = summary[key] || { rate: item.taxPercent, amount: 0 };
-        summary[key].amount += amount;
-      });
-      Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
-      return summary;
+      return {
+        [taxType]: { rate: effectiveRate, amount: Math.round(totalTax * 100) / 100 },
+      };
     }
 
     return undefined;
