@@ -71,41 +71,39 @@ function buildTaxSummary(formData: InvoiceFormData) {
     if (isSameState) {
       const isUT = utgstTerritories.includes(seller.state);
       const secondLabel = isUT ? "UTGST" : "SGST";
-      const summary: Record<string, { rate: number; amount: number }> = {};
+    const subtotal = calculateSubtotal(lineItems);
+      const totalTax = lineItems.reduce((s, i) => s + i.quantity * i.rate * (i.taxPercent / 100), 0);
+      const effectiveRate = subtotal > 0 ? Math.round((totalTax * 100 / subtotal) * 100) / 100 : 0;
+      const halfRate = Math.round((effectiveRate / 2) * 100) / 100;
+      let totalCgst = 0;
+      let totalSecond = 0;
       lineItems.forEach((item) => {
-        const halfRate = item.taxPercent / 2;
         const itemSubtotal = item.quantity * item.rate;
-        const halfAmount = itemSubtotal * (halfRate / 100);
-        summary["CGST"] = summary["CGST"] || { rate: halfRate, amount: 0 };
-        summary["CGST"].amount += halfAmount;
-        summary[secondLabel] = summary[secondLabel] || { rate: halfRate, amount: 0 };
-        summary[secondLabel].amount += halfAmount;
+        const halfAmount = itemSubtotal * (item.taxPercent / 2 / 100);
+        totalCgst += halfAmount;
+        totalSecond += halfAmount;
       });
-      Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
-      return summary;
+      return {
+        CGST: { rate: halfRate, amount: Math.round(totalCgst * 100) / 100 },
+        [secondLabel]: { rate: halfRate, amount: Math.round(totalSecond * 100) / 100 },
+      };
     } else {
-      const summary: Record<string, { rate: number; amount: number }> = {};
-      lineItems.forEach((item) => {
-        const itemSubtotal = item.quantity * item.rate;
-        const amount = itemSubtotal * (item.taxPercent / 100);
-        summary["IGST"] = summary["IGST"] || { rate: item.taxPercent, amount: 0 };
-        summary["IGST"].amount += amount;
-      });
-      Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
-      return summary;
+      const subtotalInter = calculateSubtotal(lineItems);
+      const totalTaxInter = lineItems.reduce((s, i) => s + i.quantity * i.rate * (i.taxPercent / 100), 0);
+      const effectiveRateInter = subtotalInter > 0 ? Math.round((totalTaxInter * 100 / subtotalInter) * 100) / 100 : 0;
+      return {
+        IGST: { rate: effectiveRateInter, amount: Math.round(totalTaxInter * 100) / 100 },
+      };
     }
   }
 
   if (taxType === "VAT" || taxType === "Sales Tax") {
-    const summary: Record<string, { rate: number; amount: number }> = {};
-    lineItems.forEach((item) => {
-      const itemSubtotal = item.quantity * item.rate;
-      const amount = itemSubtotal * (item.taxPercent / 100);
-      summary[taxType] = summary[taxType] || { rate: item.taxPercent, amount: 0 };
-      summary[taxType].amount += amount;
-    });
-    Object.values(summary).forEach((v) => { v.amount = Math.round(v.amount * 100) / 100; });
-    return summary;
+    const subtotalVat = calculateSubtotal(lineItems);
+    const totalTaxVat = lineItems.reduce((s, i) => s + i.quantity * i.rate * (i.taxPercent / 100), 0);
+    const effectiveRateVat = subtotalVat > 0 ? Math.round((totalTaxVat * 100 / subtotalVat) * 100) / 100 : 0;
+    return {
+      [taxType]: { rate: effectiveRateVat, amount: Math.round(totalTaxVat * 100) / 100 },
+    };
   }
 
   return undefined;
@@ -125,8 +123,10 @@ function calculateTotalTax(lineItems: LineItem[], isCrossBorder: boolean) {
 function calculateEffectiveTax(lineItems: LineItem[], isCrossBorder: boolean) {
   if (isCrossBorder) return 0;
   if (lineItems.length === 0) return 0;
-  const totalPercent = lineItems.reduce((sum, item) => sum + item.taxPercent, 0);
-  return Math.round(totalPercent / lineItems.length);
+  const subtotal = calculateSubtotal(lineItems);
+  if (subtotal === 0) return 0;
+  const totalTax = calculateTotalTax(lineItems, false);
+  return Math.round((totalTax * 100 / subtotal) * 100) / 100;
 }
 
 function formatAmount(n: number) {
