@@ -28,6 +28,31 @@ const ChatBot = () => {
   }, [messages]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    const fetchHistory = async () => {
+      try {
+        const token = getToken();
+        const res = await fetch(`${config.backendHost}/api/chatbot/chat/history`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.history)) {
+          setMessages(
+            data.history.map((m: { id: string; role: "user" | "assistant"; content: string }) => ({
+              id: m.id,
+              content: m.content,
+              role: m.role,
+            }))
+          );
+        }
+      } catch {
+        // silently fail
+      }
+    };
+    fetchHistory();
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         setIsOpen(false);
