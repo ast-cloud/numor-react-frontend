@@ -14,6 +14,7 @@ interface Message {
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -55,12 +56,27 @@ const ChatBot = () => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        setIsOpen(false);
+        setShowConfirm(true);
       }
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
+
+  const handleClose = async () => {
+    try {
+      const token = getToken();
+      await fetch(`${config.backendHost}/api/chatbot/chat/deleteHistory`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+    } catch {
+      // silently fail
+    }
+    setMessages([]);
+    setShowConfirm(false);
+    setIsOpen(false);
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -131,7 +147,7 @@ const ChatBot = () => {
           {/* Backdrop */}
           <div 
             className="fixed inset-0 z-40" 
-            onClick={() => setIsOpen(false)}
+            onClick={() => setShowConfirm(true)}
             aria-hidden="true"
           />
           <div className="fixed bottom-6 right-6 z-50 w-[340px] h-[480px] bg-card rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border/50 origin-bottom-right animate-[bounce-in_0.2s_ease-out]">
@@ -147,13 +163,27 @@ const ChatBot = () => {
               </div>
             </div>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => setShowConfirm(true)}
               className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               aria-label="Close chat"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Confirmation overlay */}
+          {showConfirm && (
+            <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-sm flex items-center justify-center p-6">
+              <div className="text-center space-y-4">
+                <p className="text-sm font-medium text-foreground">End this chat session?</p>
+                <p className="text-xs text-muted-foreground">Your conversation history will be deleted.</p>
+                <div className="flex gap-2 justify-center">
+                  <Button size="sm" variant="outline" onClick={() => setShowConfirm(false)}>Cancel</Button>
+                  <Button size="sm" variant="destructive" onClick={handleClose}>End Session</Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
