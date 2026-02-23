@@ -147,7 +147,7 @@ const ChatBot = () => {
           {/* Backdrop */}
           <div 
             className="fixed inset-0 z-40" 
-            onClick={() => setShowConfirm(true)}
+            onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
           <div className="fixed bottom-6 right-6 z-50 w-[340px] h-[480px] bg-card rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border/50 origin-bottom-right animate-[bounce-in_0.2s_ease-out]">
