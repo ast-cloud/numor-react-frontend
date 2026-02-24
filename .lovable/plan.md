@@ -1,50 +1,20 @@
 
 
-## Problem Analysis
+## Plan: Add Google OAuth to Login Page
 
-After a Google OAuth callback, the backend needs to both redirect the user to the frontend AND pass a JWT token so it can be stored in `localStorage`. Since `localStorage` can only be set by client-side JavaScript, the backend cannot set it directly.
+### What changes
 
-## Recommended Solution: Token in Redirect URL + Frontend Handler Page
+Add a `handleGoogleLogin` function to `src/pages/Login.tsx` that redirects to Google OAuth **without** any `state` parameter (since this is login, not signup — no need to specify a user type). Wire the "Continue with Google" button to call it.
 
-The standard approach is:
+### Technical details
 
-1. **Backend**: Redirect with the token as a URL query parameter or hash fragment
-2. **Frontend**: Create a small handler page that extracts the token, saves it to `localStorage`, then redirects to the appropriate dashboard
+**File: `src/pages/Login.tsx`**
 
-### Backend Change (your Express code)
+1. Import `config` from `@/lib/config`
+2. Add `handleGoogleLogin` function:
+   - Constructs Google OAuth URL with `client_id`, `redirect_uri`, `response_type`, `scope` — same as signup but **no `state` param**
+   - Redirects via `window.location.href`
+3. Add `onClick={handleGoogleLogin}` to the "Continue with Google" button (line 134)
 
-Complete the `googleLocalStorageBasedLogin` function to redirect with the token and role in the URL:
-
-```javascript
-async function googleLocalStorageBasedLogin(req, res, next) {
-  // ... existing state/code parsing ...
-
-  const { token, user } = await authService.googleAuth(code, user_type_for_signup);
-
-  const frontendUrl = process.env.FRONTEND_URL; // e.g. https://numor.lovable.app
-  const redirectPath = user_type_for_signup === "CA_USER" ? "/ca/dashboard" : "/sme/dashboard";
-
-  // Pass token in hash fragment (not query param) so it's not logged by servers
-  res.redirect(`${frontendUrl}/auth/callback#token=${token}&redirect=${redirectPath}`);
-}
-```
-
-Using the hash fragment (`#`) is preferred over query parameters (`?`) because hash fragments are never sent to servers in HTTP requests, making them slightly more secure for token transport.
-
-### Frontend Change
-
-Create a new `/auth/callback` route and page that:
-1. Reads the token from the URL hash fragment
-2. Stores it in `localStorage` using the existing `setToken()` utility
-3. Fetches the user profile (via `refreshUser` from `useAuth`)
-4. Redirects to the appropriate dashboard
-
-### Files to Create/Modify
-
-1. **Create `src/pages/AuthCallback.tsx`** - A small page that extracts the token from the hash, calls `setToken()`, triggers `refreshUser()`, then navigates to the redirect path
-2. **Modify `src/App.tsx`** - Add the `/auth/callback` route
-
-### Security Note
-
-The token is briefly visible in the URL hash but is never sent to any server. The handler page should clear the hash immediately after extracting the token (via `window.history.replaceState`). This is the same pattern used by many OAuth implementations including Firebase Auth.
+The backend will receive no `state`, so `user_type_for_signup` will be `undefined`, which is correct for existing user login. The existing `AuthCallback.tsx` will handle the redirect with the token hash fragment as before.
 
