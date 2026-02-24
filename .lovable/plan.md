@@ -1,94 +1,50 @@
 
 
-# Dashboard Integration with Real Backend Data
+## Problem Analysis
 
-## Overview
-Replace all hardcoded/dummy data in the dashboard with real data computed from the existing expense and invoice APIs. No new backend endpoints are needed -- all 7 widgets and the 4 summary stat cards can be fully powered by the current `GET /api/expenses/` and `GET /api/invoices/` endpoints, supplemented by `GET /api/clients` for client names.
+After a Google OAuth callback, the backend needs to both redirect the user to the frontend AND pass a JWT token so it can be stored in `localStorage`. Since `localStorage` can only be set by client-side JavaScript, the backend cannot set it directly.
 
-## What Changes
+## Recommended Solution: Token in Redirect URL + Frontend Handler Page
 
-### 1. New data-fetching hook: `useDashboardData`
-Create a custom hook (`src/hooks/use-dashboard-data.ts`) that:
-- Fetches expenses, invoices, and clients using React Query (parallel queries)
-- Exposes loading/error states
-- Returns the raw arrays for processing by widgets
+The standard approach is:
 
-### 2. Replace `widgetData.ts` with real data processing utilities
-Create `src/components/dashboard/widgets/widgetDataProcessors.ts` with pure functions that:
-- Accept real expense/invoice/client arrays + TimeRangeConfig
-- Filter records by the selected time range (today, this week, this month, this quarter, custom date range, all)
-- Group and aggregate data into the exact shapes each widget expects
-- Compute summary stats (total revenue, total expenses, net income, pending invoice count, and period-over-period % change)
+1. **Backend**: Redirect with the token as a URL query parameter or hash fragment
+2. **Frontend**: Create a small handler page that extracts the token, saves it to `localStorage`, then redirects to the appropriate dashboard
 
-### 3. Update `DashboardHome.tsx`
-- Call `useDashboardData()` to fetch data once at the page level
-- Replace the hardcoded `stats` array with computed values from real data
-- Pass processed data down to widgets as props (instead of widgets calling `widgetData.ts` functions internally)
-- Add loading skeletons and error handling
+### Backend Change (your Express code)
 
-### 4. Update each widget component
-Update all 7 widget components to accept pre-processed data as a prop instead of calling dummy data functions:
-- `RevenueOverTimeWidget` -- receives grouped invoice revenue by period
-- `ExpensesOverTimeWidget` -- receives grouped expense totals by period
-- `ExpensesByCategoryWidget` -- receives category-grouped expense totals
-- `IncomeVsExpensesWidget` -- receives both series aligned by period
-- `CashFlowWidget` -- receives net (income - expenses) by period
-- `TopClientsWidget` -- receives client names with total invoice revenue
-- `PaymentStatusWidget` -- receives invoice count by status
+Complete the `googleLocalStorageBasedLogin` function to redirect with the token and role in the URL:
 
-### 5. Dynamic currency formatting
-Use the organization's country (from `useAuth` context) to format all monetary values with the correct currency symbol, consistent with how the Expenses page already works.
+```javascript
+async function googleLocalStorageBasedLogin(req, res, next) {
+  // ... existing state/code parsing ...
 
----
+  const { token, user } = await authService.googleAuth(code, user_type_for_signup);
 
-## Do You Need New Backend Endpoints?
+  const frontendUrl = process.env.FRONTEND_URL; // e.g. https://numor.lovable.app
+  const redirectPath = user_type_for_signup === "CA_USER" ? "/ca/dashboard" : "/sme/dashboard";
 
-**Not strictly required**, but here are recommendations for future optimization:
-
-| Suggested Endpoint | Why | Priority |
-|---|---|---|
-| `GET /api/dashboard/summary?from=&to=` | Returns pre-aggregated totals (revenue, expenses, net income, pending count, % changes) so the frontend doesn't need to fetch all records just to sum them | Medium -- useful once data volume grows beyond a few hundred records |
-| `GET /api/dashboard/trends?from=&to=&granularity=` | Returns time-bucketed series server-side (daily/weekly/monthly) | Low -- only needed at scale |
-
-For now, fetching all expenses and invoices client-side and computing aggregates is perfectly fine for typical SME data volumes (hundreds to low thousands of records). The React Query cache will prevent redundant fetches as users switch between time ranges.
-
----
-
-## Technical Details
-
-### Files to create
-- `src/hooks/use-dashboard-data.ts` -- React Query hook fetching expenses, invoices, clients in parallel
-- `src/components/dashboard/widgets/widgetDataProcessors.ts` -- Pure functions for filtering by time range and aggregating data
-
-### Files to modify
-- `src/pages/DashboardHome.tsx` -- Use real data hook, compute stats, pass data to widgets
-- `src/components/dashboard/widgets/RevenueOverTimeWidget.tsx`
-- `src/components/dashboard/widgets/ExpensesOverTimeWidget.tsx`
-- `src/components/dashboard/widgets/ExpensesByCategoryWidget.tsx`
-- `src/components/dashboard/widgets/IncomeVsExpensesWidget.tsx`
-- `src/components/dashboard/widgets/CashFlowWidget.tsx`
-- `src/components/dashboard/widgets/TopClientsWidget.tsx`
-- `src/components/dashboard/widgets/PaymentStatusWidget.tsx`
-
-### Data flow
-
-```text
-DashboardHome
-  |-- useDashboardData() --> fetches expenses[], invoices[], clients[]
-  |-- filterByTimeRange(data, timeRangeConfig) --> filtered data
-  |-- computeStats(filtered) --> { totalRevenue, totalExpenses, netIncome, pendingCount, changes }
-  |-- Stats Cards (rendered with computed values)
-  |-- Each Widget receives its pre-processed data array as a prop
+  // Pass token in hash fragment (not query param) so it's not logged by servers
+  res.redirect(`${frontendUrl}/auth/callback#token=${token}&redirect=${redirectPath}`);
+}
 ```
 
-### Time range filtering logic
-- "Today": records where date matches today
-- "This Week": records from Monday of current week to now
-- "This Month": records from 1st of current month to now
-- "This Quarter": records from start of current quarter to now
-- "All Time": no filtering
-- "Custom": records within the selected date range
+Using the hash fragment (`#`) is preferred over query parameters (`?`) because hash fragments are never sent to servers in HTTP requests, making them slightly more secure for token transport.
 
-### Period-over-period comparison for stat cards
-For % change calculations, compare the current period's total against the equivalent previous period (e.g., this month vs last month, this week vs last week).
+### Frontend Change
+
+Create a new `/auth/callback` route and page that:
+1. Reads the token from the URL hash fragment
+2. Stores it in `localStorage` using the existing `setToken()` utility
+3. Fetches the user profile (via `refreshUser` from `useAuth`)
+4. Redirects to the appropriate dashboard
+
+### Files to Create/Modify
+
+1. **Create `src/pages/AuthCallback.tsx`** - A small page that extracts the token from the hash, calls `setToken()`, triggers `refreshUser()`, then navigates to the redirect path
+2. **Modify `src/App.tsx`** - Add the `/auth/callback` route
+
+### Security Note
+
+The token is briefly visible in the URL hash but is never sent to any server. The handler page should clear the hash immediately after extracting the token (via `window.history.replaceState`). This is the same pattern used by many OAuth implementations including Firebase Auth.
 
