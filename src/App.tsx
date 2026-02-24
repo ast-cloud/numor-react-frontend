@@ -32,6 +32,7 @@ import SMESettings from "./pages/SMESettings";
 import CASettings from "./pages/CASettings";
 import CAConnect from "./pages/CAConnect";
 import NotFound from "./pages/NotFound";
+import AuthCallback from "./pages/AuthCallback";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/ca-signup" element={<CASignup />} />
             <Route path="/ca-application-success" element={<CAApplicationSuccess />} />
             <Route path="/about" element={<About />} />
