@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { register } from "@/lib/api/auth";
 import { useToast } from "@/hooks/use-toast";
+import { config } from "@/lib/config";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -58,6 +59,24 @@ const Signup = () => {
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handleGoogleSME = () => {
+    const state = btoa(JSON.stringify({
+      user_type_for_signup: "SME_USER"
+    }));
+
+    const params = new URLSearchParams({
+      client_id: "659218881507-babe4ar7rnd0s2hm7765rl48152bag4r.apps.googleusercontent.com",
+      redirect_uri: `${config.backendHost}/api/auth/google-local-storage-based-login`,
+      response_type: "code",
+      scope: "openid email profile",
+      access_type: "offline",
+      prompt: "consent",
+      state
+    });
+
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
   };
 
   return (
@@ -184,7 +203,7 @@ const Signup = () => {
 
           {/* Social signup */}
           <div className="flex flex-col gap-3">
-            <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+            <Button variant="outline" className="w-full flex items-center justify-center gap-2" onClick={handleGoogleSME}>
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
