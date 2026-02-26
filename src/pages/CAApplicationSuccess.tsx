@@ -38,7 +38,7 @@ const CAApplicationSuccess = () => {
               Go to Homepage
             </Button>
           </Link>
-          <Link to="/ca">
+          <Link to="/for-financial-experts">
             <Button variant="outline" className="w-full">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to For Financial Experts
