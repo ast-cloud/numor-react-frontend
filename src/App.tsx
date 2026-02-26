@@ -34,6 +34,7 @@ import CAConnect from "./pages/CAConnect";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RoleGuard from "./components/RoleGuard";
 
 const queryClient = new QueryClient();
 
@@ -71,7 +72,7 @@ const App = () => (
               <Route path="settings" element={<SMESettings />} />
             </Route>
             {/* CA Routes */}
-            <Route path="/ca" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+            <Route path="/ca" element={<ProtectedRoute><RoleGuard role="CA_USER"><DashboardLayout /></RoleGuard></ProtectedRoute>}>
               <Route path="dashboard" element={<CADashboardHome />} />
               <Route path="availability" element={<CAAvailability />} />
               <Route path="bookings" element={<CABookings />} />
