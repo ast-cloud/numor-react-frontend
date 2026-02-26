@@ -54,8 +54,12 @@ const parseRoles = (data: Record<string, unknown>): UserRole[] => {
 };
 
 const resolveActiveRole = (roles: UserRole[]): UserRole => {
-  const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as UserRole;
-  if (saved && roles.includes(saved)) return saved;
+  const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as UserRole | null;
+  const canRestoreSavedRole =
+    !!saved &&
+    (roles.includes(saved) || (saved === "SME_USER" && roles.includes("CA_USER")));
+
+  if (canRestoreSavedRole && saved) return saved;
   if (roles.includes("ADMIN")) return "ADMIN";
   if (roles.includes("CA_USER")) return "CA_USER";
   return "SME_USER";
@@ -128,7 +132,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const hasRole = useCallback((role: UserRole) => user?.roles.includes(role) ?? false, [user]);
 
   const setActiveRole = useCallback((role: UserRole) => {
-    if (user?.roles.includes(role)) {
+    if (!user) return;
+
+    const canSwitchToRole =
+      user.roles.includes(role) ||
+      (role === "SME_USER" && user.roles.includes("CA_USER"));
+
+    if (canSwitchToRole) {
       setActiveRoleState(role);
       localStorage.setItem(ACTIVE_ROLE_KEY, role);
     }
