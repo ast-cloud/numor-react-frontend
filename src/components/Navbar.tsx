@@ -33,7 +33,7 @@ const Navbar = () => {
             {/* For Financial Experts Dropdown */}
             <div className="relative group">
               <Link 
-                to="/for-financial-experts" 
+                to="/ca" 
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
               >
                 For Financial Experts
@@ -92,7 +92,7 @@ const Navbar = () => {
               <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 Pricing
               </Link>
-              <Link to="/for-financial-experts" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
+              <Link to="/ca" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 For Financial Experts
               </Link>
               <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
