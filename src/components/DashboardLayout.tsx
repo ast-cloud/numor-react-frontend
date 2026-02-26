@@ -40,20 +40,20 @@ const DashboardContent = () => {
           <div className="flex items-center bg-muted rounded-full p-0.5">
             <button
               onClick={handleSwitchToRegular}
-              className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+              className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ease-in-out ${
                 activeRole === "SME_USER"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm scale-105"
+                  : "bg-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               Regular
             </button>
             <button
               onClick={handleSwitchToCA}
-              className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+              className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ease-in-out ${
                 activeRole === "CA_USER"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm scale-105"
+                  : "bg-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               CA
