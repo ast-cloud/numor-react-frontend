@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { config } from "@/lib/config";
 import { getToken } from "@/lib/api/authToken";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   id: string;
@@ -206,7 +207,9 @@ const ChatBot = () => {
                     : "bg-secondary/50 text-muted-foreground rounded-bl-md"
                 )}
               >
-                {message.content}
+                <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0 [&>pre]:my-1 [&>pre]:rounded [&>pre]:bg-muted/50 [&>pre]:p-2 [&>code]:text-xs">
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                </div>
               </div>
             ))}
             {isLoading && (
