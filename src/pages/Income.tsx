@@ -213,6 +213,7 @@ const Income = () => {
   const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
   const [editDraftId, setEditDraftId] = useState<string | null>(null);
   const [editDraftOpen, setEditDraftOpen] = useState(false);
+  const [clientsData, setClientsData] = useState<ClientData[]>([]);
   const [orgCountry, setOrgCountry] = useState<string>("US");
   const { toast } = useToast();
 
@@ -227,6 +228,7 @@ const Income = () => {
     Promise.all([fetchInvoices(), fetchClients()])
       .then(([invoiceData, clientData]) => {
         const clientsMap = new Map(clientData.map((c) => [c.id, c.name]));
+        setClientsData(clientData);
         setRawInvoices(invoiceData);
         setInvoices(invoiceData.map((inv) => mapApiInvoice(inv, clientsMap)));
       })
@@ -252,6 +254,9 @@ const Income = () => {
     setIsPdfDialogOpen(true);
     try {
       const detail = await fetchInvoice(invoice.id);
+      // Look up client from already-fetched clients data
+      const client = clientsData.find((c) => c.id === detail.clientId);
+
       const formData: InvoiceFormData = {
         invoiceNumber: detail.invoiceNumber || "",
         invoiceDate: detail.issueDate ? new Date(detail.issueDate) : undefined,
@@ -260,29 +265,29 @@ const Income = () => {
         taxType: detail.taxType || "GST",
         seller: {
           logo: "",
-          name: detail.seller?.name || detail.sellerName || "",
-          streetAddress: detail.seller?.streetAddress || "",
-          city: detail.seller?.city || "",
-          state: detail.seller?.state || "",
-          zip: detail.seller?.zipCode || "",
-          country: detail.seller?.country || "",
-          taxId: detail.seller?.taxId || "",
-          email: detail.seller?.email || detail.sellerEmail || "",
-          phone: detail.seller?.phone || "",
+          name: detail.sellerName || detail.seller?.name || "",
+          streetAddress: detail.sellerStreetAddress || detail.seller?.streetAddress || "",
+          city: detail.sellerCity || detail.seller?.city || "",
+          state: detail.sellerState || detail.seller?.state || "",
+          zip: detail.sellerZipCode || detail.seller?.zipCode || "",
+          country: detail.sellerCountry || detail.seller?.country || "",
+          taxId: detail.sellerTaxId || detail.seller?.taxId || "",
+          email: detail.sellerEmail || detail.seller?.email || "",
+          phone: detail.sellerPhone || detail.seller?.phone || "",
         },
-        clientName: detail.client?.name || "",
-        clientEmail: detail.client?.email || "",
-        clientPhone: detail.client?.phone || "",
-        clientStreetAddress: detail.client?.streetAddress || "",
-        clientCity: detail.client?.city || "",
-        clientState: detail.client?.state || "",
-        clientZip: detail.client?.zipCode || "",
-        clientCountry: detail.client?.country || "",
+        clientName: client?.name || detail.client?.name || "",
+        clientEmail: client?.email || detail.client?.email || "",
+        clientPhone: client?.phone || detail.client?.phone || "",
+        clientStreetAddress: client?.streetAddress || detail.client?.streetAddress || "",
+        clientCity: client?.city || detail.client?.city || "",
+        clientState: client?.state || detail.client?.state || "",
+        clientZip: client?.zipCode || detail.client?.zipCode || "",
+        clientCountry: client?.country || detail.client?.country || "",
         lineItems: (detail.items || []).map((item) => ({
           id: item.id,
           description: item.description || item.itemName || "",
           quantity: parseFloat(item.quantity) || 0,
-          unit: "",
+          unit: item.unitType || "",
           rate: parseFloat(item.unitPrice) || 0,
           taxPercent: parseFloat(item.taxRate) || 0,
         })),

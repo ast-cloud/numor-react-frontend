@@ -37,14 +37,22 @@ export interface InvoiceData {
   pdfStatus: string;
   sellerName: string;
   sellerEmail: string;
+  sellerPhone?: string;
+  sellerStreetAddress?: string;
+  sellerCity?: string;
+  sellerState?: string;
+  sellerZipCode?: string;
+  sellerCountry?: string;
+  sellerTaxId?: string;
   notes: string;
   createdAt: string;
   updatedAt: string;
-  items: InvoiceItem[];
+  items: (InvoiceItem & { unitType?: string })[];
   // Extended fields from detail endpoint
   taxType?: string;
   reverseCharge?: boolean;
   sacCode?: string;
+  taxSummary?: Record<string, { rate: number; amount: number }>;
   seller?: {
     name: string;
     email: string;
