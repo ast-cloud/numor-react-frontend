@@ -61,6 +61,7 @@ interface Invoice {
   clientName: string;
   dueDate: string;
   amount: number;
+  currency: string;
   status: InvoiceStatus;
   pdfUrl: string;
 }
@@ -79,6 +80,7 @@ const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoi
   clientName: clientsMap.get(inv.clientId) || inv.sellerName,
   dueDate: format(parseISO(inv.dueDate), "dd/MM/yyyy"),
   amount: parseFloat(inv.totalAmount),
+  currency: inv.currency || "USD",
   status: mapApiStatus(inv.status),
   pdfUrl: inv.pdfKey || "",
 });
@@ -152,7 +154,7 @@ const InvoiceRow = ({
         <Badge variant={variant} className="min-w-[70px] justify-center">
           {label}
         </Badge>
-        <span className="font-semibold text-foreground min-w-[100px] text-right">{formatCurrency(invoice.amount)}</span>
+        <span className="font-semibold text-foreground min-w-[100px] text-right">{formatCurrencyVal(invoice.amount, invoice.currency)}</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-1 hover:bg-muted rounded-md transition-colors" onClick={(e) => e.stopPropagation()}>
