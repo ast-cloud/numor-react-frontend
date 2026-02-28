@@ -123,6 +123,7 @@ const ChatBot = () => {
         buffer = frames.pop() || "";
 
         let shouldStop = false;
+        let chunkText = "";
 
         for (const frame of frames) {
           const lines = frame.split("\n");
@@ -148,10 +149,16 @@ const ChatBot = () => {
           }
 
           if (data && !eventType) {
-            setMessages((prev) =>
-              prev.map((m) => m.id === assistantId ? { ...m, content: m.content + data } : m)
-            );
+            chunkText += data;
           }
+        }
+
+        if (chunkText) {
+          setMessages((prev) =>
+            prev.map((m) => m.id === assistantId ? { ...m, content: m.content + chunkText } : m)
+          );
+          // Yield to browser to render before processing next chunk
+          await new Promise((r) => requestAnimationFrame(r));
         }
 
         if (shouldStop) break;
