@@ -92,9 +92,11 @@ const ChatBot = () => {
     setInput("");
     setIsLoading(true);
 
+    const assistantId = (Date.now() + 1).toString();
+
     try {
       const token = getToken();
-      const res = await fetch(`${config.backendHost}/api/chatbot/chat/`, {
+      const res = await fetch(`${config.backendHost}/api/chatbot/chat/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,19 +105,65 @@ const ChatBot = () => {
         body: JSON.stringify({ message: userMessage.content }),
       });
 
-      const data = await res.json();
+      if (!res.body) throw new Error("No response body");
 
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.reply || "Sorry, I couldn't process that.",
-        role: "assistant",
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+      // Add empty assistant message for live streaming
+      setMessages((prev) => [...prev, { id: assistantId, content: "", role: "assistant" }]);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const frames = buffer.split("\n\n");
+        buffer = frames.pop() || "";
+
+        let shouldStop = false;
+
+        for (const frame of frames) {
+          const lines = frame.split("\n");
+          let eventType = "";
+          let data = "";
+
+          for (const line of lines) {
+            if (line.startsWith("event: ")) eventType = line.slice(7).trim();
+            else if (line.startsWith("data: ")) data = line.slice(6);
+          }
+
+          if (eventType === "end") {
+            shouldStop = true;
+            break;
+          }
+
+          if (eventType === "error") {
+            setMessages((prev) =>
+              prev.map((m) => m.id === assistantId ? { ...m, content: data || "An error occurred." } : m)
+            );
+            shouldStop = true;
+            break;
+          }
+
+          if (data && !eventType) {
+            setMessages((prev) =>
+              prev.map((m) => m.id === assistantId ? { ...m, content: m.content + data } : m)
+            );
+          }
+        }
+
+        if (shouldStop) break;
+      }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { id: (Date.now() + 1).toString(), content: "Something went wrong. Please try again.", role: "assistant" },
-      ]);
+      setMessages((prev) => {
+        const hasAssistant = prev.some((m) => m.id === assistantId);
+        if (hasAssistant) {
+          return prev.map((m) => m.id === assistantId ? { ...m, content: "Something went wrong. Please try again." } : m);
+        }
+        return [...prev, { id: assistantId, content: "Something went wrong. Please try again.", role: "assistant" as const }];
+      });
     } finally {
       setIsLoading(false);
     }
