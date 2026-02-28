@@ -25,7 +25,7 @@ export async function fetchClients(): Promise<ClientData[]> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
 
-  const res = await fetch(`${config.backendHost}/api/clients`, {
+  const res = await fetch(`${config.backendHost}/api/clients?limit=20`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
