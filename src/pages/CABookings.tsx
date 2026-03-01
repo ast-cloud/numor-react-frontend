@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -212,6 +213,7 @@ const CABookings = () => {
 
   return (
     <div className="space-y-6">
+      <Helmet><title>Numor - Bookings</title></Helmet>
       <div>
         <h1 className="text-3xl font-display font-bold text-foreground">Bookings</h1>
         <p className="text-muted-foreground mt-1">Manage your client consultation appointments</p>
