@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -199,6 +200,7 @@ const SMESettings = () => {
 
   return (
     <div className="space-y-8">
+      <Helmet><title>Numor - Settings</title></Helmet>
       <div>
         <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Settings</h1>
         <p className="text-muted-foreground mt-2 text-lg">Manage your account and preferences.</p>
