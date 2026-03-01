@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -270,6 +271,7 @@ const CAConnect = () => {
 
   return (
     <div className="space-y-6">
+      <Helmet><title>Numor - Connect with CA</title></Helmet>
       <div>
         <h1 className="text-3xl font-display font-bold text-foreground">CA Connect</h1>
         <p className="text-muted-foreground mt-1">

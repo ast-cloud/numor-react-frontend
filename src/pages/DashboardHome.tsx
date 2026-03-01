@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -189,6 +190,7 @@ const DashboardHome = () => {
 
   return (
     <div className="space-y-8">
+      <Helmet><title>Numor - Dashboard</title></Helmet>
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
