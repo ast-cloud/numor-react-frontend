@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -269,6 +270,7 @@ const CAAvailability = () => {
 
   return (
     <div className="space-y-6">
+      <Helmet><title>Numor - Availability</title></Helmet>
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Availability</h1>

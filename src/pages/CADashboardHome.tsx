@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useCAProfile } from "@/hooks/use-ca-profile";
 import { AlertCircle, ArrowRight, Calendar, Users, IndianRupee, Clock, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const CADashboardHome = () => {
 
   return (
     <div className="space-y-6">
+      <Helmet><title>Numor - CA Dashboard</title></Helmet>
       {/* Profile Completion Banner */}
       {showBanner && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">

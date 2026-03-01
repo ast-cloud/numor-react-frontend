@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -282,6 +283,7 @@ const CASettings = () => {
 
   return (
     <div className="space-y-8">
+      <Helmet><title>Numor - CA Settings</title></Helmet>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">CA Profile Settings</h1>
