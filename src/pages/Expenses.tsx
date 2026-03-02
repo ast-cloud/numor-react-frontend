@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ import { DateRange } from "react-day-picker";
 import { config } from "@/lib/config";
 import { getToken } from "@/lib/api/authToken";
 import { fetchExpenses, type ExpenseAPI } from "@/lib/api/expenses";
+import { useQueryClient } from "@tanstack/react-query";
 
 type SortField = "date" | "totalPrice" | "category";
 type SortOrder = "asc" | "desc";
@@ -235,6 +236,7 @@ const createEmptyItem = (orgCountry?: string): ExpenseItem => {
 
 const Expenses = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [apiExpenses, setApiExpenses] = useState<ExpenseAPI[]>([]);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(true);
@@ -656,6 +658,7 @@ const Expenses = () => {
       }
 
       await loadExpenses();
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
 
       setExpenseItems([createEmptyItem(orgCountry)]);
       setCustomTaxItems(new Set());
@@ -730,6 +733,7 @@ const Expenses = () => {
 
       // Refetch expenses from API
       await loadExpenses();
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
 
       setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
       setBillItems([createEmptyBillItem()]);
