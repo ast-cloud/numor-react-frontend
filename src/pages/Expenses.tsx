@@ -109,7 +109,7 @@ const categories = [
 
 // Country-to-currency mapping
 const countryCurrency: Record<string, string> = {
-  "India": "INR", "UAE": "AED", "US": "USD", "UK": "GBP",
+  "India": "INR", "UAE": "AED", "US": "USD", "UK": "GBP", "United States": "USD", "United Kingdom": "GBP", "United Arab Emirates": "AED",
   "Austria": "EUR", "Belgium": "EUR", "Bulgaria": "EUR", "Croatia": "EUR",
   "Cyprus": "EUR", "Czech Republic": "EUR", "Denmark": "EUR", "Estonia": "EUR",
   "Finland": "EUR", "France": "EUR", "Germany": "EUR", "Greece": "EUR",
@@ -124,7 +124,10 @@ const countryTaxDefaults: Record<string, { taxType: string; taxPercent: string }
   "India": { taxType: "GST", taxPercent: "18" },
   "UAE": { taxType: "VAT", taxPercent: "5" },
   "US": { taxType: "Sales Tax", taxPercent: "" },
+  "United States": { taxType: "Sales Tax", taxPercent: "" },
   "UK": { taxType: "VAT", taxPercent: "20" },
+  "United Kingdom": { taxType: "VAT", taxPercent: "20" },
+  "United Arab Emirates": { taxType: "VAT", taxPercent: "5" },
   "Austria": { taxType: "VAT", taxPercent: "20" },
   "Belgium": { taxType: "VAT", taxPercent: "21" },
   "Bulgaria": { taxType: "VAT", taxPercent: "20" },
@@ -989,7 +992,7 @@ const Expenses = () => {
                             className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <span className="text-xs text-muted-foreground shrink-0">
-                            {orgCountry === "India" ? "INR" : orgCountry === "UAE" ? "AED" : orgCountry === "US" ? "USD" : orgCountry === "UK" ? "GBP" : ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"].includes(orgCountry || "") ? "EUR" : "USD"}
+                            {countryCurrency[orgCountry || ""] || "USD"}
                           </span>
                         </div>
                         {(() => {
@@ -1124,7 +1127,7 @@ const Expenses = () => {
                               className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="text-xs text-muted-foreground shrink-0">
-                              {orgCountry === "India" ? "INR" : orgCountry === "UAE" ? "AED" : orgCountry === "US" ? "USD" : orgCountry === "UK" ? "GBP" : ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"].includes(orgCountry || "") ? "EUR" : "USD"}
+                              {countryCurrency[orgCountry || ""] || "USD"}
                             </span>
                           </div>
                           <div className="relative">
