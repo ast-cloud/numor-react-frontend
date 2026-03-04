@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, activeRole } = useAuth();
 
+  const dashboardPath = activeRole === "ADMIN" ? "/admin" : activeRole === "CA_USER" ? "/ca/dashboard" : "/sme/dashboard";
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,12 +65,23 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-sm h-8" asChild>
-              <Link to="/login">Log in</Link>
-            </Button>
-            <Button variant="hero" size="sm" className="text-sm h-8" asChild>
-              <Link to="/signup">Get Started</Link>
-            </Button>
+            {user ? (
+              <Button variant="hero" size="sm" className="text-sm h-8" asChild>
+                <Link to={dashboardPath}>
+                  <User className="w-4 h-4 mr-1" />
+                  Dashboard
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="text-sm h-8" asChild>
+                  <Link to="/login">Log in</Link>
+                </Button>
+                <Button variant="hero" size="sm" className="text-sm h-8" asChild>
+                  <Link to="/signup">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -102,12 +116,23 @@ const Navbar = () => {
                 → Register as CA
               </Link>
               <div className="flex flex-col gap-2 pt-3">
-                <Button variant="outline" size="sm" className="w-full" asChild>
-                  <Link to="/login">Log in</Link>
-                </Button>
-                <Button variant="hero" size="sm" className="w-full" asChild>
-                  <Link to="/signup">Get Started</Link>
-                </Button>
+                {user ? (
+                  <Button variant="hero" size="sm" className="w-full" asChild>
+                    <Link to={dashboardPath}>
+                      <User className="w-4 h-4 mr-1" />
+                      Dashboard
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="outline" size="sm" className="w-full" asChild>
+                      <Link to="/login">Log in</Link>
+                    </Button>
+                    <Button variant="hero" size="sm" className="w-full" asChild>
+                      <Link to="/signup">Get Started</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
