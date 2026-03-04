@@ -8,7 +8,13 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, activeRole } = useAuth();
 
-  const dashboardPath = activeRole === "ADMIN" ? "/admin" : activeRole === "CA_USER" ? "/ca/dashboard" : "/sme/dashboard";
+  const getDashboardPath = () => {
+    if (!user) return "/sme/dashboard";
+    if (user.roles.includes("ADMIN")) return "/admin";
+    if (user.roles.includes("CA_USER")) return "/ca/dashboard";
+    return "/sme/dashboard";
+  };
+  const dashboardPath = getDashboardPath();
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
