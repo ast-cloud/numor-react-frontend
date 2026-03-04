@@ -36,3 +36,30 @@ export async function login(email: string, password: string) {
 export async function logout() {
   clearToken();
 }
+
+export async function forgotPassword(email: string) {
+  const res = await fetch(`${config.backendHost}/api/auth/forgetPassword`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email })
+  });
+  return res.json();
+}
+
+export async function verifyResetCode(email: string, code: string) {
+  const res = await fetch(`${config.backendHost}/api/auth/verifyResetCode`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, code })
+  });
+  return res.json();
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string) {
+  const res = await fetch(`${config.backendHost}/api/auth/resetPassword`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, code, newPassword })
+  });
+  return res.json();
+}
