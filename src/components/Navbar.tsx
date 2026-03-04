@@ -72,9 +72,9 @@ const Navbar = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-2">
             {user ? (
-              <Button variant="hero" size="sm" className="text-sm h-8" asChild>
+              <Button variant="ghost" size="sm" className="text-sm h-8 gap-1.5" asChild>
                 <Link to={dashboardPath}>
-                  <User className="w-4 h-4 mr-1" />
+                  <User className="w-3.5 h-3.5" />
                   Dashboard
                 </Link>
               </Button>
@@ -123,9 +123,9 @@ const Navbar = () => {
               </Link>
               <div className="flex flex-col gap-2 pt-3">
                 {user ? (
-                  <Button variant="hero" size="sm" className="w-full" asChild>
+                  <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
                     <Link to={dashboardPath}>
-                      <User className="w-4 h-4 mr-1" />
+                      <User className="w-3.5 h-3.5" />
                       Dashboard
                     </Link>
                   </Button>
