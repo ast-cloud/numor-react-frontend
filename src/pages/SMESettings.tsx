@@ -257,9 +257,9 @@ const SMESettings = () => {
                 <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfile}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfile} disabled={isSavingProfile}>
+                {isSavingProfile ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Save className="w-3 h-3 mr-1.5" />}
+                {isSavingProfile ? "Saving..." : "Save"}
               </Button>
             </div>
           )}
