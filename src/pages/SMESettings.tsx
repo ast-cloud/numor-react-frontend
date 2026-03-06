@@ -175,13 +175,27 @@ const SMESettings = () => {
     });
   };
 
-  const handleSaveProfile = () => {
-    // TODO: Call profile update API when available
-    setIsEditingProfile(false);
-    toast({
-      title: "Profile saved",
-      description: "Your profile has been updated successfully.",
-    });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+      await updateUserProfile({ name: profileData.name, phone: profileData.phone });
+      setOriginalProfileData({ ...profileData });
+      setIsEditingProfile(false);
+      toast({
+        title: "Profile saved",
+        description: "Your profile has been updated successfully.",
+      });
+    } catch {
+      toast({
+        title: "Failed to save",
+        description: "Could not update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleCancelProfile = () => {
