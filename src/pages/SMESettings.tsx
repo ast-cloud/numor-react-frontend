@@ -67,6 +67,8 @@ const SMESettings = () => {
     phone: "",
   });
   
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
