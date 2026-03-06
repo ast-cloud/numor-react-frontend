@@ -111,7 +111,7 @@ const ProfilePictureUpload = ({
 
   return (
     <>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 py-3">
         <div className="relative group">
           <Avatar className="w-20 h-20 border-2 border-border">
             {currentImage && <AvatarImage src={currentImage} alt="Profile" />}
