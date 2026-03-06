@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { updateUserProfile, fetchCurrentUser } from "@/lib/api/user";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useCAProfile } from "@/hooks/use-ca-profile";
-import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send } from "lucide-react";
+import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface UploadedDocument {
@@ -36,6 +37,29 @@ const CASettings = () => {
     email: user?.email || "",
     phone: caProfileData.phone || "",
   });
+  const [originalProfileData, setOriginalProfileData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: caProfileData.phone || "",
+  });
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userData = await fetchCurrentUser();
+        const data = {
+          name: userData.name || user?.name || "",
+          email: userData.email || user?.email || "",
+          phone: userData.phone || "",
+        };
+        setProfileData(data);
+        setOriginalProfileData(data);
+      } catch {
+        // fallback to context
+      }
+    };
+    loadUser();
+  }, [user]);
 
   const [professionalData, setProfessionalData] = useState({
     qualification: caProfileData.qualification || "",
@@ -125,22 +149,32 @@ const CASettings = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  const handleSaveProfile = () => {
-    // TODO: Call profile update API when available
-    updateCAProfile({ phone: profileData.phone });
-    setIsEditingProfile(false);
-    toast({
-      title: "Profile saved",
-      description: "Your profile has been updated successfully.",
-    });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+      await updateUserProfile({ name: profileData.name, phone: profileData.phone });
+      updateCAProfile({ phone: profileData.phone });
+      setOriginalProfileData({ ...profileData });
+      setIsEditingProfile(false);
+      toast({
+        title: "Profile saved",
+        description: "Your profile has been updated successfully.",
+      });
+    } catch {
+      toast({
+        title: "Failed to save",
+        description: "Could not update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleCancelProfile = () => {
-    setProfileData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: caProfileData.phone || "",
-    });
+    setProfileData({ ...originalProfileData });
     setIsEditingProfile(false);
   };
 
@@ -325,9 +359,9 @@ const CASettings = () => {
                 <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfile}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfile} disabled={isSavingProfile}>
+                {isSavingProfile ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Save className="w-3 h-3 mr-1.5" />}
+                {isSavingProfile ? "Saving..." : "Save"}
               </Button>
             </div>
           )}

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { fetchCurrentOrganization, updateOrganization } from "@/lib/api/user";
+import { fetchCurrentOrganization, updateOrganization, fetchCurrentUser, updateUserProfile } from "@/lib/api/user";
 import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2, Loader2 } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/constants";
 
@@ -71,6 +71,29 @@ const SMESettings = () => {
     email: user?.email || "",
     phone: "",
   });
+  const [originalProfileData, setOriginalProfileData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userData = await fetchCurrentUser();
+        const data = {
+          name: userData.name || user?.name || "",
+          email: userData.email || user?.email || "",
+          phone: userData.phone || "",
+        };
+        setProfileData(data);
+        setOriginalProfileData(data);
+      } catch {
+        // fallback to auth context
+      }
+    };
+    loadUser();
+  }, [user]);
 
   const [companyData, setCompanyData] = useState({
     name: "",
@@ -152,21 +175,31 @@ const SMESettings = () => {
     });
   };
 
-  const handleSaveProfile = () => {
-    // TODO: Call profile update API when available
-    setIsEditingProfile(false);
-    toast({
-      title: "Profile saved",
-      description: "Your profile has been updated successfully.",
-    });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+      await updateUserProfile({ name: profileData.name, phone: profileData.phone });
+      setOriginalProfileData({ ...profileData });
+      setIsEditingProfile(false);
+      toast({
+        title: "Profile saved",
+        description: "Your profile has been updated successfully.",
+      });
+    } catch {
+      toast({
+        title: "Failed to save",
+        description: "Could not update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleCancelProfile = () => {
-    setProfileData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: "",
-    });
+    setProfileData({ ...originalProfileData });
     setIsEditingProfile(false);
   };
 
@@ -224,9 +257,9 @@ const SMESettings = () => {
                 <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfile}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfile} disabled={isSavingProfile}>
+                {isSavingProfile ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Save className="w-3 h-3 mr-1.5" />}
+                {isSavingProfile ? "Saving..." : "Save"}
               </Button>
             </div>
           )}

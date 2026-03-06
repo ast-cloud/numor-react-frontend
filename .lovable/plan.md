@@ -1,23 +1,31 @@
-## Fix: Phone Number Not Saving in SME and CA Settings
 
-### Root Cause
 
-Both `SMESettings.tsx` and `CASettings.tsx` have `handleSaveProfile` functions with a `// TODO: Call profile update API when available` comment. They show a success toast but never actually call any backend API to persist the phone number (or name). The phone value is lost on page refresh.
+## Forgot Password Flow Integration
 
-### Plan
+A 3-step forgot password flow will be built as a new page (`/forgot-password`) with a multi-step form:
 
-1. **Add `updateUserProfile` API function in `src/lib/api/user.ts**`
-  - PUT to `/api/users/update`with `{ name, phone }`
-  - Follow the same pattern as `updateOrganization`
-2. **Update `SMESettings.tsx` `handleSaveProfile**`
-  - Call `updateUserProfile({ name, phone })` instead of just showing a toast
-  - Add loading state and error handling (like `handleSaveCompany` already does)
-3. **Update `CASettings.tsx` `handleSaveProfile**`
-  - Same: call `updateUserProfile({ name, phone })` with loading/error handling
-4. **Populate phone from backend on load**
-  - Both pages need to fetch the user's phone from `/api/user/me` on mount (the response already includes `phone`)
-  - Initialize `profileData.phone` from the fetched data instead of empty string
+### Steps
+1. **Email Entry** — User enters email, POST to `/api/auth/forgetPassword` with `{ email }`
+2. **OTP Verification** — User enters 6-digit code, POST to `/api/auth/verifyResetCode` with `{ email, code }`
+3. **New Password** — User enters + confirms new password, POST to `/api/auth/resetPassword` with `{ email, code, newPassword }` — then redirect to `/login`
 
-### Questions needed
+### Files to Create/Modify
 
-The backend endpoint for updating user profile needs to be confirmed. Common patterns would be `PUT /api/user/update` or `PUT /api/user/me`.
+1. **`src/pages/ForgotPassword.tsx`** (new) — Multi-step page with 3 states (`email`, `verify`, `reset`). Uses existing UI components (Input, Button, InputOTP). Stores email and code in local state across steps. Validates password match before submission. Styled consistently with Login page.
+
+2. **`src/lib/api/auth.ts`** (modify) — Add 3 new API functions:
+   - `forgotPassword(email)` → POST `/api/auth/forgetPassword`
+   - `verifyResetCode(email, code)` → POST `/api/auth/verifyResetCode`
+   - `resetPassword(email, code, newPassword)` → POST `/api/auth/resetPassword`
+
+3. **`src/App.tsx`** (modify) — Add route `/forgot-password` → `ForgotPassword` component
+
+4. **`src/pages/Login.tsx`** (modify) — Change the "Forgot password?" link from `href="#"` to `Link to="/forgot-password"`
+
+### UI Details
+- Each step shows a back arrow to return to login
+- OTP input uses the existing `InputOTP` component (6 slots)
+- Password step validates both fields match before enabling submit
+- Toast notifications for errors and success
+- Redirect to `/login` on successful reset
+
