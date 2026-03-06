@@ -140,7 +140,7 @@ const ProfilePictureUpload = ({
           <Button
             variant="outline"
             size="sm"
-            className="h-6 text-[11px] px-2"
+            className="h-6 text-[11px] px-1.5 w-fit"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled}
           >
@@ -159,7 +159,7 @@ const ProfilePictureUpload = ({
               Remove
             </Button>
           )}
-          <p className="text-[10px] text-muted-foreground/70">JPG, PNG, WEBP · Max 2MB</p>
+          <p className="text-[10px] text-muted-foreground/70">JPG, PNG · Max 2MB</p>
         </div>
       </div>
 
