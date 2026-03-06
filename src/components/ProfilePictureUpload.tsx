@@ -159,7 +159,7 @@ const ProfilePictureUpload = ({
               Remove
             </Button>
           )}
-          <p className="text-xs text-muted-foreground">Max 2MB</p>
+          <p className="text-[10px] text-muted-foreground/70">JPG, PNG, WEBP · Max 2MB</p>
         </div>
       </div>
 
