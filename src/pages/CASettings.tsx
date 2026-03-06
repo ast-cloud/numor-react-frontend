@@ -174,11 +174,7 @@ const CASettings = () => {
   };
 
   const handleCancelProfile = () => {
-    setProfileData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: caProfileData.phone || "",
-    });
+    setProfileData({ ...originalProfileData });
     setIsEditingProfile(false);
   };
 
