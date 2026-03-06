@@ -35,6 +35,24 @@ export async function fetchCurrentOrganization() {
   return json.data ?? json;
 }
 
+export async function updateUserProfile(data: { name: string; phone: string }) {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/users/update`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error('Failed to update profile');
+  const json = await res.json();
+  return json.data ?? json;
+}
+
 export async function updateOrganization(data: {
   name: string;
   streetAddress: string;
