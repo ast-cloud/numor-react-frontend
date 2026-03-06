@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { fetchCurrentOrganization, updateOrganization, fetchCurrentUser, updateUserProfile } from "@/lib/api/user";
-import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2, Loader2 } from "lucide-react";
+import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Loader2 } from "lucide-react";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
+import CompanyLogoUpload from "@/components/CompanyLogoUpload";
 import { INDIAN_STATES } from "@/lib/constants";
 
 const COUNTRIES = [
