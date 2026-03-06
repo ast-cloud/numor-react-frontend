@@ -50,6 +50,8 @@ const COUNTRIES = [
 const SMESettings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
   const [originalCompanyData, setOriginalCompanyData] = useState({
