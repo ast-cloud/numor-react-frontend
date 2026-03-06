@@ -369,6 +369,18 @@ const CASettings = () => {
           )}
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              Profile Picture
+            </Label>
+            <ProfilePictureUpload
+              currentImage={profilePicture}
+              fallbackInitials={profileData.name ? profileData.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "U"}
+              onImageChange={setProfilePicture}
+              disabled={!isEditingProfile}
+            />
+          </div>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name" className="flex items-center gap-2">
