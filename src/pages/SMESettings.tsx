@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { fetchCurrentOrganization, updateOrganization, fetchCurrentUser, updateUserProfile } from "@/lib/api/user";
-import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2, Loader2 } from "lucide-react";
+import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Loader2 } from "lucide-react";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
+import CompanyLogoUpload from "@/components/CompanyLogoUpload";
 import { INDIAN_STATES } from "@/lib/constants";
 
 const COUNTRIES = [
@@ -49,8 +50,6 @@ const COUNTRIES = [
 const SMESettings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
@@ -144,39 +143,8 @@ const SMESettings = () => {
   }, [toast]);
 
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please upload an image smaller than 2MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCompanyLogo(reader.result as string);
-        toast({
-          title: "Logo uploaded",
-          description: "Your company logo has been updated.",
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
-  const handleRemoveLogo = () => {
-    setCompanyLogo(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-    toast({
-      title: "Logo removed",
-      description: "Your company logo has been removed.",
-    });
-  };
+
 
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
@@ -370,50 +338,10 @@ const SMESettings = () => {
               <Upload className="w-4 h-4 text-muted-foreground" />
               Company Logo
             </Label>
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-24 border-2 border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30 overflow-hidden">
-                {companyLogo ? (
-                  <img
-                    src={companyLogo}
-                    alt="Company logo"
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <Building2 className="w-10 h-10 text-muted-foreground/50" />
-                )}
-              </div>
-              <div className="flex flex-col gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                  id="logo-upload"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs px-2"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="w-3 h-3 mr-1.5" />
-                  Upload
-                </Button>
-                {companyLogo && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={handleRemoveLogo}
-                  >
-                    <Trash2 className="w-3 h-3 mr-1.5" />
-                    Remove
-                  </Button>
-                )}
-                <p className="text-xs text-muted-foreground">PNG, JPG up to 2MB</p>
-              </div>
-            </div>
+            <CompanyLogoUpload
+              currentLogo={companyLogo}
+              onLogoChange={setCompanyLogo}
+            />
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
