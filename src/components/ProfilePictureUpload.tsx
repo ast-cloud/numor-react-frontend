@@ -72,8 +72,8 @@ const ProfilePictureUpload = ({
       toast({ title: "Invalid file", description: "Please select an image file.", variant: "destructive" });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Please select an image under 5MB.", variant: "destructive" });
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Please select an image under 2MB.", variant: "destructive" });
       return;
     }
 
