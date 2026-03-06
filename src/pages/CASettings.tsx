@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useCAProfile } from "@/hooks/use-ca-profile";
-import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2 } from "lucide-react";
+import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2, MapPin } from "lucide-react";
+import { INDIAN_STATES, COUNTRIES } from "@/lib/constants";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,6 +28,7 @@ const CASettings = () => {
   const { toast } = useToast();
   const { profileData: caProfileData, updateProfileData: updateCAProfile, isProfileComplete, submitForReview } = useCAProfile();
   
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingProfessional, setIsEditingProfessional] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
@@ -43,6 +45,21 @@ const CASettings = () => {
     name: user?.name || "",
     email: user?.email || "",
     phone: caProfileData.phone || "",
+  });
+
+  const [addressData, setAddressData] = useState({
+    streetAddress: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
+  });
+  const [originalAddressData, setOriginalAddressData] = useState({
+    streetAddress: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
   });
 
   useEffect(() => {
@@ -433,7 +450,145 @@ const CASettings = () => {
         </CardContent>
       </Card>
 
-      {/* Professional Information */}
+      {/* Current Address */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-semibold">Current Address</CardTitle>
+            <CardDescription className="text-sm">Your current residential address</CardDescription>
+          </div>
+          {!isEditingAddress ? (
+            <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => setIsEditingAddress(true)}>
+              <Pencil className="w-3 h-3 mr-1.5" />
+              Edit
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => { setAddressData({ ...originalAddressData }); setIsEditingAddress(false); }}>
+                <X className="w-3 h-3 mr-1.5" />
+                Cancel
+              </Button>
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={() => { setOriginalAddressData({ ...addressData }); setIsEditingAddress(false); toast({ title: "Address saved", description: "Your address has been updated successfully." }); }}>
+                <Save className="w-3 h-3 mr-1.5" />
+                Save
+              </Button>
+            </div>
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <MapPin className="w-4 h-4" />
+              Address Details
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-xs">Street Address</Label>
+                {isEditingAddress ? (
+                  <Input
+                    value={addressData.streetAddress}
+                    onChange={(e) => setAddressData({ ...addressData, streetAddress: e.target.value })}
+                    placeholder="e.g. 123 Business Street, Suite 100"
+                    className="h-8 text-sm"
+                  />
+                ) : (
+                  <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                    {addressData.streetAddress || "Not set"}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">City</Label>
+                {isEditingAddress ? (
+                  <Input
+                    value={addressData.city}
+                    onChange={(e) => setAddressData({ ...addressData, city: e.target.value })}
+                    placeholder="e.g. Mumbai"
+                    className="h-8 text-sm"
+                  />
+                ) : (
+                  <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                    {addressData.city || "Not set"}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">State / Province</Label>
+                {isEditingAddress ? (
+                  addressData.country === "India" ? (
+                    <Select
+                      value={addressData.state}
+                      onValueChange={(value) => setAddressData({ ...addressData, state: value })}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDIAN_STATES.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      value={addressData.state}
+                      onChange={(e) => setAddressData({ ...addressData, state: e.target.value })}
+                      placeholder="e.g. Maharashtra"
+                      className="h-8 text-sm"
+                    />
+                  )
+                ) : (
+                  <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                    {addressData.state || "Not set"}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">ZIP / Postal Code</Label>
+                {isEditingAddress ? (
+                  <Input
+                    value={addressData.zipCode}
+                    onChange={(e) => setAddressData({ ...addressData, zipCode: e.target.value })}
+                    placeholder="e.g. 400001"
+                    className="h-8 text-sm"
+                  />
+                ) : (
+                  <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                    {addressData.zipCode || "Not set"}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Country</Label>
+                {isEditingAddress ? (
+                  <Select
+                    value={addressData.country}
+                    onValueChange={(value) => setAddressData({ ...addressData, country: value })}
+                  >
+                    <SelectTrigger className="h-8 text-sm">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                    {addressData.country || "Not set"}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="space-y-1">
