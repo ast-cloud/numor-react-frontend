@@ -113,7 +113,7 @@ const ProfilePictureUpload = ({
     <>
       <div className="flex items-center gap-4 py-3">
         <div className="relative group">
-          <Avatar className="w-20 h-20 border-2 border-border">
+          <Avatar className="w-20 h-20 border-2 border-border" key={currentImage || 'no-image'}>
             {currentImage && <AvatarImage src={currentImage} alt="Profile" />}
             <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
               {fallbackInitials}
