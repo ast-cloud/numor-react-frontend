@@ -159,7 +159,7 @@ const ProfilePictureUpload = ({
               Remove
             </Button>
           )}
-          <p className="text-xs text-muted-foreground">Square crop • Max 5MB</p>
+          <p className="text-xs text-muted-foreground">Max 2MB</p>
         </div>
       </div>
 
