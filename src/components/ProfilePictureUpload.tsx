@@ -72,8 +72,8 @@ const ProfilePictureUpload = ({
       toast({ title: "Invalid file", description: "Please select an image file.", variant: "destructive" });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Please select an image under 5MB.", variant: "destructive" });
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Please select an image under 2MB.", variant: "destructive" });
       return;
     }
 
@@ -111,7 +111,7 @@ const ProfilePictureUpload = ({
 
   return (
     <>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 py-3">
         <div className="relative group">
           <Avatar className="w-20 h-20 border-2 border-border">
             {currentImage && <AvatarImage src={currentImage} alt="Profile" />}
@@ -159,7 +159,7 @@ const ProfilePictureUpload = ({
               Remove
             </Button>
           )}
-          <p className="text-xs text-muted-foreground">Square crop • Max 5MB</p>
+          <p className="text-xs text-muted-foreground">Max 2MB</p>
         </div>
       </div>
 
