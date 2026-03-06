@@ -140,7 +140,7 @@ const ProfilePictureUpload = ({
           <Button
             variant="outline"
             size="sm"
-            className="h-6 text-[11px] px-2"
+            className="h-6 text-[11px] px-1.5 w-fit"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled}
           >
