@@ -141,39 +141,8 @@ const SMESettings = () => {
   }, [toast]);
 
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please upload an image smaller than 2MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCompanyLogo(reader.result as string);
-        toast({
-          title: "Logo uploaded",
-          description: "Your company logo has been updated.",
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
-  const handleRemoveLogo = () => {
-    setCompanyLogo(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-    toast({
-      title: "Logo removed",
-      description: "Your company logo has been removed.",
-    });
-  };
+
 
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
