@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useCAProfile } from "@/hooks/use-ca-profile";
 import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2 } from "lucide-react";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { Badge } from "@/components/ui/badge";
 
 interface UploadedDocument {
