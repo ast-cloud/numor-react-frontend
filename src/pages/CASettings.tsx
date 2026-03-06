@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { updateUserProfile, fetchCurrentUser } from "@/lib/api/user";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
