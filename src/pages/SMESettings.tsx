@@ -199,11 +199,7 @@ const SMESettings = () => {
   };
 
   const handleCancelProfile = () => {
-    setProfileData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: "",
-    });
+    setProfileData({ ...originalProfileData });
     setIsEditingProfile(false);
   };
 
