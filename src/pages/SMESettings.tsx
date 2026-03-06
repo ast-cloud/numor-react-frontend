@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { fetchCurrentOrganization, updateOrganization, fetchCurrentUser, updateUserProfile } from "@/lib/api/user";
 import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Trash2, Loader2 } from "lucide-react";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { INDIAN_STATES } from "@/lib/constants";
 
 const COUNTRIES = [
@@ -66,6 +67,8 @@ const SMESettings = () => {
     phone: "",
   });
   
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -265,6 +268,18 @@ const SMESettings = () => {
           )}
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              Profile Picture
+            </Label>
+            <ProfilePictureUpload
+              currentImage={profilePicture}
+              fallbackInitials={profileData.name ? profileData.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "U"}
+              onImageChange={setProfilePicture}
+              disabled={!isEditingProfile}
+            />
+          </div>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name" className="flex items-center gap-2">
