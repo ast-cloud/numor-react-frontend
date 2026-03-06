@@ -71,6 +71,29 @@ const SMESettings = () => {
     email: user?.email || "",
     phone: "",
   });
+  const [originalProfileData, setOriginalProfileData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userData = await fetchCurrentUser();
+        const data = {
+          name: userData.name || user?.name || "",
+          email: userData.email || user?.email || "",
+          phone: userData.phone || "",
+        };
+        setProfileData(data);
+        setOriginalProfileData(data);
+      } catch {
+        // fallback to auth context
+      }
+    };
+    loadUser();
+  }, [user]);
 
   const [companyData, setCompanyData] = useState({
     name: "",
