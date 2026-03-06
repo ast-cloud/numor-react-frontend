@@ -149,14 +149,28 @@ const CASettings = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  const handleSaveProfile = () => {
-    // TODO: Call profile update API when available
-    updateCAProfile({ phone: profileData.phone });
-    setIsEditingProfile(false);
-    toast({
-      title: "Profile saved",
-      description: "Your profile has been updated successfully.",
-    });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+      await updateUserProfile({ name: profileData.name, phone: profileData.phone });
+      updateCAProfile({ phone: profileData.phone });
+      setOriginalProfileData({ ...profileData });
+      setIsEditingProfile(false);
+      toast({
+        title: "Profile saved",
+        description: "Your profile has been updated successfully.",
+      });
+    } catch {
+      toast({
+        title: "Failed to save",
+        description: "Could not update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleCancelProfile = () => {
