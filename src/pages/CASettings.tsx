@@ -28,6 +28,7 @@ const CASettings = () => {
   const { toast } = useToast();
   const { profileData: caProfileData, updateProfileData: updateCAProfile, isProfileComplete, submitForReview } = useCAProfile();
   
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingProfessional, setIsEditingProfessional] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
