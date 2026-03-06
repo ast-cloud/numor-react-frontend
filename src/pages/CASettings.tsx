@@ -47,6 +47,21 @@ const CASettings = () => {
     phone: caProfileData.phone || "",
   });
 
+  const [addressData, setAddressData] = useState({
+    streetAddress: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
+  });
+  const [originalAddressData, setOriginalAddressData] = useState({
+    streetAddress: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
+  });
+
   useEffect(() => {
     const loadUser = async () => {
       try {
