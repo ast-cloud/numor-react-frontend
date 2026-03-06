@@ -336,50 +336,10 @@ const SMESettings = () => {
               <Upload className="w-4 h-4 text-muted-foreground" />
               Company Logo
             </Label>
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-24 border-2 border-dashed border-border rounded-lg flex items-center justify-center bg-muted/30 overflow-hidden">
-                {companyLogo ? (
-                  <img
-                    src={companyLogo}
-                    alt="Company logo"
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <Building2 className="w-10 h-10 text-muted-foreground/50" />
-                )}
-              </div>
-              <div className="flex flex-col gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                  id="logo-upload"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs px-2"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="w-3 h-3 mr-1.5" />
-                  Upload
-                </Button>
-                {companyLogo && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={handleRemoveLogo}
-                  >
-                    <Trash2 className="w-3 h-3 mr-1.5" />
-                    Remove
-                  </Button>
-                )}
-                <p className="text-xs text-muted-foreground">PNG, JPG up to 2MB</p>
-              </div>
-            </div>
+            <CompanyLogoUpload
+              currentLogo={companyLogo}
+              onLogoChange={setCompanyLogo}
+            />
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
