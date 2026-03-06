@@ -151,11 +151,11 @@ const ProfilePictureUpload = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 text-xs px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="h-6 text-[11px] px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleRemove}
               disabled={disabled}
             >
-              <Trash2 className="w-3 h-3 mr-1.5" />
+              <Trash2 className="w-2.5 h-2.5 mr-1" />
               Remove
             </Button>
           )}
