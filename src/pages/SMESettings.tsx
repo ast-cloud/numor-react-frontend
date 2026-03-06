@@ -277,7 +277,6 @@ const SMESettings = () => {
               currentImage={profilePicture}
               fallbackInitials={profileData.name ? profileData.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "U"}
               onImageChange={setProfilePicture}
-              disabled={!isEditingProfile}
             />
           </div>
           <div className="grid gap-6 md:grid-cols-2">
