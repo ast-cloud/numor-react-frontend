@@ -81,13 +81,11 @@ const CASettings = () => {
   }, [user]);
 
   const [professionalData, setProfessionalData] = useState({
-    qualification: caProfileData.qualification || "",
     membershipNumber: caProfileData.membershipNumber || "",
     experience: caProfileData.experience || "",
     specialization: caProfileData.specialization || "",
-    firmName: caProfileData.firmName || "",
-    firmAddress: "",
     bio: caProfileData.bio || "",
+    hourlyFee: "",
   });
 
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
