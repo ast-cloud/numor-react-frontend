@@ -702,44 +702,6 @@ const CASettings = () => {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="firmName" className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-muted-foreground" />
-                Firm Name
-              </Label>
-              {isEditingProfessional ? (
-                <Input
-                  id="firmName"
-                  value={professionalData.firmName}
-                  onChange={(e) => setProfessionalData({ ...professionalData, firmName: e.target.value })}
-                  placeholder="Enter your firm name"
-                />
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {professionalData.firmName || "Not set"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="firmAddress" className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                Firm Address
-              </Label>
-              {isEditingProfessional ? (
-                <Input
-                  id="firmAddress"
-                  value={professionalData.firmAddress}
-                  onChange={(e) => setProfessionalData({ ...professionalData, firmAddress: e.target.value })}
-                  placeholder="Enter your firm address"
-                />
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {professionalData.firmAddress || "Not set"}
-                </p>
-              )}
-            </div>
-
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="bio" className="flex items-center gap-2">
                 <User className="w-4 h-4 text-muted-foreground" />
