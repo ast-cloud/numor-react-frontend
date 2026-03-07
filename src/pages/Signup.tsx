@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { register } from "@/lib/api/auth";
 import { useToast } from "@/hooks/use-toast";
+import EmailVerification from "@/components/EmailVerification";
 import { config } from "@/lib/config";
 
 const Signup = () => {
