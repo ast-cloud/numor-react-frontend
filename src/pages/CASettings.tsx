@@ -197,11 +197,9 @@ const CASettings = () => {
 
   const handleSaveProfessional = () => {
     updateCAProfile({
-      qualification: professionalData.qualification,
       membershipNumber: professionalData.membershipNumber,
       experience: professionalData.experience,
       specialization: professionalData.specialization,
-      firmName: professionalData.firmName,
       bio: professionalData.bio,
     });
     setIsEditingProfessional(false);
