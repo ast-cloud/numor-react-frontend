@@ -149,11 +149,19 @@ const CASignup = () => {
                 type="email"
                 placeholder="Enter your email"
                 value={formData.email}
-                onChange={handleChange("email")}
+                onChange={(e) => {
+                  handleChange("email")(e);
+                  setEmailVerified(false);
+                }}
                 className="pl-10"
                 required
               />
             </div>
+            <EmailVerification
+              email={formData.email}
+              isVerified={emailVerified}
+              onVerified={() => setEmailVerified(true)}
+            />
           </div>
 
           <div className="space-y-2">
