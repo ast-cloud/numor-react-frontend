@@ -211,13 +211,11 @@ const CASettings = () => {
 
   const handleCancelProfessional = () => {
     setProfessionalData({
-      qualification: caProfileData.qualification || "",
       membershipNumber: caProfileData.membershipNumber || "",
       experience: caProfileData.experience || "",
       specialization: caProfileData.specialization || "",
-      firmName: caProfileData.firmName || "",
-      firmAddress: "",
       bio: caProfileData.bio || "",
+      hourlyFee: "",
     });
     setIsEditingProfessional(false);
   };
