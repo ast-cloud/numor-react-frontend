@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useCAProfile } from "@/hooks/use-ca-profile";
-import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2, MapPin } from "lucide-react";
+import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2, MapPin, IndianRupee, AlertCircle } from "lucide-react";
 import { INDIAN_STATES, COUNTRIES } from "@/lib/constants";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { Badge } from "@/components/ui/badge";
@@ -81,13 +81,11 @@ const CASettings = () => {
   }, [user]);
 
   const [professionalData, setProfessionalData] = useState({
-    qualification: caProfileData.qualification || "",
     membershipNumber: caProfileData.membershipNumber || "",
     experience: caProfileData.experience || "",
     specialization: caProfileData.specialization || "",
-    firmName: caProfileData.firmName || "",
-    firmAddress: "",
     bio: caProfileData.bio || "",
+    hourlyFee: "",
   });
 
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
@@ -199,11 +197,9 @@ const CASettings = () => {
 
   const handleSaveProfessional = () => {
     updateCAProfile({
-      qualification: professionalData.qualification,
       membershipNumber: professionalData.membershipNumber,
       experience: professionalData.experience,
       specialization: professionalData.specialization,
-      firmName: professionalData.firmName,
       bio: professionalData.bio,
     });
     setIsEditingProfessional(false);
@@ -215,13 +211,11 @@ const CASettings = () => {
 
   const handleCancelProfessional = () => {
     setProfessionalData({
-      qualification: caProfileData.qualification || "",
       membershipNumber: caProfileData.membershipNumber || "",
       experience: caProfileData.experience || "",
       specialization: caProfileData.specialization || "",
-      firmName: caProfileData.firmName || "",
-      firmAddress: "",
       bio: caProfileData.bio || "",
+      hourlyFee: "",
     });
     setIsEditingProfessional(false);
   };
@@ -356,6 +350,21 @@ const CASettings = () => {
           <Badge variant="secondary" className="text-sm py-1.5 px-3">
             <CheckCircle className="w-4 h-4 mr-2" />
             Submitted for Review
+          </Badge>
+        )}
+      </div>
+
+      {/* Verification Status */}
+      <div className="flex items-center gap-2">
+        {caProfileData.isSubmitted ? (
+          <Badge variant="secondary" className="text-sm py-1.5 px-3 bg-amber-500/10 text-amber-600 border-amber-500/20">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            Verification Status: Unverified
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-sm py-1.5 px-3 text-muted-foreground">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            Verification Status: Unverified
           </Badge>
         )}
       </div>
@@ -616,36 +625,6 @@ const CASettings = () => {
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="qualification" className="flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-muted-foreground" />
-                Qualification
-              </Label>
-              {isEditingProfessional ? (
-                <Select 
-                  value={professionalData.qualification} 
-                  onValueChange={(value) => setProfessionalData({ ...professionalData, qualification: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your qualification" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ca">Chartered Accountant (CA)</SelectItem>
-                    <SelectItem value="cpa">Certified Public Accountant (CPA)</SelectItem>
-                    <SelectItem value="cfa">Chartered Financial Analyst (CFA)</SelectItem>
-                    <SelectItem value="cma">Certified Management Accountant (CMA)</SelectItem>
-                    <SelectItem value="other">Other Professional Certification</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {professionalData.qualification ? 
-                    { ca: "Chartered Accountant (CA)", cpa: "Certified Public Accountant (CPA)", cfa: "Chartered Financial Analyst (CFA)", cma: "Certified Management Accountant (CMA)", other: "Other Professional Certification" }[professionalData.qualification] 
-                    : "Not set"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="membershipNumber" className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-muted-foreground" />
                 Membership Number
@@ -723,44 +702,6 @@ const CASettings = () => {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="firmName" className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-muted-foreground" />
-                Firm Name
-              </Label>
-              {isEditingProfessional ? (
-                <Input
-                  id="firmName"
-                  value={professionalData.firmName}
-                  onChange={(e) => setProfessionalData({ ...professionalData, firmName: e.target.value })}
-                  placeholder="Enter your firm name"
-                />
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {professionalData.firmName || "Not set"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="firmAddress" className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                Firm Address
-              </Label>
-              {isEditingProfessional ? (
-                <Input
-                  id="firmAddress"
-                  value={professionalData.firmAddress}
-                  onChange={(e) => setProfessionalData({ ...professionalData, firmAddress: e.target.value })}
-                  placeholder="Enter your firm address"
-                />
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {professionalData.firmAddress || "Not set"}
-                </p>
-              )}
-            </div>
-
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="bio" className="flex items-center gap-2">
                 <User className="w-4 h-4 text-muted-foreground" />
@@ -776,7 +717,28 @@ const CASettings = () => {
                 />
               ) : (
                 <p className="text-sm py-2 px-3 bg-muted/50 rounded-md min-h-[80px] whitespace-pre-wrap">
-                  {professionalData.bio || "Not set"}
+              {professionalData.bio || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="hourlyFee" className="flex items-center gap-2">
+                <IndianRupee className="w-4 h-4 text-muted-foreground" />
+                Hourly Fee (₹)
+              </Label>
+              {isEditingProfessional ? (
+                <Input
+                  id="hourlyFee"
+                  type="number"
+                  value={professionalData.hourlyFee}
+                  onChange={(e) => setProfessionalData({ ...professionalData, hourlyFee: e.target.value })}
+                  placeholder="e.g. 2000"
+                  min="0"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {professionalData.hourlyFee ? `₹${professionalData.hourlyFee}` : "Not set"}
                 </p>
               )}
             </div>
