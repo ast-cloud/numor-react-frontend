@@ -352,22 +352,40 @@ const CASettings = () => {
             Submitted for Review
           </Badge>
         )}
-      </div>
-
-      {/* Verification Status */}
-      <div className="flex items-center gap-2">
-        {caProfileData.isSubmitted ? (
-          <Badge variant="secondary" className="text-sm py-1.5 px-3 bg-amber-500/10 text-amber-600 border-amber-500/20">
-            <AlertCircle className="w-4 h-4 mr-2" />
-            Verification Status: Unverified
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-sm py-1.5 px-3 text-muted-foreground">
-            <AlertCircle className="w-4 h-4 mr-2" />
-            Verification Status: Unverified
-          </Badge>
-        )}
-      </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">CA Profile Settings</h1>
+          <p className="text-muted-foreground mt-2 text-lg">Manage your professional profile and credentials.</p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          {!caProfileData.isSubmitted && (
+            <Button 
+              onClick={handleSubmitForReview}
+              disabled={!isProfileComplete()}
+              className="flex items-center gap-2"
+            >
+              <Send className="w-4 h-4" />
+              Submit for Review
+            </Button>
+          )}
+          {caProfileData.isSubmitted && (
+            <Badge variant="secondary" className="text-sm py-1.5 px-3">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Submitted for Review
+            </Badge>
+          )}
+          {caProfileData.isSubmitted ? (
+            <Badge variant="secondary" className="text-sm py-1.5 px-3 bg-amber-500/10 text-amber-600 border-amber-500/20">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Status: Unverified
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-sm py-1.5 px-3 text-muted-foreground">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Status: Unverified
+            </Badge>
+          )}
+        </div>
 
       {/* Profile Information */}
       <Card>
