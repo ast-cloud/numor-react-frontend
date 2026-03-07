@@ -354,6 +354,21 @@ const CASettings = () => {
         )}
       </div>
 
+      {/* Verification Status */}
+      <div className="flex items-center gap-2">
+        {caProfileData.isSubmitted ? (
+          <Badge variant="secondary" className="text-sm py-1.5 px-3 bg-amber-500/10 text-amber-600 border-amber-500/20">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            Verification Status: Unverified
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-sm py-1.5 px-3 text-muted-foreground">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            Verification Status: Unverified
+          </Badge>
+        )}
+      </div>
+
       {/* Profile Information */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
