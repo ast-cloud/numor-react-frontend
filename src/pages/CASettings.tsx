@@ -717,7 +717,28 @@ const CASettings = () => {
                 />
               ) : (
                 <p className="text-sm py-2 px-3 bg-muted/50 rounded-md min-h-[80px] whitespace-pre-wrap">
-                  {professionalData.bio || "Not set"}
+              {professionalData.bio || "Not set"}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="hourlyFee" className="flex items-center gap-2">
+                <IndianRupee className="w-4 h-4 text-muted-foreground" />
+                Hourly Fee (₹)
+              </Label>
+              {isEditingProfessional ? (
+                <Input
+                  id="hourlyFee"
+                  type="number"
+                  value={professionalData.hourlyFee}
+                  onChange={(e) => setProfessionalData({ ...professionalData, hourlyFee: e.target.value })}
+                  placeholder="e.g. 2000"
+                  min="0"
+                />
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {professionalData.hourlyFee ? `₹${professionalData.hourlyFee}` : "Not set"}
                 </p>
               )}
             </div>
