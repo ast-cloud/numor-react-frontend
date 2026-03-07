@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { register } from "@/lib/api/auth";
 import { useToast } from "@/hooks/use-toast";
+import EmailVerification from "@/components/EmailVerification";
 import { config } from "@/lib/config";
 
 const Signup = () => {
@@ -17,6 +18,7 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -136,11 +138,19 @@ const Signup = () => {
                   type="email"
                   placeholder="Enter your email"
                   value={formData.email}
-                  onChange={handleChange("email")}
+                  onChange={(e) => {
+                    handleChange("email")(e);
+                    setEmailVerified(false);
+                  }}
                   className="pl-10"
                   required
                 />
               </div>
+              <EmailVerification
+                email={formData.email}
+                isVerified={emailVerified}
+                onVerified={() => setEmailVerified(true)}
+              />
             </div>
 
             <div className="space-y-2">

@@ -8,6 +8,7 @@ import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { register } from "@/lib/api/auth";
 import { config } from "@/lib/config";
+import EmailVerification from "@/components/EmailVerification";
 
 const CASignup = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const CASignup = () => {
     confirmPassword: "",
     agreeToTerms: false,
   });
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -147,11 +149,19 @@ const CASignup = () => {
                 type="email"
                 placeholder="Enter your email"
                 value={formData.email}
-                onChange={handleChange("email")}
+                onChange={(e) => {
+                  handleChange("email")(e);
+                  setEmailVerified(false);
+                }}
                 className="pl-10"
                 required
               />
             </div>
+            <EmailVerification
+              email={formData.email}
+              isVerified={emailVerified}
+              onVerified={() => setEmailVerified(true)}
+            />
           </div>
 
           <div className="space-y-2">
