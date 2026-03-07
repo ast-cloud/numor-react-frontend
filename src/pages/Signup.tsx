@@ -18,6 +18,7 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
