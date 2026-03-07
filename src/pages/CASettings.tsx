@@ -386,6 +386,7 @@ const CASettings = () => {
             </Badge>
           )}
         </div>
+      </div>
 
       {/* Profile Information */}
       <Card>
