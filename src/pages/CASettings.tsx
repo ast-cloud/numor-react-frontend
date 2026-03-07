@@ -336,27 +336,6 @@ const CASettings = () => {
           <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">CA Profile Settings</h1>
           <p className="text-muted-foreground mt-2 text-lg">Manage your professional profile and credentials.</p>
         </div>
-        {!caProfileData.isSubmitted && (
-          <Button 
-            onClick={handleSubmitForReview}
-            disabled={!isProfileComplete()}
-            className="flex items-center gap-2"
-          >
-            <Send className="w-4 h-4" />
-            Submit for Review
-          </Button>
-        )}
-        {caProfileData.isSubmitted && (
-          <Badge variant="secondary" className="text-sm py-1.5 px-3">
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Submitted for Review
-          </Badge>
-        )}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">CA Profile Settings</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Manage your professional profile and credentials.</p>
-        </div>
         <div className="flex flex-col items-end gap-2">
           {!caProfileData.isSubmitted && (
             <Button 
