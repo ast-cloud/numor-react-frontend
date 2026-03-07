@@ -20,6 +20,7 @@ const CASignup = () => {
     confirmPassword: "",
     agreeToTerms: false,
   });
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
