@@ -625,36 +625,6 @@ const CASettings = () => {
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="qualification" className="flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-muted-foreground" />
-                Qualification
-              </Label>
-              {isEditingProfessional ? (
-                <Select 
-                  value={professionalData.qualification} 
-                  onValueChange={(value) => setProfessionalData({ ...professionalData, qualification: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your qualification" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ca">Chartered Accountant (CA)</SelectItem>
-                    <SelectItem value="cpa">Certified Public Accountant (CPA)</SelectItem>
-                    <SelectItem value="cfa">Chartered Financial Analyst (CFA)</SelectItem>
-                    <SelectItem value="cma">Certified Management Accountant (CMA)</SelectItem>
-                    <SelectItem value="other">Other Professional Certification</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {professionalData.qualification ? 
-                    { ca: "Chartered Accountant (CA)", cpa: "Certified Public Accountant (CPA)", cfa: "Chartered Financial Analyst (CFA)", cma: "Certified Management Accountant (CMA)", other: "Other Professional Certification" }[professionalData.qualification] 
-                    : "Not set"}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="membershipNumber" className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-muted-foreground" />
                 Membership Number
