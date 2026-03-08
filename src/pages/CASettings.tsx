@@ -88,7 +88,9 @@ const CASettings = () => {
     specialization: caProfileData.specialization || "",
     bio: caProfileData.bio || "",
     hourlyFee: "",
+    languages: [] as string[],
   });
+  const [languagesOpen, setLanguagesOpen] = useState(false);
 
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
   const [idProofDocuments, setIdProofDocuments] = useState<UploadedDocument[]>([]);
