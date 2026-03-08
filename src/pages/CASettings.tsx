@@ -691,26 +691,74 @@ const CASettings = () => {
                 Specialization
               </Label>
               {isEditingProfessional ? (
-                <Select 
-                  value={professionalData.specialization} 
-                  onValueChange={(value) => setProfessionalData({ ...professionalData, specialization: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your specialization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tax">Tax Advisory</SelectItem>
-                    <SelectItem value="audit">Audit & Assurance</SelectItem>
-                    <SelectItem value="corporate">Corporate Finance</SelectItem>
-                    <SelectItem value="consulting">Financial Consulting</SelectItem>
-                    <SelectItem value="bookkeeping">Bookkeeping & Accounting</SelectItem>
-                    <SelectItem value="compliance">Regulatory Compliance</SelectItem>
-                  </SelectContent>
-                </Select>
+                <>
+                  <Popover open={specializationOpen} onOpenChange={setSpecializationOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={specializationOpen}
+                        className="w-full justify-between font-normal"
+                      >
+                        {professionalData.specialization.length > 0
+                          ? `${professionalData.specialization.length} selected`
+                          : "Select specializations"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search specializations..." />
+                        <CommandList>
+                          <CommandEmpty>No specialization found.</CommandEmpty>
+                          <CommandGroup>
+                            {SPECIALIZATIONS.map((spec) => (
+                              <CommandItem
+                                key={spec.value}
+                                onSelect={() => {
+                                  setProfessionalData((prev) => ({
+                                    ...prev,
+                                    specialization: prev.specialization.includes(spec.value)
+                                      ? prev.specialization.filter((s) => s !== spec.value)
+                                      : [...prev.specialization, spec.value],
+                                  }));
+                                }}
+                              >
+                                <Checkbox
+                                  checked={professionalData.specialization.includes(spec.value)}
+                                  className="mr-2"
+                                />
+                                {spec.label}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {professionalData.specialization.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {professionalData.specialization.map((val) => {
+                        const spec = SPECIALIZATIONS.find((s) => s.value === val);
+                        return (
+                          <Badge key={val} variant="secondary" className="text-xs cursor-pointer" onClick={() => {
+                            setProfessionalData((prev) => ({
+                              ...prev,
+                              specialization: prev.specialization.filter((s) => s !== val),
+                            }));
+                          }}>
+                            {spec?.label || val}
+                            <X className="w-3 h-3 ml-1" />
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
               ) : (
                 <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                  {professionalData.specialization ? 
-                    { tax: "Tax Advisory", audit: "Audit & Assurance", corporate: "Corporate Finance", consulting: "Financial Consulting", bookkeeping: "Bookkeeping & Accounting", compliance: "Regulatory Compliance" }[professionalData.specialization] 
+                  {professionalData.specialization.length > 0
+                    ? professionalData.specialization.map((v) => SPECIALIZATIONS.find((s) => s.value === v)?.label || v).join(", ")
                     : "Not set"}
                 </p>
               )}
