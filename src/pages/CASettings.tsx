@@ -818,7 +818,9 @@ const CASettings = () => {
                     </Badge>
                   ))}
                 </div>
+                </div>
               )}
+            </div>
           </div>
         </CardContent>
       </Card>
