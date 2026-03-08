@@ -196,7 +196,7 @@ const Signup = () => {
               </Link>
             </p>
 
-            <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting || !emailVerified}>
+            <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </form>
