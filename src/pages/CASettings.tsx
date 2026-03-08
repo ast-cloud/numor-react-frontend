@@ -214,7 +214,7 @@ const CASettings = () => {
     updateCAProfile({
       membershipNumber: professionalData.membershipNumber,
       experience: professionalData.experience,
-      specialization: professionalData.specialization,
+      specialization: professionalData.specialization.join(","),
       bio: professionalData.bio,
     });
     setIsEditingProfessional(false);
