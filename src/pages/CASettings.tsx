@@ -746,6 +746,79 @@ const CASettings = () => {
                 </p>
               )}
             </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Languages className="w-4 h-4 text-muted-foreground" />
+                Languages
+              </Label>
+              {isEditingProfessional ? (
+                <Popover open={languagesOpen} onOpenChange={setLanguagesOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={languagesOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {professionalData.languages.length > 0
+                        ? `${professionalData.languages.length} selected`
+                        : "Select languages"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search languages..." />
+                      <CommandList>
+                        <CommandEmpty>No language found.</CommandEmpty>
+                        <CommandGroup>
+                          {LANGUAGES.map((language) => (
+                            <CommandItem
+                              key={language}
+                              onSelect={() => {
+                                setProfessionalData((prev) => ({
+                                  ...prev,
+                                  languages: prev.languages.includes(language)
+                                    ? prev.languages.filter((l) => l !== language)
+                                    : [...prev.languages, language],
+                                }));
+                              }}
+                            >
+                              <Checkbox
+                                checked={professionalData.languages.includes(language)}
+                                className="mr-2"
+                              />
+                              {language}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {professionalData.languages.length > 0
+                    ? professionalData.languages.join(", ")
+                    : "Not set"}
+                </p>
+              )}
+              {isEditingProfessional && professionalData.languages.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {professionalData.languages.map((lang) => (
+                    <Badge key={lang} variant="secondary" className="text-xs cursor-pointer" onClick={() => {
+                      setProfessionalData((prev) => ({
+                        ...prev,
+                        languages: prev.languages.filter((l) => l !== lang),
+                      }));
+                    }}>
+                      {lang}
+                      <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ))}
+                </div>
+              )}
           </div>
         </CardContent>
       </Card>
