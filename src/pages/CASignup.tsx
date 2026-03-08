@@ -217,7 +217,7 @@ const CASignup = () => {
             </Label>
           </div>
 
-          <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting || !emailVerified}>
             {isSubmitting ? "Creating Account..." : "Create Account"}
           </Button>
         </form>
