@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useCAProfile } from "@/hooks/use-ca-profile";
-import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2, MapPin, IndianRupee, AlertCircle } from "lucide-react";
+import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2, MapPin, IndianRupee, AlertCircle, Languages, ChevronsUpDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { INDIAN_STATES, COUNTRIES, LANGUAGES } from "@/lib/constants";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
