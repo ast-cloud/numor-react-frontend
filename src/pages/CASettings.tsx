@@ -86,7 +86,7 @@ const CASettings = () => {
   const [professionalData, setProfessionalData] = useState({
     membershipNumber: caProfileData.membershipNumber || "",
     experience: caProfileData.experience || "",
-    specialization: caProfileData.specialization || "",
+    specialization: [] as string[],
     bio: caProfileData.bio || "",
     hourlyFee: "",
     languages: [] as string[],
