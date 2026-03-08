@@ -220,6 +220,7 @@ const CASettings = () => {
       specialization: caProfileData.specialization || "",
       bio: caProfileData.bio || "",
       hourlyFee: "",
+      languages: [],
     });
     setIsEditingProfessional(false);
   };
