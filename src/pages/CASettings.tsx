@@ -228,7 +228,7 @@ const CASettings = () => {
     setProfessionalData({
       membershipNumber: caProfileData.membershipNumber || "",
       experience: caProfileData.experience || "",
-      specialization: caProfileData.specialization || "",
+      specialization: caProfileData.specialization ? caProfileData.specialization.split(",") : [],
       bio: caProfileData.bio || "",
       hourlyFee: "",
       languages: [],
