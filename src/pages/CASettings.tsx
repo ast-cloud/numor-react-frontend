@@ -92,6 +92,16 @@ const CASettings = () => {
     languages: [] as string[],
   });
   const [languagesOpen, setLanguagesOpen] = useState(false);
+  const [specializationOpen, setSpecializationOpen] = useState(false);
+
+  const SPECIALIZATIONS = [
+    { value: "tax", label: "Tax Advisory" },
+    { value: "audit", label: "Audit & Assurance" },
+    { value: "corporate", label: "Corporate Finance" },
+    { value: "consulting", label: "Financial Consulting" },
+    { value: "bookkeeping", label: "Bookkeeping & Accounting" },
+    { value: "compliance", label: "Regulatory Compliance" },
+  ];
 
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
   const [idProofDocuments, setIdProofDocuments] = useState<UploadedDocument[]>([]);
