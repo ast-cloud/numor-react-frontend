@@ -10,8 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useCAProfile } from "@/hooks/use-ca-profile";
-import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2, MapPin, IndianRupee, AlertCircle } from "lucide-react";
-import { INDIAN_STATES, COUNTRIES } from "@/lib/constants";
+import { User, Mail, Pencil, Save, X, Phone, Award, Briefcase, GraduationCap, FileText, Upload, Trash2, CheckCircle, Shield, Send, Loader2, MapPin, IndianRupee, AlertCircle, Languages, ChevronsUpDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { INDIAN_STATES, COUNTRIES, LANGUAGES } from "@/lib/constants";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { Badge } from "@/components/ui/badge";
 
@@ -86,7 +89,9 @@ const CASettings = () => {
     specialization: caProfileData.specialization || "",
     bio: caProfileData.bio || "",
     hourlyFee: "",
+    languages: [] as string[],
   });
+  const [languagesOpen, setLanguagesOpen] = useState(false);
 
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
   const [idProofDocuments, setIdProofDocuments] = useState<UploadedDocument[]>([]);
@@ -216,6 +221,7 @@ const CASettings = () => {
       specialization: caProfileData.specialization || "",
       bio: caProfileData.bio || "",
       hourlyFee: "",
+      languages: [],
     });
     setIsEditingProfessional(false);
   };
@@ -738,6 +744,80 @@ const CASettings = () => {
                 <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
                   {professionalData.hourlyFee ? `₹${professionalData.hourlyFee}` : "Not set"}
                 </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Languages className="w-4 h-4 text-muted-foreground" />
+                Languages
+              </Label>
+              {isEditingProfessional ? (
+                <Popover open={languagesOpen} onOpenChange={setLanguagesOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={languagesOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {professionalData.languages.length > 0
+                        ? `${professionalData.languages.length} selected`
+                        : "Select languages"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search languages..." />
+                      <CommandList>
+                        <CommandEmpty>No language found.</CommandEmpty>
+                        <CommandGroup>
+                          {LANGUAGES.map((language) => (
+                            <CommandItem
+                              key={language}
+                              onSelect={() => {
+                                setProfessionalData((prev) => ({
+                                  ...prev,
+                                  languages: prev.languages.includes(language)
+                                    ? prev.languages.filter((l) => l !== language)
+                                    : [...prev.languages, language],
+                                }));
+                              }}
+                            >
+                              <Checkbox
+                                checked={professionalData.languages.includes(language)}
+                                className="mr-2"
+                              />
+                              {language}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
+                  {professionalData.languages.length > 0
+                    ? professionalData.languages.join(", ")
+                    : "Not set"}
+                </p>
+              )}
+              {isEditingProfessional && professionalData.languages.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {professionalData.languages.map((lang) => (
+                    <Badge key={lang} variant="secondary" className="text-xs cursor-pointer" onClick={() => {
+                      setProfessionalData((prev) => ({
+                        ...prev,
+                        languages: prev.languages.filter((l) => l !== lang),
+                      }));
+                    }}>
+                      {lang}
+                      <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ))}
+                </div>
               )}
             </div>
           </div>
