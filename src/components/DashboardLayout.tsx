@@ -8,7 +8,6 @@ import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
 import { CAProfileProvider } from "@/hooks/use-ca-profile";
-import { useIsMobile } from "@/hooks/use-mobile";
 import ChatBot from "@/components/ChatBot";
 
 const DashboardContent = () => {
@@ -17,7 +16,6 @@ const DashboardContent = () => {
   const { hasRole, activeRole, setActiveRole } = useAuth();
   const isCA = hasRole("CA_USER");
   const { collapsed } = useSidebarState();
-  const isMobile = useIsMobile();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const handleSwitchToRegular = () => {
@@ -38,28 +36,24 @@ const DashboardContent = () => {
       </div>
 
       {/* Mobile: sidebar is fully off-canvas */}
-      {isMobile && (
-        <>
-          <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-            <SheetContent
-              side="left"
-              className="w-[18rem] p-0 bg-card text-card-foreground [&>button]:hidden"
-            >
-              <Sidebar onMobileClose={() => setMobileSidebarOpen(false)} />
-            </SheetContent>
-          </Sheet>
+      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+        <SheetContent
+          side="left"
+          className="w-[18rem] p-0 bg-card text-card-foreground [&>button]:hidden md:hidden"
+        >
+          <Sidebar onMobileClose={() => setMobileSidebarOpen(false)} />
+        </SheetContent>
+      </Sheet>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="fixed top-4 left-4 z-50 md:hidden text-muted-foreground hover:text-foreground"
-            onClick={() => setMobileSidebarOpen(true)}
-            aria-label="Open sidebar"
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
-        </>
-      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 left-4 z-50 md:hidden text-muted-foreground hover:text-foreground"
+        onClick={() => setMobileSidebarOpen(true)}
+        aria-label="Open sidebar"
+      >
+        <Menu className="w-5 h-5" />
+      </Button>
 
       <main
         className={`flex-1 min-w-0 overflow-x-hidden pt-20 transition-all duration-300 ml-0 p-4 md:p-8 ${collapsed ? "md:ml-16" : "md:ml-64"}`}
