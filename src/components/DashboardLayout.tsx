@@ -1,7 +1,9 @@
 import { Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sun, Moon, Menu } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
@@ -14,6 +16,7 @@ const DashboardContent = () => {
   const { hasRole, activeRole, setActiveRole } = useAuth();
   const isCA = hasRole("CA_USER");
   const { collapsed } = useSidebarState();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const handleSwitchToRegular = () => {
     setActiveRole("SME_USER");
@@ -27,12 +30,37 @@ const DashboardContent = () => {
 
   return (
     <div className="min-h-screen bg-background flex relative">
-      <div className="fixed top-0 left-0 h-screen z-40">
+      {/* Desktop / Tablet sidebar stays as-is */}
+      <div className="fixed top-0 left-0 h-screen z-40 hidden md:block">
         <Sidebar />
       </div>
-      <main className={`flex-1 min-w-0 overflow-x-hidden p-8 pt-20 transition-all duration-300 ${collapsed ? "ml-16" : "ml-64"}`}>
+
+      {/* Mobile: sidebar is fully off-canvas */}
+      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+        <SheetContent
+          side="left"
+          className="w-[18rem] p-0 bg-card text-card-foreground [&>button]:hidden md:hidden"
+        >
+          <Sidebar onMobileClose={() => setMobileSidebarOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 left-4 z-50 md:hidden text-muted-foreground hover:text-foreground"
+        onClick={() => setMobileSidebarOpen(true)}
+        aria-label="Open sidebar"
+      >
+        <Menu className="w-5 h-5" />
+      </Button>
+
+      <main
+        className={`flex-1 min-w-0 overflow-x-hidden pt-20 transition-all duration-300 ml-0 p-4 md:p-8 ${collapsed ? "md:ml-16" : "md:ml-64"}`}
+      >
         <Outlet />
       </main>
+
       {/* Top Right Controls */}
       <div className="absolute top-4 right-4 flex items-center gap-2 z-50">
         {/* Profile Toggle - Only for CA users */}
@@ -60,6 +88,7 @@ const DashboardContent = () => {
             </button>
           </div>
         )}
+
         {/* Dark Mode Toggle */}
         <Button
           variant="ghost"
@@ -70,6 +99,7 @@ const DashboardContent = () => {
           {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
       </div>
+
       <ChatBot />
     </div>
   );
@@ -86,3 +116,4 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
+
