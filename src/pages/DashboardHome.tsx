@@ -198,9 +198,13 @@ const DashboardHome = () => {
         </div>
         <div className="flex items-center gap-2">
           <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
-            <SelectTrigger className="w-auto min-w-[120px] h-8 text-sm whitespace-nowrap">
-              <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
-              <SelectValue placeholder="This Month" />
+            <SelectTrigger className="w-auto min-w-[160px] h-8 text-sm whitespace-nowrap">
+              <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <SelectValue placeholder="This Month" />
+                </span>
+              </span>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Time</SelectItem>
