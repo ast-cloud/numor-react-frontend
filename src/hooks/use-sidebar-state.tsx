@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface SidebarContextType {
   collapsed: boolean;
@@ -8,8 +8,21 @@ interface SidebarContextType {
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
+const getIsTablet = () => {
+  if (typeof window === "undefined") return false;
+  const w = window.innerWidth;
+  return w >= 768 && w < 1024;
+};
+
 export const SidebarStateProvider = ({ children }: { children: ReactNode }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => getIsTablet());
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 768px) and (max-width: 1023px)");
+    const handler = (e: MediaQueryListEvent) => setCollapsed(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   const toggle = () => setCollapsed((prev) => !prev);
 
