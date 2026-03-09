@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Menu } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
@@ -13,7 +13,7 @@ const DashboardContent = () => {
   const navigate = useNavigate();
   const { hasRole, activeRole, setActiveRole } = useAuth();
   const isCA = hasRole("CA_USER");
-  const { collapsed } = useSidebarState();
+  const { collapsed, mobileOpen, toggleMobile } = useSidebarState();
 
   const handleSwitchToRegular = () => {
     setActiveRole("SME_USER");
@@ -30,12 +30,15 @@ const DashboardContent = () => {
       <div className="fixed top-0 left-0 h-screen z-40">
         <Sidebar />
       </div>
-      <main className={`flex-1 min-w-0 overflow-x-hidden p-8 pt-20 transition-all duration-300 ${collapsed ? "ml-16" : "ml-64"}`}>
+
+      {/* Main content — no left margin on mobile, sidebar-aware on desktop */}
+      <main className={`flex-1 min-w-0 overflow-x-hidden p-8 pt-20 transition-all duration-300 ml-0 md:${collapsed ? "ml-16" : "ml-64"}`}>
         <Outlet />
       </main>
-      {/* Top Right Controls */}
+
+      {/* Top controls */}
       <div className="absolute top-4 right-4 flex items-center gap-2 z-50">
-        {/* Profile Toggle - Only for CA users */}
+        {/* Role toggle — CA users only */}
         {isCA && (
           <div className="flex items-center bg-muted rounded-full p-0.5">
             <button
@@ -60,7 +63,7 @@ const DashboardContent = () => {
             </button>
           </div>
         )}
-        {/* Dark Mode Toggle */}
+        {/* Dark mode toggle */}
         <Button
           variant="ghost"
           size="icon"
@@ -70,6 +73,18 @@ const DashboardContent = () => {
           {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
       </div>
+
+      {/* Mobile hamburger — top-left, hidden on desktop */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleMobile}
+        className="fixed top-4 left-4 z-50 md:hidden text-muted-foreground hover:text-foreground"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5" />
+      </Button>
+
       <ChatBot />
     </div>
   );
