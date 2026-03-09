@@ -21,38 +21,68 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, activeRole, logout } = useAuth();
-  const { collapsed, toggle } = useSidebarState();
+  const { collapsed, toggle, mobileOpen, closeMobile } = useSidebarState();
 
   const navItems = activeRole === "CA_USER" ? caNavItems : regularNavItems;
 
   const handleLogout = () => {
     logout();
+    closeMobile();
     navigate("/");
   };
 
-  return (
-    <aside className={`${collapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}>
-      {/* Header with Logo and Hamburger */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        {!collapsed && <h1 className="text-xl font-display font-bold text-primary">Numor</h1>}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggle}
-          className={`${collapsed ? "mx-auto" : ""} text-muted-foreground hover:text-foreground`}
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
-      </div>
+  const handleNavClick = () => {
+    closeMobile();
+  };
 
-      {/* User Profile Section */}
-      <div className="p-4 border-b border-border">
-        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <User className="w-5 h-5 text-primary" />
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
+  return (
+    <>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={closeMobile}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          h-screen bg-card border-r border-border flex flex-col transition-all duration-300
+          fixed top-0 left-0 z-40
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full"} w-64
+          md:translate-x-0 md:${collapsed ? "w-16" : "w-64"}
+        `}
+      >
+        {/* Header with Logo and Hamburger */}
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          {!collapsed && <h1 className="text-xl font-display font-bold text-primary">Numor</h1>}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggle}
+            className={`${collapsed ? "mx-auto" : ""} text-muted-foreground hover:text-foreground hidden md:flex`}
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+          {/* Mobile close button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={closeMobile}
+            className="text-muted-foreground hover:text-foreground md:hidden ml-auto"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* User Profile Section */}
+        <div className="p-4 border-b border-border">
+          <div className={`flex items-center ${collapsed ? "md:justify-center" : "gap-3"}`}>
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-primary" />
+            </div>
+            <div className={`flex-1 min-w-0 ${collapsed ? "md:hidden" : ""}`}>
               <p className="text-sm font-medium text-foreground truncate">
                 {user?.name || "User"}
               </p>
@@ -60,66 +90,68 @@ const Sidebar = () => {
                 {user?.email || ""}
               </p>
             </div>
-          )}
+          </div>
         </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-1">
-          {navItems.map((item) => {
-            const isExactMatch = item.url === "/sme/dashboard" || item.url === "/ca/dashboard";
-            const isActive = isExactMatch 
-              ? location.pathname === item.url 
-              : location.pathname.startsWith(item.url);
-            
-            return (
-              <li key={item.title}>
-                <NavLink
-                  to={item.url}
-                  className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                  title={collapsed ? item.title : undefined}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {!collapsed && item.title}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const isExactMatch = item.url === "/sme/dashboard" || item.url === "/ca/dashboard";
+              const isActive = isExactMatch
+                ? location.pathname === item.url
+                : location.pathname.startsWith(item.url);
 
-      {/* Bottom Section: Settings & Logout */}
-      <div className="p-4 border-t border-border space-y-1">
-        <NavLink
-          to={activeRole === "CA_USER" ? "/ca/settings" : "/sme/settings"}
-          className={({ isActive }) =>
-            `flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`
-          }
-          title={collapsed ? "Settings" : undefined}
-        >
-          <Settings className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && "Settings"}
-        </NavLink>
-        <Button
-          variant="ghost"
-          className={`w-full ${collapsed ? "justify-center px-0" : "justify-start gap-3"} text-muted-foreground hover:text-destructive hover:bg-destructive/10`}
-          onClick={handleLogout}
-          title={collapsed ? "Logout" : undefined}
-        >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && "Logout"}
-        </Button>
-      </div>
-    </aside>
+              return (
+                <li key={item.title}>
+                  <NavLink
+                    to={item.url}
+                    onClick={handleNavClick}
+                    className={`flex items-center ${collapsed ? "md:justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                    title={collapsed ? item.title : undefined}
+                  >
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span className={collapsed ? "md:hidden" : ""}>{item.title}</span>
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Bottom Section: Settings & Logout */}
+        <div className="p-4 border-t border-border space-y-1">
+          <NavLink
+            to={activeRole === "CA_USER" ? "/ca/settings" : "/sme/settings"}
+            onClick={handleNavClick}
+            className={({ isActive }) =>
+              `flex items-center ${collapsed ? "md:justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`
+            }
+            title={collapsed ? "Settings" : undefined}
+          >
+            <Settings className="w-5 h-5 flex-shrink-0" />
+            <span className={collapsed ? "md:hidden" : ""}>Settings</span>
+          </NavLink>
+          <Button
+            variant="ghost"
+            className={`w-full ${collapsed ? "md:justify-center md:px-0" : "justify-start gap-3"} text-muted-foreground hover:text-destructive hover:bg-destructive/10`}
+            onClick={handleLogout}
+            title={collapsed ? "Logout" : undefined}
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <span className={collapsed ? "md:hidden" : ""}>Logout</span>
+          </Button>
+        </div>
+      </aside>
+    </>
   );
 };
 
