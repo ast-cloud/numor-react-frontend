@@ -962,7 +962,7 @@ const Expenses = () => {
                           onChange={(e) => updateItem(0, "date", e.target.value)}
                         />
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3" style={{ gridTemplateColumns: undefined }} >
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                         <FloatingLabelInput
                           label="Qty *"
                           type="number"
