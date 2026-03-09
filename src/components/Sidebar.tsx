@@ -15,7 +15,6 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const regularNavItems = [
   { title: "Dashboard", url: "/sme/dashboard", icon: LayoutDashboard },
@@ -39,9 +38,11 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const location = useLocation();
   const { user, activeRole, logout } = useAuth();
   const { collapsed, toggle } = useSidebarState();
-  const isMobile = useIsMobile();
 
-  const effectiveCollapsed = isMobile ? false : collapsed;
+  // When rendered inside the mobile sheet, we treat it as "mobile".
+  const inMobileSheet = typeof onMobileClose === "function";
+  const effectiveCollapsed = inMobileSheet ? false : collapsed;
+
   const navItems = activeRole === "CA_USER" ? caNavItems : regularNavItems;
 
   const handleLogout = () => {
@@ -51,22 +52,22 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   };
 
   const handleNavClick = () => {
-    if (isMobile) onMobileClose?.();
+    if (inMobileSheet) onMobileClose?.();
   };
 
   return (
     <aside
-      className={`${isMobile ? "w-full" : effectiveCollapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}
+      className={`${inMobileSheet ? "w-full" : effectiveCollapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}
     >
       {/* Header with Logo and Controls */}
       <div className="p-4 border-b border-border flex items-center justify-between">
         {!effectiveCollapsed && <h1 className="text-xl font-display font-bold text-primary">Numor</h1>}
 
-        {isMobile ? (
+        {inMobileSheet ? (
           <Button
             variant="ghost"
             size="icon"
-            onClick={onMobileClose}
+            onClick={() => onMobileClose?.()}
             className="text-muted-foreground hover:text-foreground"
             aria-label="Close sidebar"
           >
@@ -161,4 +162,5 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 };
 
 export default Sidebar;
+
 
