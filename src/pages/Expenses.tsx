@@ -902,7 +902,7 @@ const Expenses = () => {
                 <span>Add Expense</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[calc(100vw-2rem)] sm:w-full">
               <DialogHeader>
                 <DialogTitle>Add Expense</DialogTitle>
               </DialogHeader>
@@ -944,7 +944,7 @@ const Expenses = () => {
                   {/* Quick Single Expense Form */}
                   <form onSubmit={handleManualSubmit} className="space-y-4">
                     <div className="space-y-3">
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <FloatingLabelInput
                           label="Title *"
                           value={expenseItems[0].title}
@@ -962,7 +962,7 @@ const Expenses = () => {
                           onChange={(e) => updateItem(0, "date", e.target.value)}
                         />
                       </div>
-                      <div className="grid gap-3" style={{ gridTemplateColumns: '0.7fr 0.8fr 1.2fr 1.2fr 1fr 1fr' }}>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                         <FloatingLabelInput
                           label="Qty *"
                           type="number"
