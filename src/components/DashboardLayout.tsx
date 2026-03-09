@@ -62,7 +62,7 @@ const DashboardContent = () => {
       </main>
 
       {/* Top Right Controls */}
-      <div className="fixed top-4 right-4 flex items-center gap-2 z-50">
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-50">
         {/* Profile Toggle - Only for CA users */}
         {isCA && (
           <div className="flex items-center bg-muted rounded-full p-0.5">
