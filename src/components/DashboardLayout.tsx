@@ -56,7 +56,7 @@ const DashboardContent = () => {
       </Button>
 
       <main
-        className={`flex-1 min-w-0 overflow-x-hidden pt-20 transition-all duration-300 ml-0 p-4 md:p-8 ${collapsed ? "md:ml-16" : "md:ml-64"}`}
+        className={`flex-1 min-w-0 overflow-x-hidden px-4 md:px-8 pb-4 md:pb-8 pt-20 transition-all duration-300 ml-0 ${collapsed ? "md:ml-16" : "md:ml-64"}`}
       >
         <Outlet />
       </main>
