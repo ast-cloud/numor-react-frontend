@@ -211,6 +211,8 @@ const CASettings = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [isSavingProfessional, setIsSavingProfessional] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   const handleSaveProfile = async () => {
