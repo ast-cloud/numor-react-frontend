@@ -263,6 +263,7 @@ const CASettings = () => {
         specialization: professionalData.specialization.join(","),
         bio: professionalData.bio,
       });
+      setOriginalProfessionalData({ ...professionalData });
       setIsEditingProfessional(false);
       toast({
         title: "Professional details saved",
