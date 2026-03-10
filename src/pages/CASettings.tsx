@@ -242,18 +242,38 @@ const CASettings = () => {
     setIsEditingProfile(false);
   };
 
-  const handleSaveProfessional = () => {
-    updateCAProfile({
-      membershipNumber: professionalData.membershipNumber,
-      experience: professionalData.experience,
-      specialization: professionalData.specialization.join(","),
-      bio: professionalData.bio,
-    });
-    setIsEditingProfessional(false);
-    toast({
-      title: "Professional details saved",
-      description: "Your professional information has been updated successfully.",
-    });
+  const handleSaveProfessional = async () => {
+    setIsSavingProfessional(true);
+    try {
+      const payload: Record<string, unknown> = {};
+      if (professionalData.membershipNumber) payload.registrationNo = professionalData.membershipNumber;
+      if (professionalData.experience) payload.experienceYears = professionalData.experience;
+      if (professionalData.specialization.length > 0) payload.specializations = professionalData.specialization;
+      if (professionalData.bio) payload.bio = professionalData.bio;
+      if (professionalData.hourlyFee) payload.hourlyFee = Number(professionalData.hourlyFee);
+      if (professionalData.languages.length > 0) payload.languages = professionalData.languages;
+
+      await updateCAProfileAPI(payload);
+      updateCAProfile({
+        membershipNumber: professionalData.membershipNumber,
+        experience: professionalData.experience,
+        specialization: professionalData.specialization.join(","),
+        bio: professionalData.bio,
+      });
+      setIsEditingProfessional(false);
+      toast({
+        title: "Professional details saved",
+        description: "Your professional information has been updated successfully.",
+      });
+    } catch {
+      toast({
+        title: "Failed to save",
+        description: "Could not update professional details. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfessional(false);
+    }
   };
 
   const handleCancelProfessional = () => {
