@@ -98,14 +98,16 @@ const CASettings = () => {
         setAddressData(addr);
         setOriginalAddressData(addr);
 
-        setProfessionalData({
+        const prof = {
           membershipNumber: data.registrationNo || "",
           experience: data.experienceYears ? String(data.experienceYears) : "",
           specialization: Array.isArray(data.specializations) ? data.specializations : [],
           bio: data.bio || "",
           hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
           languages: Array.isArray(data.languages) ? data.languages : [],
-        });
+        };
+        setProfessionalData(prof);
+        setOriginalProfessionalData(prof);
       } catch {
         // fallback to defaults
       }
@@ -121,6 +123,7 @@ const CASettings = () => {
     hourlyFee: "",
     languages: [] as string[],
   });
+  const [originalProfessionalData, setOriginalProfessionalData] = useState({ ...professionalData });
   const [languagesOpen, setLanguagesOpen] = useState(false);
   const [specializationOpen, setSpecializationOpen] = useState(false);
 
@@ -260,6 +263,7 @@ const CASettings = () => {
         specialization: professionalData.specialization.join(","),
         bio: professionalData.bio,
       });
+      setOriginalProfessionalData({ ...professionalData });
       setIsEditingProfessional(false);
       toast({
         title: "Professional details saved",
@@ -277,14 +281,7 @@ const CASettings = () => {
   };
 
   const handleCancelProfessional = () => {
-    setProfessionalData({
-      membershipNumber: caProfileData.membershipNumber || "",
-      experience: caProfileData.experience || "",
-      specialization: caProfileData.specialization ? caProfileData.specialization.split(",") : [],
-      bio: caProfileData.bio || "",
-      hourlyFee: "",
-      languages: [],
-    });
+    setProfessionalData({ ...originalProfessionalData });
     setIsEditingProfessional(false);
   };
 
