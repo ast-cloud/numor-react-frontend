@@ -247,7 +247,7 @@ const CASettings = () => {
     try {
       const payload: Record<string, unknown> = {};
       if (professionalData.membershipNumber) payload.registrationNo = professionalData.membershipNumber;
-      if (professionalData.experience) payload.experienceYears = professionalData.experience;
+      if (professionalData.experience) payload.experienceYears = parseInt(professionalData.experience, 10);
       if (professionalData.specialization.length > 0) payload.specializations = professionalData.specialization;
       if (professionalData.bio) payload.bio = professionalData.bio;
       if (professionalData.hourlyFee) payload.hourlyFee = Number(professionalData.hourlyFee);
@@ -733,21 +733,21 @@ const CASettings = () => {
                 Years of Experience
               </Label>
               {isEditingProfessional ? (
-                <Select 
-                  value={professionalData.experience} 
-                  onValueChange={(value) => setProfessionalData({ ...professionalData, experience: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your experience" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0-3">0-3 years</SelectItem>
-                    <SelectItem value="3-5">3-5 years</SelectItem>
-                    <SelectItem value="5-10">5-10 years</SelectItem>
-                    <SelectItem value="10-15">10-15 years</SelectItem>
-                    <SelectItem value="15+">15+ years</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="experience"
+                  type="number"
+                  min={0}
+                  step={1}
+                  placeholder="Enter years of experience"
+                  value={professionalData.experience}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setProfessionalData({ ...professionalData, experience: val });
+                  }}
+                  onKeyDown={(e) => {
+                    if (['e', 'E', '.', '-', '+'].includes(e.key)) e.preventDefault();
+                  }}
+                />
               ) : (
                 <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
                   {professionalData.experience ? `${professionalData.experience} years` : "Not set"}
