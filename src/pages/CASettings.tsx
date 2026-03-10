@@ -98,14 +98,16 @@ const CASettings = () => {
         setAddressData(addr);
         setOriginalAddressData(addr);
 
-        setProfessionalData({
+        const prof = {
           membershipNumber: data.registrationNo || "",
           experience: data.experienceYears ? String(data.experienceYears) : "",
           specialization: Array.isArray(data.specializations) ? data.specializations : [],
           bio: data.bio || "",
           hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
           languages: Array.isArray(data.languages) ? data.languages : [],
-        });
+        };
+        setProfessionalData(prof);
+        setOriginalProfessionalData(prof);
       } catch {
         // fallback to defaults
       }
