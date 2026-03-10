@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { updateUserProfile, fetchCurrentUser } from "@/lib/api/user";
+import { fetchCAProfile } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,35 @@ const CASettings = () => {
     };
     loadUser();
   }, [user]);
+
+  useEffect(() => {
+    const loadCAProfile = async () => {
+      try {
+        const data = await fetchCAProfile();
+        const addr = {
+          streetAddress: data.streetAddress || "",
+          city: data.city || "",
+          state: data.state || "",
+          zipCode: data.zipCode || "",
+          country: data.country || "",
+        };
+        setAddressData(addr);
+        setOriginalAddressData(addr);
+
+        setProfessionalData({
+          membershipNumber: data.registrationNo || "",
+          experience: data.experienceYears ? String(data.experienceYears) : "",
+          specialization: Array.isArray(data.specializations) ? data.specializations : [],
+          bio: data.bio || "",
+          hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
+          languages: Array.isArray(data.languages) ? data.languages : [],
+        });
+      } catch {
+        // fallback to defaults
+      }
+    };
+    loadCAProfile();
+  }, []);
 
   const [professionalData, setProfessionalData] = useState({
     membershipNumber: caProfileData.membershipNumber || "",
