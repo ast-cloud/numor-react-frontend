@@ -699,9 +699,9 @@ const CASettings = () => {
                 <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfessional}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfessional} disabled={isSavingProfessional}>
+                {isSavingProfessional ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Save className="w-3 h-3 mr-1.5" />}
+                {isSavingProfessional ? "Saving..." : "Save"}
               </Button>
             </div>
           )}
