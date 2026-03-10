@@ -543,9 +543,27 @@ const CASettings = () => {
                 <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5" onClick={() => { setOriginalAddressData({ ...addressData }); setIsEditingAddress(false); toast({ title: "Address saved", description: "Your address has been updated successfully." }); }}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
+              <Button size="sm" className="h-7 text-xs px-2.5" disabled={isSavingAddress} onClick={async () => {
+                setIsSavingAddress(true);
+                try {
+                  const payload: Record<string, unknown> = {};
+                  if (addressData.streetAddress) payload.streetAddress = addressData.streetAddress;
+                  if (addressData.city) payload.city = addressData.city;
+                  if (addressData.state) payload.state = addressData.state;
+                  if (addressData.zipCode) payload.zipCode = addressData.zipCode;
+                  if (addressData.country) payload.country = addressData.country;
+                  await updateCAProfileAPI(payload);
+                  setOriginalAddressData({ ...addressData });
+                  setIsEditingAddress(false);
+                  toast({ title: "Address saved", description: "Your address has been updated successfully." });
+                } catch {
+                  toast({ title: "Failed to save", description: "Could not update address. Please try again.", variant: "destructive" });
+                } finally {
+                  setIsSavingAddress(false);
+                }
+              }}>
+                {isSavingAddress ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Save className="w-3 h-3 mr-1.5" />}
+                {isSavingAddress ? "Saving..." : "Save"}
               </Button>
             </div>
           )}
