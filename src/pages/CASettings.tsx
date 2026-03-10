@@ -121,6 +121,7 @@ const CASettings = () => {
     hourlyFee: "",
     languages: [] as string[],
   });
+  const [originalProfessionalData, setOriginalProfessionalData] = useState({ ...professionalData });
   const [languagesOpen, setLanguagesOpen] = useState(false);
   const [specializationOpen, setSpecializationOpen] = useState(false);
 
