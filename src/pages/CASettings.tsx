@@ -280,14 +280,7 @@ const CASettings = () => {
   };
 
   const handleCancelProfessional = () => {
-    setProfessionalData({
-      membershipNumber: caProfileData.membershipNumber || "",
-      experience: caProfileData.experience || "",
-      specialization: caProfileData.specialization ? caProfileData.specialization.split(",") : [],
-      bio: caProfileData.bio || "",
-      hourlyFee: "",
-      languages: [],
-    });
+    setProfessionalData({ ...originalProfessionalData });
     setIsEditingProfessional(false);
   };
 
