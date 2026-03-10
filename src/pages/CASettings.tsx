@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { updateUserProfile, fetchCurrentUser } from "@/lib/api/user";
-import { fetchCAProfile } from "@/lib/api/caProfile";
+import { fetchCAProfile, updateCAProfileAPI } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -211,6 +211,8 @@ const CASettings = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [isSavingProfessional, setIsSavingProfessional] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   const handleSaveProfile = async () => {
@@ -240,18 +242,38 @@ const CASettings = () => {
     setIsEditingProfile(false);
   };
 
-  const handleSaveProfessional = () => {
-    updateCAProfile({
-      membershipNumber: professionalData.membershipNumber,
-      experience: professionalData.experience,
-      specialization: professionalData.specialization.join(","),
-      bio: professionalData.bio,
-    });
-    setIsEditingProfessional(false);
-    toast({
-      title: "Professional details saved",
-      description: "Your professional information has been updated successfully.",
-    });
+  const handleSaveProfessional = async () => {
+    setIsSavingProfessional(true);
+    try {
+      const payload: Record<string, unknown> = {};
+      if (professionalData.membershipNumber) payload.registrationNo = professionalData.membershipNumber;
+      if (professionalData.experience) payload.experienceYears = professionalData.experience;
+      if (professionalData.specialization.length > 0) payload.specializations = professionalData.specialization;
+      if (professionalData.bio) payload.bio = professionalData.bio;
+      if (professionalData.hourlyFee) payload.hourlyFee = Number(professionalData.hourlyFee);
+      if (professionalData.languages.length > 0) payload.languages = professionalData.languages;
+
+      await updateCAProfileAPI(payload);
+      updateCAProfile({
+        membershipNumber: professionalData.membershipNumber,
+        experience: professionalData.experience,
+        specialization: professionalData.specialization.join(","),
+        bio: professionalData.bio,
+      });
+      setIsEditingProfessional(false);
+      toast({
+        title: "Professional details saved",
+        description: "Your professional information has been updated successfully.",
+      });
+    } catch {
+      toast({
+        title: "Failed to save",
+        description: "Could not update professional details. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfessional(false);
+    }
   };
 
   const handleCancelProfessional = () => {
@@ -521,9 +543,27 @@ const CASettings = () => {
                 <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5" onClick={() => { setOriginalAddressData({ ...addressData }); setIsEditingAddress(false); toast({ title: "Address saved", description: "Your address has been updated successfully." }); }}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
+              <Button size="sm" className="h-7 text-xs px-2.5" disabled={isSavingAddress} onClick={async () => {
+                setIsSavingAddress(true);
+                try {
+                  const payload: Record<string, unknown> = {};
+                  if (addressData.streetAddress) payload.streetAddress = addressData.streetAddress;
+                  if (addressData.city) payload.city = addressData.city;
+                  if (addressData.state) payload.state = addressData.state;
+                  if (addressData.zipCode) payload.zipCode = addressData.zipCode;
+                  if (addressData.country) payload.country = addressData.country;
+                  await updateCAProfileAPI(payload);
+                  setOriginalAddressData({ ...addressData });
+                  setIsEditingAddress(false);
+                  toast({ title: "Address saved", description: "Your address has been updated successfully." });
+                } catch {
+                  toast({ title: "Failed to save", description: "Could not update address. Please try again.", variant: "destructive" });
+                } finally {
+                  setIsSavingAddress(false);
+                }
+              }}>
+                {isSavingAddress ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Save className="w-3 h-3 mr-1.5" />}
+                {isSavingAddress ? "Saving..." : "Save"}
               </Button>
             </div>
           )}
@@ -659,9 +699,9 @@ const CASettings = () => {
                 <X className="w-3 h-3 mr-1.5" />
                 Cancel
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfessional}>
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
+              <Button size="sm" className="h-7 text-xs px-2.5" onClick={handleSaveProfessional} disabled={isSavingProfessional}>
+                {isSavingProfessional ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Save className="w-3 h-3 mr-1.5" />}
+                {isSavingProfessional ? "Saving..." : "Save"}
               </Button>
             </div>
           )}
