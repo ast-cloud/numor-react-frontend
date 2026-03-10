@@ -84,6 +84,35 @@ const CASettings = () => {
     loadUser();
   }, [user]);
 
+  useEffect(() => {
+    const loadCAProfile = async () => {
+      try {
+        const data = await fetchCAProfile();
+        const addr = {
+          streetAddress: data.streetAddress || "",
+          city: data.city || "",
+          state: data.state || "",
+          zipCode: data.zipCode || "",
+          country: data.country || "",
+        };
+        setAddressData(addr);
+        setOriginalAddressData(addr);
+
+        setProfessionalData({
+          membershipNumber: data.registrationNo || "",
+          experience: data.experienceYears ? String(data.experienceYears) : "",
+          specialization: Array.isArray(data.specializations) ? data.specializations : [],
+          bio: data.bio || "",
+          hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
+          languages: Array.isArray(data.languages) ? data.languages : [],
+        });
+      } catch {
+        // fallback to defaults
+      }
+    };
+    loadCAProfile();
+  }, []);
+
   const [professionalData, setProfessionalData] = useState({
     membershipNumber: caProfileData.membershipNumber || "",
     experience: caProfileData.experience || "",
