@@ -247,7 +247,7 @@ const CASettings = () => {
     try {
       const payload: Record<string, unknown> = {};
       if (professionalData.membershipNumber) payload.registrationNo = professionalData.membershipNumber;
-      if (professionalData.experience) payload.experienceYears = professionalData.experience;
+      if (professionalData.experience) payload.experienceYears = parseInt(professionalData.experience, 10);
       if (professionalData.specialization.length > 0) payload.specializations = professionalData.specialization;
       if (professionalData.bio) payload.bio = professionalData.bio;
       if (professionalData.hourlyFee) payload.hourlyFee = Number(professionalData.hourlyFee);
