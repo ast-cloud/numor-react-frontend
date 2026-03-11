@@ -1,31 +1,29 @@
 
 
-## Forgot Password Flow Integration
+# Fetch Profile Photo from API
 
-A 3-step forgot password flow will be built as a new page (`/forgot-password`) with a multi-step form:
+## What
+Add an API helper to fetch the user's profile photo URL from `GET /api/user/profilePhoto`, then use it in both CASettings and SMESettings pages to display the current profile picture. The photo loads lazily (non-blocking).
 
-### Steps
-1. **Email Entry** — User enters email, POST to `/api/auth/forgetPassword` with `{ email }`
-2. **OTP Verification** — User enters 6-digit code, POST to `/api/auth/verifyResetCode` with `{ email, code }`
-3. **New Password** — User enters + confirms new password, POST to `/api/auth/resetPassword` with `{ email, code, newPassword }` — then redirect to `/login`
+## Technical Plan
 
-### Files to Create/Modify
+### 1. Add API function in `src/lib/api/user.ts`
+Add `fetchProfilePhoto()` that calls `GET ${config.backendHost}/api/user/profilePhoto` and returns the `photoUrl` string (or `null` on error/404).
 
-1. **`src/pages/ForgotPassword.tsx`** (new) — Multi-step page with 3 states (`email`, `verify`, `reset`). Uses existing UI components (Input, Button, InputOTP). Stores email and code in local state across steps. Validates password match before submission. Styled consistently with Login page.
+### 2. Update `src/pages/CASettings.tsx`
+- In the existing `loadUser` useEffect, call `fetchProfilePhoto()` and set `profilePicture` state with the returned URL.
+- Use a separate async call so it doesn't block other data loading.
 
-2. **`src/lib/api/auth.ts`** (modify) — Add 3 new API functions:
-   - `forgotPassword(email)` → POST `/api/auth/forgetPassword`
-   - `verifyResetCode(email, code)` → POST `/api/auth/verifyResetCode`
-   - `resetPassword(email, code, newPassword)` → POST `/api/auth/resetPassword`
+### 3. Update `src/pages/SMESettings.tsx`
+- Same approach: add a useEffect that calls `fetchProfilePhoto()` on mount and sets `profilePicture`.
 
-3. **`src/App.tsx`** (modify) — Add route `/forgot-password` → `ForgotPassword` component
+### 4. Lazy loading
+- The `AvatarImage` in `ProfilePictureUpload` already renders an `<img>` tag. Add `loading="lazy"` to the `AvatarImage` to ensure the browser fetches the photo without blocking page render.
+- The fetch call itself is async and non-blocking by nature.
 
-4. **`src/pages/Login.tsx`** (modify) — Change the "Forgot password?" link from `href="#"` to `Link to="/forgot-password"`
-
-### UI Details
-- Each step shows a back arrow to return to login
-- OTP input uses the existing `InputOTP` component (6 slots)
-- Password step validates both fields match before enabling submit
-- Toast notifications for errors and success
-- Redirect to `/login` on successful reset
+### Files Changed
+- `src/lib/api/user.ts` — add `fetchProfilePhoto`
+- `src/pages/CASettings.tsx` — fetch photo on mount
+- `src/pages/SMESettings.tsx` — fetch photo on mount
+- `src/components/ProfilePictureUpload.tsx` — add `loading="lazy"` to AvatarImage
 
