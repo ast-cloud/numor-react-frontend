@@ -68,7 +68,9 @@ export async function fetchProfilePhoto(): Promise<string | null> {
 
     if (!res.ok) return null;
     const json = await res.json();
-    return json.photoUrl || null;
+    const url = json.photoUrl;
+    if (!url || (typeof url === "object" && url.profilePhoto === null)) return null;
+    return typeof url === "string" ? url : null;
   } catch {
     return null;
   }
