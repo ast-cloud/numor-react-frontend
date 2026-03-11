@@ -93,6 +93,31 @@ export async function deleteProfilePhoto(): Promise<boolean> {
   return json.success === true;
 }
 
+export async function uploadProfilePhoto(base64DataUrl: string): Promise<string> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  // Convert base64 data URL to Blob
+  const res0 = await fetch(base64DataUrl);
+  const blob = await res0.blob();
+  const file = new File([blob], "profile.jpg", { type: blob.type || "image/jpeg" });
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${config.backendHost}/api/user/profilePhoto`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error("Failed to upload profile photo");
+  const json = await res.json();
+  return json.photoUrl ?? json.data?.photoUrl ?? base64DataUrl;
+}
+
 export async function updateOrganization(data: {
   name: string;
   streetAddress: string;
