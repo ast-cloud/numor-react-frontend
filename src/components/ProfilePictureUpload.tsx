@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera, Upload, Trash2, ZoomIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { deleteProfilePhoto } from "@/lib/api/user";
+import { deleteProfilePhoto, uploadProfilePhoto } from "@/lib/api/user";
 
 interface ProfilePictureUploadProps {
   currentImage: string | null;
