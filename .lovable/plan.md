@@ -1,31 +1,24 @@
 
 
-## Forgot Password Flow Integration
+# Fix Profile Picture Not Updating After Upload
 
-A 3-step forgot password flow will be built as a new page (`/forgot-password`) with a multi-step form:
+## Problem
+After uploading a cropped photo, the `ProfilePictureUpload` component doesn't visually update until a full page refresh, even though the state is being set correctly. This is likely caused by Radix Avatar's internal image loading state machine not re-evaluating when the `src` changes, or browser-level image caching of the signed URL.
 
-### Steps
-1. **Email Entry** — User enters email, POST to `/api/auth/forgetPassword` with `{ email }`
-2. **OTP Verification** — User enters 6-digit code, POST to `/api/auth/verifyResetCode` with `{ email, code }`
-3. **New Password** — User enters + confirms new password, POST to `/api/auth/resetPassword` with `{ email, code, newPassword }` — then redirect to `/login`
+## Solution
+Two small changes to ensure the Avatar re-renders reliably:
 
-### Files to Create/Modify
+### 1. `src/components/ProfilePictureUpload.tsx`
+- Change the Avatar `key` to use a more unique value (e.g., include a timestamp or use the full URL) so that any URL change — even subtle ones — forces a complete remount of the Radix Avatar component.
+- Current: `key={currentImage || 'no-image'}` — if URLs are similar or cached, Radix may not re-evaluate.
+- New: `key={currentImage ? currentImage + Date.now() : 'no-image'}` — forces remount on every change.
 
-1. **`src/pages/ForgotPassword.tsx`** (new) — Multi-step page with 3 states (`email`, `verify`, `reset`). Uses existing UI components (Input, Button, InputOTP). Stores email and code in local state across steps. Validates password match before submission. Styled consistently with Login page.
+Actually a simpler, cleaner approach: just append a cache-busting query param when setting the new image URL from upload, ensuring the browser fetches the fresh image.
 
-2. **`src/lib/api/auth.ts`** (modify) — Add 3 new API functions:
-   - `forgotPassword(email)` → POST `/api/auth/forgetPassword`
-   - `verifyResetCode(email, code)` → POST `/api/auth/verifyResetCode`
-   - `resetPassword(email, code, newPassword)` → POST `/api/auth/resetPassword`
+### 2. `src/lib/api/user.ts` — `uploadProfilePhoto`
+- Append a cache-busting param (`?t=<timestamp>`) to the returned `photoUrl` to prevent browser caching of the old image at the same signed URL pattern.
 
-3. **`src/App.tsx`** (modify) — Add route `/forgot-password` → `ForgotPassword` component
-
-4. **`src/pages/Login.tsx`** (modify) — Change the "Forgot password?" link from `href="#"` to `Link to="/forgot-password"`
-
-### UI Details
-- Each step shows a back arrow to return to login
-- OTP input uses the existing `InputOTP` component (6 slots)
-- Password step validates both fields match before enabling submit
-- Toast notifications for errors and success
-- Redirect to `/login` on successful reset
+### Files Changed
+- `src/lib/api/user.ts` — cache-bust returned URL
+- `src/components/ProfilePictureUpload.tsx` — ensure unique key on Avatar
 
