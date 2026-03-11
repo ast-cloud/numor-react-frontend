@@ -94,12 +94,13 @@ const ProfilePictureUpload = ({
     setIsCropping(true);
     try {
       const cropped = await getCroppedImg(rawImage, croppedAreaPixels);
-      onImageChange(cropped);
+      const photoUrl = await uploadProfilePhoto(cropped);
+      onImageChange(photoUrl);
       setIsCropDialogOpen(false);
       setRawImage(null);
-      toast({ title: "Profile picture updated", description: "Your photo has been cropped and saved." });
+      toast({ title: "Profile picture updated", description: "Your photo has been uploaded successfully." });
     } catch {
-      toast({ title: "Crop failed", description: "Could not process the image.", variant: "destructive" });
+      toast({ title: "Upload failed", description: "Could not upload the image. Please try again.", variant: "destructive" });
     } finally {
       setIsCropping(false);
     }
