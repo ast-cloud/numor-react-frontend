@@ -105,9 +105,23 @@ const ProfilePictureUpload = ({
     }
   };
 
-  const handleRemove = () => {
-    onImageChange(null);
-    toast({ title: "Profile picture removed" });
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const handleRemove = async () => {
+    setIsRemoving(true);
+    try {
+      const success = await deleteProfilePhoto();
+      if (success) {
+        onImageChange(null);
+        toast({ title: "Profile picture removed" });
+      } else {
+        toast({ title: "Failed to remove", description: "Please try again.", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Failed to remove", description: "Could not delete the photo.", variant: "destructive" });
+    } finally {
+      setIsRemoving(false);
+    }
   };
 
   return (
