@@ -115,7 +115,13 @@ export async function uploadProfilePhoto(base64DataUrl: string): Promise<string>
 
   if (!res.ok) throw new Error("Failed to upload profile photo");
   const json = await res.json();
-  return json.photoUrl ?? json.data?.photoUrl ?? base64DataUrl;
+  const url = json.photoUrl ?? json.data?.photoUrl ?? base64DataUrl;
+  // Append cache-busting param to force browser to fetch fresh image
+  if (typeof url === "string" && url.startsWith("http")) {
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}t=${Date.now()}`;
+  }
+  return url;
 }
 
 export async function updateOrganization(data: {
