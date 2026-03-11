@@ -74,6 +74,23 @@ export async function fetchProfilePhoto(): Promise<string | null> {
   }
 }
 
+export async function deleteProfilePhoto(): Promise<boolean> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${config.backendHost}/api/user/profilePhoto`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to delete profile photo");
+  const json = await res.json();
+  return json.success === true;
+}
+
 export async function updateOrganization(data: {
   name: string;
   streetAddress: string;
