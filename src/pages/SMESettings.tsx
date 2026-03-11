@@ -97,6 +97,12 @@ const SMESettings = () => {
     loadUser();
   }, [user]);
 
+  useEffect(() => {
+    fetchProfilePhoto().then((url) => {
+      if (url) setProfilePicture(url);
+    });
+  }, []);
+
   const [companyData, setCompanyData] = useState({
     name: "",
     streetAddress: "",

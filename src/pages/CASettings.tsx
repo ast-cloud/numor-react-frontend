@@ -85,6 +85,12 @@ const CASettings = () => {
   }, [user]);
 
   useEffect(() => {
+    fetchProfilePhoto().then((url) => {
+      if (url) setProfilePicture(url);
+    });
+  }, []);
+
+  useEffect(() => {
     const loadCAProfile = async () => {
       try {
         const data = await fetchCAProfile();
