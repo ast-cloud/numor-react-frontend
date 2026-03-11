@@ -53,6 +53,27 @@ export async function updateUserProfile(data: { name: string; phone: string }) {
   return json.data ?? json;
 }
 
+export async function fetchProfilePhoto(): Promise<string | null> {
+  try {
+    const token = getToken();
+    if (!token) return null;
+
+    const res = await fetch(`${config.backendHost}/api/user/profilePhoto`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.photoUrl || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function updateOrganization(data: {
   name: string;
   streetAddress: string;
