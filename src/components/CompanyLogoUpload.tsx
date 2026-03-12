@@ -146,10 +146,10 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
               size="sm"
               className="h-6 text-[11px] px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleRemove}
-              disabled={disabled}
+              disabled={disabled || isRemoving}
             >
-              <Trash2 className="w-2.5 h-2.5 mr-1" />
-              Remove
+              {isRemoving ? <Loader2 className="w-2.5 h-2.5 mr-1 animate-spin" /> : <Trash2 className="w-2.5 h-2.5 mr-1" />}
+              {isRemoving ? "Removing..." : "Remove"}
             </Button>
           )}
           <p className="text-[10px] text-muted-foreground/70">JPG, PNG · Max 2MB</p>
