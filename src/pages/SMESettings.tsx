@@ -132,9 +132,9 @@ const SMESettings = () => {
         };
         setCompanyData(orgData);
         setOriginalCompanyData(orgData);
-        if (org.logoUrl) {
-          setCompanyLogo(org.logoUrl);
-        }
+        fetchOrganizationLogo().then((url) => {
+          if (url) setCompanyLogo(url);
+        });
       } catch {
         toast({
           title: "Failed to load organization",
