@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { fetchCurrentOrganization, updateOrganization, fetchCurrentUser, updateUserProfile, fetchProfilePhoto } from "@/lib/api/user";
+import { fetchCurrentOrganization, updateOrganization, fetchCurrentUser, updateUserProfile, fetchProfilePhoto, fetchOrganizationLogo } from "@/lib/api/user";
 import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload, Loader2 } from "lucide-react";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import CompanyLogoUpload from "@/components/CompanyLogoUpload";
@@ -132,9 +132,9 @@ const SMESettings = () => {
         };
         setCompanyData(orgData);
         setOriginalCompanyData(orgData);
-        if (org.logoUrl) {
-          setCompanyLogo(org.logoUrl);
-        }
+        fetchOrganizationLogo().then((url) => {
+          if (url) setCompanyLogo(url);
+        });
       } catch {
         toast({
           title: "Failed to load organization",

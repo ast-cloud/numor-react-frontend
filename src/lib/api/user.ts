@@ -167,3 +167,26 @@ export async function updateOrganization(data: {
   const json = await res.json();
   return json.data ?? json;
 }
+
+export async function fetchOrganizationLogo(): Promise<string | null> {
+  try {
+    const token = getToken();
+    if (!token) return null;
+
+    const res = await fetch(`${config.backendHost}/api/organization/logo`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    const url = json.logoUrl;
+    if (!url || typeof url !== "string") return null;
+    return url;
+  } catch {
+    return null;
+  }
+}
