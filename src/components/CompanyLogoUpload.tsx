@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Building2, Upload, Trash2, ZoomIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { uploadOrganizationLogo } from "@/lib/api/user";
 
 interface CompanyLogoUploadProps {
   currentLogo: string | null;
