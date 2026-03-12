@@ -224,3 +224,20 @@ export async function uploadOrganizationLogo(base64DataUrl: string): Promise<str
 
   return base64DataUrl;
 }
+
+export async function deleteOrganizationLogo(): Promise<boolean> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${config.backendHost}/api/organization/logo`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to delete organization logo");
+  const json = await res.json();
+  return json.success === true;
+}

@@ -93,9 +93,23 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
     }
   };
 
-  const handleRemove = () => {
-    onLogoChange(null);
-    toast({ title: "Logo removed" });
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const handleRemove = async () => {
+    setIsRemoving(true);
+    try {
+      const success = await deleteOrganizationLogo();
+      if (success) {
+        onLogoChange(null);
+        toast({ title: "Logo removed" });
+      } else {
+        toast({ title: "Failed to remove", description: "Please try again.", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Failed to remove", description: "Could not delete the logo.", variant: "destructive" });
+    } finally {
+      setIsRemoving(false);
+    }
   };
 
   return (
