@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Building2, Upload, Trash2, ZoomIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { uploadOrganizationLogo } from "@/lib/api/user";
+import { uploadOrganizationLogo, deleteOrganizationLogo } from "@/lib/api/user";
 
 interface CompanyLogoUploadProps {
   currentLogo: string | null;
@@ -93,9 +93,23 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
     }
   };
 
-  const handleRemove = () => {
-    onLogoChange(null);
-    toast({ title: "Logo removed" });
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const handleRemove = async () => {
+    setIsRemoving(true);
+    try {
+      const success = await deleteOrganizationLogo();
+      if (success) {
+        onLogoChange(null);
+        toast({ title: "Logo removed" });
+      } else {
+        toast({ title: "Failed to remove", description: "Please try again.", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Failed to remove", description: "Could not delete the logo.", variant: "destructive" });
+    } finally {
+      setIsRemoving(false);
+    }
   };
 
   return (
@@ -132,10 +146,10 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
               size="sm"
               className="h-6 text-[11px] px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleRemove}
-              disabled={disabled}
+              disabled={disabled || isRemoving}
             >
-              <Trash2 className="w-2.5 h-2.5 mr-1" />
-              Remove
+              {isRemoving ? <Loader2 className="w-2.5 h-2.5 mr-1 animate-spin" /> : <Trash2 className="w-2.5 h-2.5 mr-1" />}
+              {isRemoving ? "Removing..." : "Remove"}
             </Button>
           )}
           <p className="text-[10px] text-muted-foreground/70">JPG, PNG · Max 2MB</p>
