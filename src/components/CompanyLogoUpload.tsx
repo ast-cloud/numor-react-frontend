@@ -122,7 +122,7 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
             <Building2 className="w-10 h-10 text-muted-foreground/50" />
           )}
         </div>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col items-start gap-1">
           <input
             ref={fileInputRef}
             type="file"
@@ -133,22 +133,22 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
           <Button
             variant="outline"
             size="sm"
-            className="h-6 text-[11px] px-1.5 w-fit"
+            className="h-5 text-[10px] px-1.5 w-fit"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled}
           >
-            <Upload className="w-2.5 h-2.5 mr-1" />
+            <Upload className="w-2 h-2 mr-0.5" />
             {currentLogo ? "Change" : "Upload"}
           </Button>
           {currentLogo && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 text-[11px] px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="h-5 text-[10px] px-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleRemove}
               disabled={disabled || isRemoving}
             >
-              {isRemoving ? <Loader2 className="w-2.5 h-2.5 mr-1 animate-spin" /> : <Trash2 className="w-2.5 h-2.5 mr-1" />}
+              {isRemoving ? <Loader2 className="w-2 h-2 mr-0.5 animate-spin" /> : <Trash2 className="w-2 h-2 mr-0.5" />}
               {isRemoving ? "Removing..." : "Remove"}
             </Button>
           )}
