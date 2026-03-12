@@ -190,3 +190,37 @@ export async function fetchOrganizationLogo(): Promise<string | null> {
     return null;
   }
 }
+
+export async function uploadOrganizationLogo(base64DataUrl: string): Promise<string> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res0 = await fetch(base64DataUrl);
+  const blob = await res0.blob();
+  const file = new File([blob], "logo.png", { type: blob.type || "image/png" });
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${config.backendHost}/api/organization/logo`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error("Failed to upload organization logo");
+  const json = await res.json();
+
+  const logoUrl = typeof json.logoUrl === "string" ? json.logoUrl : null;
+  if (logoUrl) {
+    const separator = logoUrl.includes("?") ? "&" : "?";
+    return `${logoUrl}${separator}t=${Date.now()}`;
+  }
+
+  const refreshed = await fetchOrganizationLogo();
+  if (refreshed) return refreshed;
+
+  return base64DataUrl;
+}
