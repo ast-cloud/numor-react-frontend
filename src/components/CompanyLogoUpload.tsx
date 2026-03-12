@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Building2, Upload, Trash2, ZoomIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { uploadOrganizationLogo } from "@/lib/api/user";
 
 interface CompanyLogoUploadProps {
   currentLogo: string | null;
@@ -80,10 +81,11 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
     setIsCropping(true);
     try {
       const cropped = await getCroppedImg(rawImage, croppedAreaPixels);
-      onLogoChange(cropped);
+      const logoUrl = await uploadOrganizationLogo(cropped);
+      onLogoChange(logoUrl);
       setIsCropDialogOpen(false);
       setRawImage(null);
-      toast({ title: "Logo updated", description: "Your company logo has been cropped and saved." });
+      toast({ title: "Logo updated", description: "Your company logo has been uploaded successfully." });
     } catch {
       toast({ title: "Crop failed", description: "Could not process the image.", variant: "destructive" });
     } finally {
