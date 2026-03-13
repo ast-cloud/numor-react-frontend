@@ -249,16 +249,21 @@ const CASettings = () => {
     }
   };
 
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+
   const handleRemoveDocument = async (
     documentId: string,
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>
   ) => {
+    setDeletingDocId(documentId);
     try {
       await deleteCADocument(documentId);
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
       toast({ title: "Document deleted", description: "The document has been deleted successfully." });
     } catch (error) {
       toast({ title: "Error", description: "Failed to delete document. Please try again.", variant: "destructive" });
+    } finally {
+      setDeletingDocId(null);
     }
   };
 
@@ -427,9 +432,14 @@ const CASettings = () => {
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        disabled={deletingDocId === doc.id}
                         onClick={() => handleRemoveDocument(doc.id, setDocuments)}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deletingDocId === doc.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
