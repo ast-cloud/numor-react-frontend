@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { updateUserProfile, fetchCurrentUser, fetchProfilePhoto } from "@/lib/api/user";
-import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments } from "@/lib/api/caProfile";
+import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments, deleteCADocument } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -249,12 +249,17 @@ const CASettings = () => {
     }
   };
 
-  const handleRemoveDocument = (
+  const handleRemoveDocument = async (
     documentId: string,
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>
   ) => {
-    setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
-    toast({ title: "Document removed", description: "The document has been removed." });
+    try {
+      await deleteCADocument(documentId);
+      setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
+      toast({ title: "Document deleted", description: "The document has been deleted successfully." });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete document. Please try again.", variant: "destructive" });
+    }
   };
 
   const formatFileSize = (bytes: number): string => {

@@ -57,6 +57,22 @@ export async function fetchCADocuments() {
   return json.data?.documents ?? json.documents ?? [];
 }
 
+export async function deleteCADocument(documentId: string) {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${config.backendHost}/api/ca-profile/documents/${documentId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to delete document");
+  const json = await res.json();
+  return json.data ?? json;
+}
+
 export async function updateCAProfileAPI(data: Record<string, unknown>) {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
