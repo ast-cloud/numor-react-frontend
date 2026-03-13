@@ -200,7 +200,7 @@ const CASettings = () => {
 
     setIsUploading(true);
     try {
-      if (pendingDocumentType === "ID Proof") {
+      if (pendingDocumentType === "id_proof") {
         const result = await uploadCADocument(pendingFile, "ID_PROOF", pendingDescription.trim());
         const newDocument: UploadedDocument = {
           id: result.id || `${Date.now()}`,
