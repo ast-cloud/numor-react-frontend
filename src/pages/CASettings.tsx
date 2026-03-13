@@ -339,23 +339,6 @@ const CASettings = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Upload Area */}
-        <div 
-          className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
-          onClick={() => inputRef.current?.click()}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            className="hidden"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => handleFileSelect(e, setDocuments, documentType)}
-          />
-          <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-          <p className="text-sm font-medium text-foreground">Click to upload or drag and drop</p>
-          <p className="text-xs text-muted-foreground mt-1">PDF, JPG, or PNG (max 5MB)</p>
-        </div>
-
         {/* Uploaded Documents List */}
         {documents.length > 0 && (
           <div className="space-y-2">
@@ -401,6 +384,23 @@ const CASettings = () => {
             </div>
           </div>
         )}
+
+        {/* Upload Area */}
+        <div 
+          className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+          onClick={() => inputRef.current?.click()}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            className="hidden"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => handleFileSelect(e, setDocuments, documentType)}
+          />
+          <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+          <p className="text-sm font-medium text-foreground">Click to upload or drag and drop</p>
+          <p className="text-xs text-muted-foreground mt-1">PDF, JPG, or PNG (max 5MB)</p>
+        </div>
       </CardContent>
     </Card>
   );
