@@ -398,7 +398,7 @@ const CASettings = () => {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{doc.description || doc.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
+                          {doc.uploadedAt.toLocaleDateString()}
                         </p>
                       </div>
                     </div>
