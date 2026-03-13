@@ -191,6 +191,10 @@ const CASettings = () => {
 
   const handleConfirmUpload = () => {
     if (!pendingFile || !pendingSetDocuments) return;
+    if (!pendingDescription.trim()) {
+      toast({ title: "Description required", description: "Please add a description for the document.", variant: "destructive" });
+      return;
+    }
 
     const newDocument: UploadedDocument = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
