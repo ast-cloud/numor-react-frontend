@@ -364,7 +364,7 @@ const CASettings = () => {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-3 bg-muted/50 rounded-lg space-y-2"
+                  className="p-3 bg-muted/50 rounded-lg"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -376,6 +376,9 @@ const CASettings = () => {
                         <p className="text-xs text-muted-foreground">
                           {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
                         </p>
+                        {doc.description && (
+                          <p className="text-xs text-muted-foreground italic mt-0.5">{doc.description}</p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -393,18 +396,6 @@ const CASettings = () => {
                       </Button>
                     </div>
                   </div>
-                  <Input
-                    placeholder="Add a description (e.g., CA Certificate 2024)"
-                    value={doc.description}
-                    onChange={(e) => {
-                      setDocuments((prev) =>
-                        prev.map((d) =>
-                          d.id === doc.id ? { ...d, description: e.target.value } : d
-                        )
-                      );
-                    }}
-                    className="text-sm h-8"
-                  />
                 </div>
               ))}
             </div>
