@@ -249,16 +249,21 @@ const CASettings = () => {
     }
   };
 
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+
   const handleRemoveDocument = async (
     documentId: string,
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>
   ) => {
+    setDeletingDocId(documentId);
     try {
       await deleteCADocument(documentId);
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
       toast({ title: "Document deleted", description: "The document has been deleted successfully." });
     } catch (error) {
       toast({ title: "Error", description: "Failed to delete document. Please try again.", variant: "destructive" });
+    } finally {
+      setDeletingDocId(null);
     }
   };
 
