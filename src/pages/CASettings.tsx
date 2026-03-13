@@ -349,8 +349,7 @@ const CASettings = () => {
             type="file"
             className="hidden"
             accept=".pdf,.jpg,.jpeg,.png"
-            multiple
-            onChange={(e) => handleFileUpload(e, setDocuments, documentType)}
+            onChange={(e) => handleFileSelect(e, setDocuments, documentType)}
           />
           <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
           <p className="text-sm font-medium text-foreground">Click to upload or drag and drop</p>
