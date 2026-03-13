@@ -147,6 +147,12 @@ const CASettings = () => {
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
   const [idProofDocuments, setIdProofDocuments] = useState<UploadedDocument[]>([]);
 
+  // Upload dialog state
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingDescription, setPendingDescription] = useState("");
+  const [pendingSetDocuments, setPendingSetDocuments] = useState<React.Dispatch<React.SetStateAction<UploadedDocument[]>> | null>(null);
+  const [pendingDocumentType, setPendingDocumentType] = useState("");
   // Update CA profile context when documents change
   useEffect(() => {
     updateCAProfile({
