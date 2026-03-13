@@ -18,6 +18,28 @@ export async function fetchCAProfile() {
   return json.data ?? json;
 }
 
+export async function uploadCADocument(file: File, type: string, description: string) {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const formData = new FormData();
+  formData.append("type", type);
+  formData.append("file", file);
+  formData.append("description", description);
+
+  const res = await fetch(`${config.backendHost}/api/ca-profile/documents`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error("Failed to upload document");
+  const json = await res.json();
+  return json.data ?? json;
+}
+
 export async function updateCAProfileAPI(data: Record<string, unknown>) {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");

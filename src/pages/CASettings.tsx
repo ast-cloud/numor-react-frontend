@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { updateUserProfile, fetchCurrentUser, fetchProfilePhoto } from "@/lib/api/user";
-import { fetchCAProfile, updateCAProfileAPI } from "@/lib/api/caProfile";
+import { fetchCAProfile, updateCAProfileAPI, uploadCADocument } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -189,27 +189,48 @@ const CASettings = () => {
     event.target.value = '';
   };
 
-  const handleConfirmUpload = () => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleConfirmUpload = async () => {
     if (!pendingFile || !pendingSetDocuments) return;
     if (!pendingDescription.trim()) {
       toast({ title: "Description required", description: "Please add a description for the document.", variant: "destructive" });
       return;
     }
 
-    const newDocument: UploadedDocument = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name: pendingFile.name,
-      type: pendingFile.type,
-      size: pendingFile.size,
-      uploadedAt: new Date(),
-      description: pendingDescription.trim(),
-    };
-
-    pendingSetDocuments((prev) => [...prev, newDocument]);
-    toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
-    setUploadDialogOpen(false);
-    setPendingFile(null);
-    setPendingDescription("");
+    setIsUploading(true);
+    try {
+      if (pendingDocumentType === "ID Proof") {
+        const result = await uploadCADocument(pendingFile, "ID_PROOF", pendingDescription.trim());
+        const newDocument: UploadedDocument = {
+          id: result.id || `${Date.now()}`,
+          name: pendingFile.name,
+          type: pendingFile.type,
+          size: pendingFile.size,
+          uploadedAt: new Date(result.createdAt || Date.now()),
+          description: result.description || pendingDescription.trim(),
+        };
+        pendingSetDocuments((prev) => [...prev, newDocument]);
+      } else {
+        const newDocument: UploadedDocument = {
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: pendingFile.name,
+          type: pendingFile.type,
+          size: pendingFile.size,
+          uploadedAt: new Date(),
+          description: pendingDescription.trim(),
+        };
+        pendingSetDocuments((prev) => [...prev, newDocument]);
+      }
+      toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
+      setUploadDialogOpen(false);
+      setPendingFile(null);
+      setPendingDescription("");
+    } catch {
+      toast({ title: "Upload failed", description: "Could not upload the document. Please try again.", variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleRemoveDocument = (
@@ -1010,9 +1031,9 @@ const CASettings = () => {
             <Button variant="outline" onClick={() => { setUploadDialogOpen(false); setPendingFile(null); setPendingDescription(""); }}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmUpload}>
-              <Upload className="w-4 h-4 mr-1.5" />
-              Upload
+            <Button onClick={handleConfirmUpload} disabled={isUploading}>
+              {isUploading ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Upload className="w-4 h-4 mr-1.5" />}
+              {isUploading ? "Uploading..." : "Upload"}
             </Button>
           </DialogFooter>
         </DialogContent>
