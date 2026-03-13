@@ -25,6 +25,7 @@ interface UploadedDocument {
   type: string;
   size: number;
   uploadedAt: Date;
+  description: string;
 }
 
 const CASettings = () => {
@@ -189,6 +190,7 @@ const CASettings = () => {
         type: file.type,
         size: file.size,
         uploadedAt: new Date(),
+        description: "",
       };
 
       setDocuments((prev) => [...prev, newDocument]);
@@ -363,33 +365,47 @@ const CASettings = () => {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="p-3 bg-muted/50 rounded-lg space-y-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-background rounded">
-                      <FileText className="w-4 h-4 text-muted-foreground" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-background rounded">
+                        <FileText className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium truncate max-w-[200px]">{doc.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium truncate max-w-[200px]">{doc.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Uploaded
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleRemoveDocument(doc.id, setDocuments)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Uploaded
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => handleRemoveDocument(doc.id, setDocuments)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <Input
+                    placeholder="Add a description (e.g., CA Certificate 2024)"
+                    value={doc.description}
+                    onChange={(e) => {
+                      setDocuments((prev) =>
+                        prev.map((d) =>
+                          d.id === doc.id ? { ...d, description: e.target.value } : d
+                        )
+                      );
+                    }}
+                    className="text-sm h-8"
+                  />
                 </div>
               ))}
             </div>
