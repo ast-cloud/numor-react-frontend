@@ -983,8 +983,40 @@ const CASettings = () => {
           documentType="id_proof"
         />
       </div>
-    </div>
-  );
-};
 
-export default CASettings;
+      {/* Upload Description Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={(open) => { if (!open) { setUploadDialogOpen(false); setPendingFile(null); setPendingDescription(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Document</DialogTitle>
+            <DialogDescription>Add a description for your document before uploading.</DialogDescription>
+          </DialogHeader>
+          {pendingFile && (
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+              <FileText className="w-5 h-5 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{pendingFile.name}</p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(pendingFile.size)}</p>
+              </div>
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="doc-description">Description (optional)</Label>
+            <Input
+              id="doc-description"
+              placeholder="e.g., CA Certificate 2024, PAN Card"
+              value={pendingDescription}
+              onChange={(e) => setPendingDescription(e.target.value)}
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => { setUploadDialogOpen(false); setPendingFile(null); setPendingDescription(""); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmUpload}>
+              <Upload className="w-4 h-4 mr-1.5" />
+              Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
