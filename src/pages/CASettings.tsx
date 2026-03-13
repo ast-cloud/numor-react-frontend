@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { updateUserProfile, fetchCurrentUser, fetchProfilePhoto } from "@/lib/api/user";
-import { fetchCAProfile, updateCAProfileAPI, uploadCADocument } from "@/lib/api/caProfile";
+import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ interface UploadedDocument {
   size: number;
   uploadedAt: Date;
   description: string;
+  url?: string;
 }
 
 const CASettings = () => {
@@ -121,6 +122,32 @@ const CASettings = () => {
       }
     };
     loadCAProfile();
+
+    const loadDocuments = async () => {
+      try {
+        const docs = await fetchCADocuments();
+        const idProofs: UploadedDocument[] = [];
+        const certs: UploadedDocument[] = [];
+        for (const doc of docs) {
+          const mapped: UploadedDocument = {
+            id: doc.id,
+            name: doc.description || "Document",
+            type: doc.type,
+            size: 0,
+            uploadedAt: new Date(doc.createdAt || Date.now()),
+            description: doc.description || "",
+            url: doc.url,
+          };
+          if (doc.type === "ID_PROOF") idProofs.push(mapped);
+          else if (doc.type === "CERTIFICATION") certs.push(mapped);
+        }
+        setIdProofDocuments(idProofs);
+        setCertificationDocuments(certs);
+      } catch {
+        // silently fail
+      }
+    };
+    loadDocuments();
   }, []);
 
   const [professionalData, setProfessionalData] = useState({
