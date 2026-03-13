@@ -349,23 +349,23 @@ const CASettings = () => {
                   key={doc.id}
                   className="p-3 bg-muted/50 rounded-lg"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-background rounded">
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="p-2 bg-background rounded shrink-0">
                         <FileText className="w-4 h-4 text-muted-foreground" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium truncate max-w-[200px]">{doc.name}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{doc.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
                         </p>
                         {doc.description && (
-                          <p className="text-xs text-muted-foreground italic mt-0.5">{doc.description}</p>
+                          <p className="text-xs text-muted-foreground italic mt-0.5 truncate">{doc.description}</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="secondary" className="text-xs whitespace-nowrap">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         Uploaded
                       </Badge>
