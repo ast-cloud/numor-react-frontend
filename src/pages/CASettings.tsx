@@ -1031,9 +1031,9 @@ const CASettings = () => {
             <Button variant="outline" onClick={() => { setUploadDialogOpen(false); setPendingFile(null); setPendingDescription(""); }}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmUpload}>
-              <Upload className="w-4 h-4 mr-1.5" />
-              Upload
+            <Button onClick={handleConfirmUpload} disabled={isUploading}>
+              {isUploading ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Upload className="w-4 h-4 mr-1.5" />}
+              {isUploading ? "Uploading..." : "Upload"}
             </Button>
           </DialogFooter>
         </DialogContent>
