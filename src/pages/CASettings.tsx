@@ -190,6 +190,7 @@ const CASettings = () => {
         type: file.type,
         size: file.size,
         uploadedAt: new Date(),
+        description: "",
       };
 
       setDocuments((prev) => [...prev, newDocument]);
