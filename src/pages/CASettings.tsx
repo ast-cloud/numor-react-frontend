@@ -191,6 +191,10 @@ const CASettings = () => {
 
   const handleConfirmUpload = () => {
     if (!pendingFile || !pendingSetDocuments) return;
+    if (!pendingDescription.trim()) {
+      toast({ title: "Description required", description: "Please add a description for the document.", variant: "destructive" });
+      return;
+    }
 
     const newDocument: UploadedDocument = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -994,7 +998,7 @@ const CASettings = () => {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="doc-description">Description (optional)</Label>
+            <Label htmlFor="doc-description">Description <span className="text-destructive">*</span></Label>
             <Input
               id="doc-description"
               placeholder="e.g., CA Certificate 2024, PAN Card"
