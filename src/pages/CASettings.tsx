@@ -25,6 +25,7 @@ interface UploadedDocument {
   type: string;
   size: number;
   uploadedAt: Date;
+  description: string;
 }
 
 const CASettings = () => {
