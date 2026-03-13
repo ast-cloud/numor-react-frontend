@@ -355,13 +355,10 @@ const CASettings = () => {
                         <FileText className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{doc.name}</p>
+                        <p className="text-sm font-medium truncate">{doc.description || doc.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
                         </p>
-                        {doc.description && (
-                          <p className="text-xs text-muted-foreground italic mt-0.5 truncate">{doc.description}</p>
-                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
