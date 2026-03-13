@@ -466,7 +466,7 @@ const CASettings = () => {
           {!caProfileData.isSubmitted && (
             <Button 
               onClick={handleSubmitForReview}
-              disabled={!isProfileComplete()}
+              disabled={!isFormComplete()}
               className="flex items-center gap-2"
             >
               <Send className="w-4 h-4" />
