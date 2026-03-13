@@ -986,7 +986,7 @@ const CASettings = () => {
 
       {/* Upload Description Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={(open) => { if (!open) { setUploadDialogOpen(false); setPendingFile(null); setPendingDescription(""); } }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md overflow-hidden">
           <DialogHeader>
             <DialogTitle>Upload Document</DialogTitle>
             <DialogDescription>Add a description for your document before uploading.</DialogDescription>
