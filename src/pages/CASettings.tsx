@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useCAProfile } from "@/hooks/use-ca-profile";
@@ -146,6 +147,12 @@ const CASettings = () => {
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
   const [idProofDocuments, setIdProofDocuments] = useState<UploadedDocument[]>([]);
 
+  // Upload dialog state
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingDescription, setPendingDescription] = useState("");
+  const [pendingSetDocuments, setPendingSetDocuments] = useState<React.Dispatch<React.SetStateAction<UploadedDocument[]>> | null>(null);
+  const [pendingDocumentType, setPendingDocumentType] = useState("");
   // Update CA profile context when documents change
   useEffect(() => {
     updateCAProfile({
@@ -154,55 +161,51 @@ const CASettings = () => {
     });
   }, [certificationDocuments, idProofDocuments]);
 
-  const handleFileUpload = (
+  const handleFileSelect = (
     event: React.ChangeEvent<HTMLInputElement>,
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>,
     documentType: string
   ) => {
-    const files = event.target.files;
-    if (!files) return;
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
 
-    Array.from(files).forEach((file) => {
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload PDF, JPG, or PNG files only.",
-          variant: "destructive",
-        });
-        return;
-      }
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Please upload PDF, JPG, or PNG files only.", variant: "destructive" });
+      return;
+    }
+    if (file.size > maxSize) {
+      toast({ title: "File too large", description: "Maximum file size is 5MB.", variant: "destructive" });
+      return;
+    }
 
-      if (file.size > maxSize) {
-        toast({
-          title: "File too large",
-          description: "Maximum file size is 5MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const newDocument: UploadedDocument = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        uploadedAt: new Date(),
-        description: "",
-      };
-
-      setDocuments((prev) => [...prev, newDocument]);
-      
-      toast({
-        title: "Document uploaded",
-        description: `${file.name} has been uploaded successfully.`,
-      });
-    });
-
-    // Reset input
+    setPendingFile(file);
+    setPendingDescription("");
+    setPendingSetDocuments(() => setDocuments);
+    setPendingDocumentType(documentType);
+    setUploadDialogOpen(true);
     event.target.value = '';
+  };
+
+  const handleConfirmUpload = () => {
+    if (!pendingFile || !pendingSetDocuments) return;
+
+    const newDocument: UploadedDocument = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: pendingFile.name,
+      type: pendingFile.type,
+      size: pendingFile.size,
+      uploadedAt: new Date(),
+      description: pendingDescription.trim(),
+    };
+
+    pendingSetDocuments((prev) => [...prev, newDocument]);
+    toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
+    setUploadDialogOpen(false);
+    setPendingFile(null);
+    setPendingDescription("");
   };
 
   const handleRemoveDocument = (
@@ -210,10 +213,7 @@ const CASettings = () => {
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>
   ) => {
     setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
-    toast({
-      title: "Document removed",
-      description: "The document has been removed.",
-    });
+    toast({ title: "Document removed", description: "The document has been removed." });
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -349,8 +349,7 @@ const CASettings = () => {
             type="file"
             className="hidden"
             accept=".pdf,.jpg,.jpeg,.png"
-            multiple
-            onChange={(e) => handleFileUpload(e, setDocuments, documentType)}
+            onChange={(e) => handleFileSelect(e, setDocuments, documentType)}
           />
           <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
           <p className="text-sm font-medium text-foreground">Click to upload or drag and drop</p>
@@ -365,7 +364,7 @@ const CASettings = () => {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-3 bg-muted/50 rounded-lg space-y-2"
+                  className="p-3 bg-muted/50 rounded-lg"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -377,6 +376,9 @@ const CASettings = () => {
                         <p className="text-xs text-muted-foreground">
                           {formatFileSize(doc.size)} • {doc.uploadedAt.toLocaleDateString()}
                         </p>
+                        {doc.description && (
+                          <p className="text-xs text-muted-foreground italic mt-0.5">{doc.description}</p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -394,18 +396,6 @@ const CASettings = () => {
                       </Button>
                     </div>
                   </div>
-                  <Input
-                    placeholder="Add a description (e.g., CA Certificate 2024)"
-                    value={doc.description}
-                    onChange={(e) => {
-                      setDocuments((prev) =>
-                        prev.map((d) =>
-                          d.id === doc.id ? { ...d, description: e.target.value } : d
-                        )
-                      );
-                    }}
-                    className="text-sm h-8"
-                  />
                 </div>
               ))}
             </div>
@@ -993,6 +983,43 @@ const CASettings = () => {
           documentType="id_proof"
         />
       </div>
+
+      {/* Upload Description Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={(open) => { if (!open) { setUploadDialogOpen(false); setPendingFile(null); setPendingDescription(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Document</DialogTitle>
+            <DialogDescription>Add a description for your document before uploading.</DialogDescription>
+          </DialogHeader>
+          {pendingFile && (
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+              <FileText className="w-5 h-5 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{pendingFile.name}</p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(pendingFile.size)}</p>
+              </div>
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="doc-description">Description (optional)</Label>
+            <Input
+              id="doc-description"
+              placeholder="e.g., CA Certificate 2024, PAN Card"
+              value={pendingDescription}
+              onChange={(e) => setPendingDescription(e.target.value)}
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => { setUploadDialogOpen(false); setPendingFile(null); setPendingDescription(""); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmUpload}>
+              <Upload className="w-4 h-4 mr-1.5" />
+              Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
