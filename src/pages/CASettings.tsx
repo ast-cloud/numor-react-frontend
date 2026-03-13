@@ -200,28 +200,17 @@ const CASettings = () => {
 
     setIsUploading(true);
     try {
-      if (pendingDocumentType === "id_proof") {
-        const result = await uploadCADocument(pendingFile, "ID_PROOF", pendingDescription.trim());
-        const newDocument: UploadedDocument = {
-          id: result.id || `${Date.now()}`,
-          name: pendingFile.name,
-          type: pendingFile.type,
-          size: pendingFile.size,
-          uploadedAt: new Date(result.createdAt || Date.now()),
-          description: result.description || pendingDescription.trim(),
-        };
-        pendingSetDocuments((prev) => [...prev, newDocument]);
-      } else {
-        const newDocument: UploadedDocument = {
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          name: pendingFile.name,
-          type: pendingFile.type,
-          size: pendingFile.size,
-          uploadedAt: new Date(),
-          description: pendingDescription.trim(),
-        };
-        pendingSetDocuments((prev) => [...prev, newDocument]);
-      }
+      const apiType = pendingDocumentType === "id_proof" ? "ID_PROOF" : "CERTIFICATION";
+      const result = await uploadCADocument(pendingFile, apiType, pendingDescription.trim());
+      const newDocument: UploadedDocument = {
+        id: result.id || `${Date.now()}`,
+        name: pendingFile.name,
+        type: pendingFile.type,
+        size: pendingFile.size,
+        uploadedAt: new Date(result.createdAt || Date.now()),
+        description: result.description || pendingDescription.trim(),
+      };
+      pendingSetDocuments((prev) => [...prev, newDocument]);
       toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
       setUploadDialogOpen(false);
       setPendingFile(null);
