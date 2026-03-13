@@ -432,9 +432,14 @@ const CASettings = () => {
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        disabled={deletingDocId === doc.id}
                         onClick={() => handleRemoveDocument(doc.id, setDocuments)}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deletingDocId === doc.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
