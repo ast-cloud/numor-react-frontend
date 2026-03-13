@@ -1020,3 +1020,8 @@ const CASettings = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+};
+
+export default CASettings;
