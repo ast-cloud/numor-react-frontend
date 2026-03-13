@@ -161,55 +161,51 @@ const CASettings = () => {
     });
   }, [certificationDocuments, idProofDocuments]);
 
-  const handleFileUpload = (
+  const handleFileSelect = (
     event: React.ChangeEvent<HTMLInputElement>,
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>,
     documentType: string
   ) => {
-    const files = event.target.files;
-    if (!files) return;
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
 
-    Array.from(files).forEach((file) => {
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload PDF, JPG, or PNG files only.",
-          variant: "destructive",
-        });
-        return;
-      }
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Please upload PDF, JPG, or PNG files only.", variant: "destructive" });
+      return;
+    }
+    if (file.size > maxSize) {
+      toast({ title: "File too large", description: "Maximum file size is 5MB.", variant: "destructive" });
+      return;
+    }
 
-      if (file.size > maxSize) {
-        toast({
-          title: "File too large",
-          description: "Maximum file size is 5MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const newDocument: UploadedDocument = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        uploadedAt: new Date(),
-        description: "",
-      };
-
-      setDocuments((prev) => [...prev, newDocument]);
-      
-      toast({
-        title: "Document uploaded",
-        description: `${file.name} has been uploaded successfully.`,
-      });
-    });
-
-    // Reset input
+    setPendingFile(file);
+    setPendingDescription("");
+    setPendingSetDocuments(() => setDocuments);
+    setPendingDocumentType(documentType);
+    setUploadDialogOpen(true);
     event.target.value = '';
+  };
+
+  const handleConfirmUpload = () => {
+    if (!pendingFile || !pendingSetDocuments) return;
+
+    const newDocument: UploadedDocument = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: pendingFile.name,
+      type: pendingFile.type,
+      size: pendingFile.size,
+      uploadedAt: new Date(),
+      description: pendingDescription.trim(),
+    };
+
+    pendingSetDocuments((prev) => [...prev, newDocument]);
+    toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
+    setUploadDialogOpen(false);
+    setPendingFile(null);
+    setPendingDescription("");
   };
 
   const handleRemoveDocument = (
@@ -217,10 +213,7 @@ const CASettings = () => {
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>
   ) => {
     setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
-    toast({
-      title: "Document removed",
-      description: "The document has been removed.",
-    });
+    toast({ title: "Document removed", description: "The document has been removed." });
   };
 
   const formatFileSize = (bytes: number): string => {
