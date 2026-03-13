@@ -334,8 +334,23 @@ const CASettings = () => {
     setIsEditingProfessional(false);
   };
 
+  const isFormComplete = () => {
+    const personalComplete = !!(profileData.name && profileData.email && profileData.phone);
+    const addressComplete = !!(addressData.streetAddress && addressData.city && addressData.state && addressData.zipCode && addressData.country);
+    const professionalComplete = !!(
+      professionalData.membershipNumber &&
+      professionalData.experience &&
+      professionalData.specialization.length > 0 &&
+      professionalData.bio &&
+      professionalData.hourlyFee &&
+      professionalData.languages.length > 0
+    );
+    const documentsComplete = certificationDocuments.length > 0 && idProofDocuments.length > 0;
+    return personalComplete && addressComplete && professionalComplete && documentsComplete;
+  };
+
   const handleSubmitForReview = () => {
-    if (!isProfileComplete()) {
+    if (!isFormComplete()) {
       toast({
         title: "Profile incomplete",
         description: "Please fill in all required fields and upload documents before submitting.",
