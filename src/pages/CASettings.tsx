@@ -1088,6 +1088,33 @@ const CASettings = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle>{previewDoc?.description || previewDoc?.name}</DialogTitle>
+            <DialogDescription>Document preview</DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center overflow-auto max-h-[65vh]">
+            {previewDoc?.mimeType?.startsWith("image/") ? (
+              <img
+                src={previewDoc.url}
+                alt={previewDoc.description || previewDoc.name}
+                className="max-w-full max-h-[60vh] object-contain rounded-lg"
+              />
+            ) : previewDoc?.mimeType === "application/pdf" ? (
+              <iframe
+                src={previewDoc.url}
+                title={previewDoc.description || previewDoc.name}
+                className="w-full h-[60vh] rounded-lg border border-border"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">Preview not available for this file type.</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
