@@ -251,6 +251,7 @@ const CASettings = () => {
     }
   };
 
+  const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null);
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
 
   const handleRemoveDocument = async (
