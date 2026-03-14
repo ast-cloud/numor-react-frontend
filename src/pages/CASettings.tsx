@@ -1096,23 +1096,21 @@ const CASettings = () => {
             <DialogTitle>{previewDoc?.description || previewDoc?.name}</DialogTitle>
             <DialogDescription>Document preview</DialogDescription>
           </DialogHeader>
-          <div className="flex items-center justify-center overflow-hidden max-h-[65vh]">
+          <div className="relative flex items-center justify-center overflow-hidden max-h-[65vh]">
             {(() => {
               const previewUrl = previewDoc?.url?.replace(/[&?]download=?[^&]*/gi, '') || '';
               if (previewDoc?.mimeType?.startsWith("image/")) {
                 return (
-                  <img
+                  <ImageWithSpinner
                     src={previewUrl}
                     alt={previewDoc.description || previewDoc.name}
-                    className="max-w-full max-h-[60vh] object-contain rounded-lg"
                   />
                 );
               } else if (previewDoc?.mimeType === "application/pdf") {
                 return (
-                  <iframe
+                  <IframeWithSpinner
                     src={previewUrl}
                     title={previewDoc.description || previewDoc.name}
-                    className="w-full h-[60vh] rounded-lg border border-border"
                   />
                 );
               } else {
