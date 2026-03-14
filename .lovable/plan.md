@@ -1,35 +1,31 @@
 
 
-## Fix: Image loading spinner not visible
+## Forgot Password Flow Integration
 
-### Root Cause
-The `ImageWithSpinner` component positions the spinner with `absolute inset-0`, which requires the parent to have dimensions. The `<iframe>` always has `h-[60vh]` so it gives the container height immediately. But the `<img>` has no dimensions until it loads, so the container collapses to zero height and the spinner is invisible.
+A 3-step forgot password flow will be built as a new page (`/forgot-password`) with a multi-step form:
 
-### Fix
-**`src/pages/CASettings.tsx`** (line 37-49, `ImageWithSpinner`):
-- Add `min-h-[200px] w-full` to a wrapper div so the spinner has space before the image loads.
-- Once the image loads, it naturally takes over.
+### Steps
+1. **Email Entry** — User enters email, POST to `/api/auth/forgetPassword` with `{ email }`
+2. **OTP Verification** — User enters 6-digit code, POST to `/api/auth/verifyResetCode` with `{ email, code }`
+3. **New Password** — User enters + confirms new password, POST to `/api/auth/resetPassword` with `{ email, code, newPassword }` — then redirect to `/login`
 
-```tsx
-const ImageWithSpinner = ({ src, alt }: { src: string; alt: string }) => {
-  const [loading, setLoading] = useState(true);
-  return (
-    <div className="relative min-h-[200px] w-full flex items-center justify-center">
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        </div>
-      )}
-      <img
-        src={src}
-        alt={alt}
-        className="max-w-full max-h-[60vh] object-contain rounded-lg"
-        onLoad={() => setLoading(false)}
-      />
-    </div>
-  );
-};
-```
+### Files to Create/Modify
 
-One component change, no other files affected.
+1. **`src/pages/ForgotPassword.tsx`** (new) — Multi-step page with 3 states (`email`, `verify`, `reset`). Uses existing UI components (Input, Button, InputOTP). Stores email and code in local state across steps. Validates password match before submission. Styled consistently with Login page.
+
+2. **`src/lib/api/auth.ts`** (modify) — Add 3 new API functions:
+   - `forgotPassword(email)` → POST `/api/auth/forgetPassword`
+   - `verifyResetCode(email, code)` → POST `/api/auth/verifyResetCode`
+   - `resetPassword(email, code, newPassword)` → POST `/api/auth/resetPassword`
+
+3. **`src/App.tsx`** (modify) — Add route `/forgot-password` → `ForgotPassword` component
+
+4. **`src/pages/Login.tsx`** (modify) — Change the "Forgot password?" link from `href="#"` to `Link to="/forgot-password"`
+
+### UI Details
+- Each step shows a back arrow to return to login
+- OTP input uses the existing `InputOTP` component (6 slots)
+- Password step validates both fields match before enabling submit
+- Toast notifications for errors and success
+- Redirect to `/login` on successful reset
 
