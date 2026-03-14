@@ -28,6 +28,7 @@ interface UploadedDocument {
   uploadedAt: Date;
   description: string;
   url?: string;
+  mimeType?: string;
 }
 
 const CASettings = () => {
@@ -137,6 +138,7 @@ const CASettings = () => {
             uploadedAt: new Date(doc.createdAt || Date.now()),
             description: doc.description || "",
             url: doc.url,
+            mimeType: doc.mimeType,
           };
           if (doc.type === "ID_PROOF") idProofs.push(mapped);
           else if (doc.type === "CERTIFICATION") certs.push(mapped);
@@ -249,6 +251,7 @@ const CASettings = () => {
     }
   };
 
+  const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null);
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
 
   const handleRemoveDocument = async (
@@ -413,7 +416,8 @@ const CASettings = () => {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-3 bg-muted/50 rounded-lg"
+                  className="p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                  onClick={() => doc.url && setPreviewDoc(doc)}
                 >
                 <div className="flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -433,7 +437,7 @@ const CASettings = () => {
                         size="sm"
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         disabled={deletingDocId === doc.id}
-                        onClick={() => handleRemoveDocument(doc.id, setDocuments)}
+                        onClick={(e) => { e.stopPropagation(); handleRemoveDocument(doc.id, setDocuments); }}
                       >
                         {deletingDocId === doc.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -1082,6 +1086,33 @@ const CASettings = () => {
               {isUploading ? "Uploading..." : "Upload"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle>{previewDoc?.description || previewDoc?.name}</DialogTitle>
+            <DialogDescription>Document preview</DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center overflow-auto max-h-[65vh]">
+            {previewDoc?.mimeType?.startsWith("image/") ? (
+              <img
+                src={previewDoc.url}
+                alt={previewDoc.description || previewDoc.name}
+                className="max-w-full max-h-[60vh] object-contain rounded-lg"
+              />
+            ) : previewDoc?.mimeType === "application/pdf" ? (
+              <iframe
+                src={previewDoc.url}
+                title={previewDoc.description || previewDoc.name}
+                className="w-full h-[60vh] rounded-lg border border-border"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">Preview not available for this file type.</p>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
