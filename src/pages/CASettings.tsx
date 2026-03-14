@@ -1091,12 +1091,12 @@ const CASettings = () => {
 
       {/* Document Preview Dialog */}
       <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
-        <DialogContent className="max-w-3xl max-h-[85vh]">
+        <DialogContent className="max-w-3xl w-full max-h-[85vh]">
           <DialogHeader>
             <DialogTitle>{previewDoc?.description || previewDoc?.name}</DialogTitle>
             <DialogDescription>Document preview</DialogDescription>
           </DialogHeader>
-          <div className="flex items-center justify-center overflow-auto max-h-[65vh]">
+          <div className="flex items-center justify-center overflow-hidden max-h-[65vh]">
             {(() => {
               const previewUrl = previewDoc?.url?.replace(/[&?]download=?[^&]*/gi, '') || '';
               if (previewDoc?.mimeType?.startsWith("image/")) {
