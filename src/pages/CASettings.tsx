@@ -1091,7 +1091,7 @@ const CASettings = () => {
 
       {/* Document Preview Dialog */}
       <Dialog open={!!previewDoc} onOpenChange={(open) => !open && setPreviewDoc(null)}>
-        <DialogContent className="max-w-3xl max-h-[85vh]">
+        <DialogContent className="max-w-3xl w-full max-h-[85vh]">
           <DialogHeader>
             <DialogTitle>{previewDoc?.description || previewDoc?.name}</DialogTitle>
             <DialogDescription>Document preview</DialogDescription>
