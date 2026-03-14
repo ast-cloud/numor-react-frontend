@@ -138,6 +138,7 @@ const CASettings = () => {
             uploadedAt: new Date(doc.createdAt || Date.now()),
             description: doc.description || "",
             url: doc.url,
+            mimeType: doc.mimeType,
           };
           if (doc.type === "ID_PROOF") idProofs.push(mapped);
           else if (doc.type === "CERTIFICATION") certs.push(mapped);
