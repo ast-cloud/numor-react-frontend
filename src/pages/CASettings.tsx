@@ -1097,17 +1097,22 @@ const CASettings = () => {
             <DialogDescription>Document preview</DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-center overflow-auto max-h-[65vh]">
-            {previewDoc?.mimeType?.startsWith("image/") ? (
-              <img
-                src={previewDoc.url}
-                alt={previewDoc.description || previewDoc.name}
-                className="max-w-full max-h-[60vh] object-contain rounded-lg"
-              />
-            ) : previewDoc?.mimeType === "application/pdf" ? (
-              <iframe
-                src={previewDoc.url}
-                title={previewDoc.description || previewDoc.name}
-                className="w-full h-[60vh] rounded-lg border border-border"
+            {(() => {
+              const previewUrl = previewDoc?.url?.replace(/[&?]download=?[^&]*/gi, '') || '';
+              if (previewDoc?.mimeType?.startsWith("image/")) {
+                return (
+                  <img
+                    src={previewUrl}
+                    alt={previewDoc.description || previewDoc.name}
+                    className="max-w-full max-h-[60vh] object-contain rounded-lg"
+                  />
+                );
+              } else if (previewDoc?.mimeType === "application/pdf") {
+                return (
+                  <iframe
+                    src={previewUrl}
+                    title={previewDoc.description || previewDoc.name}
+                    className="w-full h-[60vh] rounded-lg border border-border"
               />
             ) : (
               <p className="text-sm text-muted-foreground">Preview not available for this file type.</p>
