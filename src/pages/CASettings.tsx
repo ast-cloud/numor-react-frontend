@@ -28,6 +28,7 @@ interface UploadedDocument {
   uploadedAt: Date;
   description: string;
   url?: string;
+  mimeType?: string;
 }
 
 const CASettings = () => {
