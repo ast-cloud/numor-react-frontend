@@ -34,7 +34,7 @@ interface UploadedDocument {
 const ImageWithSpinner = ({ src, alt }: { src: string; alt: string }) => {
   const [loading, setLoading] = useState(true);
   return (
-    <>
+    <div className="relative min-h-[200px] w-full flex items-center justify-center">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -46,7 +46,7 @@ const ImageWithSpinner = ({ src, alt }: { src: string; alt: string }) => {
         className="max-w-full max-h-[60vh] object-contain rounded-lg"
         onLoad={() => setLoading(false)}
       />
-    </>
+    </div>
   );
 };
 
