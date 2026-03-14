@@ -31,6 +31,44 @@ interface UploadedDocument {
   mimeType?: string;
 }
 
+const ImageWithSpinner = ({ src, alt }: { src: string; alt: string }) => {
+  const [loading, setLoading] = useState(true);
+  return (
+    <>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className="max-w-full max-h-[60vh] object-contain rounded-lg"
+        onLoad={() => setLoading(false)}
+      />
+    </>
+  );
+};
+
+const IframeWithSpinner = ({ src, title }: { src: string; title: string }) => {
+  const [loading, setLoading] = useState(true);
+  return (
+    <>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      )}
+      <iframe
+        src={src}
+        title={title}
+        className="w-full h-[60vh] rounded-lg border border-border"
+        onLoad={() => setLoading(false)}
+      />
+    </>
+  );
+};
+
 const CASettings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
