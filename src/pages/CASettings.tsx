@@ -1096,7 +1096,7 @@ const CASettings = () => {
             <DialogTitle>{previewDoc?.description || previewDoc?.name}</DialogTitle>
             <DialogDescription>Document preview</DialogDescription>
           </DialogHeader>
-          <div className="flex items-center justify-center overflow-auto max-h-[65vh]">
+          <div className="flex items-center justify-center overflow-hidden max-h-[65vh]">
             {(() => {
               const previewUrl = previewDoc?.url?.replace(/[&?]download=?[^&]*/gi, '') || '';
               if (previewDoc?.mimeType?.startsWith("image/")) {
