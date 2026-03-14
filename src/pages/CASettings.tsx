@@ -1113,10 +1113,12 @@ const CASettings = () => {
                     src={previewUrl}
                     title={previewDoc.description || previewDoc.name}
                     className="w-full h-[60vh] rounded-lg border border-border"
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">Preview not available for this file type.</p>
-            )}
+                  />
+                );
+              } else {
+                return <p className="text-sm text-muted-foreground">Preview not available for this file type.</p>;
+              }
+            })()}
           </div>
         </DialogContent>
       </Dialog>
