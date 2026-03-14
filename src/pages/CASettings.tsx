@@ -416,7 +416,8 @@ const CASettings = () => {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-3 bg-muted/50 rounded-lg"
+                  className="p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                  onClick={() => doc.url && setPreviewDoc(doc)}
                 >
                 <div className="flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -436,7 +437,7 @@ const CASettings = () => {
                         size="sm"
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         disabled={deletingDocId === doc.id}
-                        onClick={() => handleRemoveDocument(doc.id, setDocuments)}
+                        onClick={(e) => { e.stopPropagation(); handleRemoveDocument(doc.id, setDocuments); }}
                       >
                         {deletingDocId === doc.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
