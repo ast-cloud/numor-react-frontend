@@ -120,14 +120,27 @@ const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVe
               Verify
             </Button>
           </div>
-          <button
-            type="button"
-            className="text-xs text-primary hover:underline"
-            onClick={handleSendOtp}
-            disabled={isSending}
-          >
-            Resend code
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="text-xs text-primary hover:underline"
+              onClick={handleSendOtp}
+              disabled={isSending}
+            >
+              Resend code
+            </button>
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+              onClick={() => {
+                setStep("idle");
+                setOtp("");
+                onOtpStep?.(false);
+              }}
+            >
+              Change email
+            </button>
+          </div>
         </div>
       )}
     </div>

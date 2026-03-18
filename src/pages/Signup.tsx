@@ -151,6 +151,7 @@ const Signup = () => {
                 email={formData.email}
                 isVerified={emailVerified}
                 onVerified={() => setEmailVerified(true)}
+                onOtpStep={(inOtp) => setEmailDisabled(inOtp)}
               />
             </div>
 
