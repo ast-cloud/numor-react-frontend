@@ -21,7 +21,7 @@ const CASignup = () => {
     agreeToTerms: false,
   });
   const [emailVerified, setEmailVerified] = useState(false);
-
+  const [emailDisabled, setEmailDisabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -155,12 +155,14 @@ const CASignup = () => {
                 }}
                 className="pl-10"
                 required
+                disabled={emailDisabled}
               />
             </div>
             <EmailVerification
               email={formData.email}
               isVerified={emailVerified}
               onVerified={() => setEmailVerified(true)}
+              onOtpStep={(inOtp) => setEmailDisabled(inOtp)}
             />
           </div>
 

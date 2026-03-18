@@ -10,11 +10,12 @@ interface EmailVerificationProps {
   email: string;
   isVerified: boolean;
   onVerified: () => void;
+  onOtpStep?: (inOtp: boolean) => void;
 }
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const EmailVerification = ({ email, isVerified, onVerified }: EmailVerificationProps) => {
+const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVerificationProps) => {
   const { toast } = useToast();
   const [step, setStep] = useState<"idle" | "otp" | "verified">(isVerified ? "verified" : "idle");
   const [isSending, setIsSending] = useState(false);
@@ -32,6 +33,7 @@ const EmailVerification = ({ email, isVerified, onVerified }: EmailVerificationP
       const data = await res.json();
       if (data.success) {
         setStep("otp");
+        onOtpStep?.(true);
         toast({ title: "OTP Sent", description: "Verification code sent to your email." });
       } else {
         throw new Error(data.message || "Failed to send OTP");
@@ -119,14 +121,27 @@ const EmailVerification = ({ email, isVerified, onVerified }: EmailVerificationP
               Verify
             </Button>
           </div>
-          <button
-            type="button"
-            className="text-xs text-primary hover:underline"
-            onClick={handleSendOtp}
-            disabled={isSending}
-          >
-            Resend code
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="text-xs text-primary hover:underline"
+              onClick={handleSendOtp}
+              disabled={isSending}
+            >
+              Resend code
+            </button>
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+              onClick={() => {
+                setStep("idle");
+                setOtp("");
+                onOtpStep?.(false);
+              }}
+            >
+              Change email
+            </button>
+          </div>
         </div>
       )}
     </div>
