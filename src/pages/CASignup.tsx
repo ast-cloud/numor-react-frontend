@@ -177,6 +177,17 @@ const CASignup = () => {
               isVerified={emailVerified}
               onVerified={() => setEmailVerified(true)}
               onOtpStep={(inOtp) => setEmailDisabled(inOtp)}
+              onAlreadyRegistered={(data) => {
+                const role = data?.currentRole;
+                if (role === "CA_USER" || role === "ADMIN") {
+                  setShowAlreadyRegistered(true);
+                } else if (role === "SME_USER") {
+                  setUpgradePasswordSet(!!data?.passwordSet);
+                  setShowUpgradeDialog(true);
+                } else {
+                  setShowAlreadyRegistered(true);
+                }
+              }}
             />
           </div>
 
