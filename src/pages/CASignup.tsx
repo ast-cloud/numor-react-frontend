@@ -9,6 +9,17 @@ import { useToast } from "@/hooks/use-toast";
 import { register } from "@/lib/api/auth";
 import { config } from "@/lib/config";
 import EmailVerification from "@/components/EmailVerification";
+import UpgradeAccountDialog from "@/components/UpgradeAccountDialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 const CASignup = () => {
   const navigate = useNavigate();
@@ -23,6 +34,9 @@ const CASignup = () => {
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [upgradePasswordSet, setUpgradePasswordSet] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,6 +177,17 @@ const CASignup = () => {
               isVerified={emailVerified}
               onVerified={() => setEmailVerified(true)}
               onOtpStep={(inOtp) => setEmailDisabled(inOtp)}
+              onAlreadyRegistered={(data) => {
+                const role = data?.currentRole;
+                if (role === "CA_USER" || role === "ADMIN") {
+                  setShowAlreadyRegistered(true);
+                } else if (role === "SME_USER") {
+                  setUpgradePasswordSet(!!data?.passwordSet);
+                  setShowUpgradeDialog(true);
+                } else {
+                  setShowAlreadyRegistered(true);
+                }
+              }}
             />
           </div>
 
@@ -256,6 +281,39 @@ const CASignup = () => {
             Sign in
           </Link>
         </p>
+
+        {/* Already registered dialog (CA_USER / ADMIN) */}
+        <AlertDialog open={showAlreadyRegistered} onOpenChange={setShowAlreadyRegistered}>
+          <AlertDialogContent className="max-w-sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Email Already Registered</AlertDialogTitle>
+              <AlertDialogDescription>
+                This email is already registered with us. Please log in instead.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => navigate("/login")}>
+                Go to Login
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Upgrade dialog (SME_USER) */}
+        <UpgradeAccountDialog
+          open={showUpgradeDialog}
+          onOpenChange={setShowUpgradeDialog}
+          email={formData.email}
+          passwordSet={upgradePasswordSet}
+          onUpgradeComplete={(password) => {
+            toast({
+              title: "Upgrade Initiated",
+              description: "Your account is being upgraded to a financial expert.",
+            });
+            // TODO: Call upgrade API with email + password
+          }}
+        />
       </div>
     </div>
   );

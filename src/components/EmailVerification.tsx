@@ -22,11 +22,12 @@ interface EmailVerificationProps {
   isVerified: boolean;
   onVerified: () => void;
   onOtpStep?: (inOtp: boolean) => void;
+  onAlreadyRegistered?: (data: any) => void;
 }
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVerificationProps) => {
+const EmailVerification = ({ email, isVerified, onVerified, onOtpStep, onAlreadyRegistered }: EmailVerificationProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<"idle" | "otp" | "verified">(isVerified ? "verified" : "idle");
@@ -49,7 +50,11 @@ const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVe
         onOtpStep?.(true);
         toast({ title: "OTP Sent", description: "Verification code sent to your email." });
       } else if (data.result?.message === "Email is already registered") {
-        setShowAlreadyRegistered(true);
+        if (onAlreadyRegistered) {
+          onAlreadyRegistered(data.result);
+        } else {
+          setShowAlreadyRegistered(true);
+        }
       } else {
         throw new Error(data.result?.message || data.message || "Failed to send OTP");
       }
