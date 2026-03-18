@@ -33,6 +33,7 @@ const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVe
       const data = await res.json();
       if (data.success) {
         setStep("otp");
+        onOtpStep?.(true);
         toast({ title: "OTP Sent", description: "Verification code sent to your email." });
       } else {
         throw new Error(data.message || "Failed to send OTP");
