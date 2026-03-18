@@ -34,6 +34,9 @@ const CASignup = () => {
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [upgradePasswordSet, setUpgradePasswordSet] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
