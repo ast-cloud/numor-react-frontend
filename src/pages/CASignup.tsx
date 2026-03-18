@@ -21,7 +21,7 @@ const CASignup = () => {
     agreeToTerms: false,
   });
   const [emailVerified, setEmailVerified] = useState(false);
-
+  const [emailDisabled, setEmailDisabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
