@@ -306,12 +306,24 @@ const CASignup = () => {
           onOpenChange={setShowUpgradeDialog}
           email={formData.email}
           passwordSet={upgradePasswordSet}
-          onUpgradeComplete={(password) => {
-            toast({
-              title: "Upgrade Initiated",
-              description: "Your account is being upgraded to a financial expert.",
-            });
-            // TODO: Call upgrade API with email + password
+          onUpgradeComplete={async (password) => {
+            try {
+              const result = await register(formData.fullName || "User", formData.email, password, "CA_USER");
+              if (result.error) {
+                throw new Error(result.error);
+              }
+              toast({
+                title: "Account Upgraded",
+                description: "Your account has been upgraded to a financial expert!",
+              });
+              navigate("/ca/dashboard");
+            } catch (error: any) {
+              toast({
+                title: "Upgrade Failed",
+                description: error?.message || "Something went wrong. Please try again.",
+                variant: "destructive",
+              });
+            }
           }}
         />
       </div>
