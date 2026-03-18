@@ -27,7 +27,7 @@ interface EmailVerificationProps {
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVerificationProps) => {
+const EmailVerification = ({ email, isVerified, onVerified, onOtpStep, onAlreadyRegistered }: EmailVerificationProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<"idle" | "otp" | "verified">(isVerified ? "verified" : "idle");
