@@ -48,8 +48,10 @@ const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVe
         setStep("otp");
         onOtpStep?.(true);
         toast({ title: "OTP Sent", description: "Verification code sent to your email." });
+      } else if (data.result?.message === "Email is already registered") {
+        setShowAlreadyRegistered(true);
       } else {
-        throw new Error(data.message || "Failed to send OTP");
+        throw new Error(data.result?.message || data.message || "Failed to send OTP");
       }
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Failed to send verification code.", variant: "destructive" });
