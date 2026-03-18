@@ -9,6 +9,17 @@ import { useToast } from "@/hooks/use-toast";
 import { register } from "@/lib/api/auth";
 import { config } from "@/lib/config";
 import EmailVerification from "@/components/EmailVerification";
+import UpgradeAccountDialog from "@/components/UpgradeAccountDialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 const CASignup = () => {
   const navigate = useNavigate();
