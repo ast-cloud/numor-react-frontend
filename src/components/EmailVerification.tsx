@@ -27,11 +27,13 @@ interface EmailVerificationProps {
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVerificationProps) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<"idle" | "otp" | "verified">(isVerified ? "verified" : "idle");
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [otp, setOtp] = useState("");
+  const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
 
   const handleSendOtp = async () => {
     setIsSending(true);
