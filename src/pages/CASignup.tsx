@@ -169,6 +169,7 @@ const CASignup = () => {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
+                disabled={!emailVerified}
                 id="password"
                 type="password"
                 placeholder="Create a password"
@@ -185,6 +186,7 @@ const CASignup = () => {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
+                disabled={!emailVerified}
                 id="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
@@ -217,7 +219,7 @@ const CASignup = () => {
             </Label>
           </div>
 
-          <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" variant="hero" className="w-full" disabled={isSubmitting || !emailVerified}>
             {isSubmitting ? "Creating Account..." : "Create Account"}
           </Button>
         </form>
