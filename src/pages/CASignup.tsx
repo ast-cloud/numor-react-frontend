@@ -155,6 +155,7 @@ const CASignup = () => {
                 }}
                 className="pl-10"
                 required
+                disabled={emailDisabled}
               />
             </div>
             <EmailVerification
