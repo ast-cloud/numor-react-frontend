@@ -22,6 +22,7 @@ interface EmailVerificationProps {
   isVerified: boolean;
   onVerified: () => void;
   onOtpStep?: (inOtp: boolean) => void;
+  onAlreadyRegistered?: (data: any) => void;
 }
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
