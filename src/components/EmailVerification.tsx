@@ -10,6 +10,7 @@ interface EmailVerificationProps {
   email: string;
   isVerified: boolean;
   onVerified: () => void;
+  onOtpStep?: (inOtp: boolean) => void;
 }
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
