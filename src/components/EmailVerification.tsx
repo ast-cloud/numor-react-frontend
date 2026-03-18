@@ -1,10 +1,21 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { config } from "@/lib/config";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface EmailVerificationProps {
   email: string;
@@ -16,11 +27,13 @@ interface EmailVerificationProps {
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVerificationProps) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<"idle" | "otp" | "verified">(isVerified ? "verified" : "idle");
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [otp, setOtp] = useState("");
+  const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
 
   const handleSendOtp = async () => {
     setIsSending(true);
@@ -35,8 +48,10 @@ const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVe
         setStep("otp");
         onOtpStep?.(true);
         toast({ title: "OTP Sent", description: "Verification code sent to your email." });
+      } else if (data.result?.message === "Email is already registered") {
+        setShowAlreadyRegistered(true);
       } else {
-        throw new Error(data.message || "Failed to send OTP");
+        throw new Error(data.result?.message || data.message || "Failed to send OTP");
       }
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Failed to send verification code.", variant: "destructive" });
@@ -144,6 +159,23 @@ const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVe
           </div>
         </div>
       )}
+
+      <AlertDialog open={showAlreadyRegistered} onOpenChange={setShowAlreadyRegistered}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Email Already Registered</AlertDialogTitle>
+            <AlertDialogDescription>
+              This email is already registered with us. Please log in instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate("/login")}>
+              Go to Login
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
