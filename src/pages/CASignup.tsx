@@ -281,6 +281,39 @@ const CASignup = () => {
             Sign in
           </Link>
         </p>
+
+        {/* Already registered dialog (CA_USER / ADMIN) */}
+        <AlertDialog open={showAlreadyRegistered} onOpenChange={setShowAlreadyRegistered}>
+          <AlertDialogContent className="max-w-sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Email Already Registered</AlertDialogTitle>
+              <AlertDialogDescription>
+                This email is already registered with us. Please log in instead.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => navigate("/login")}>
+                Go to Login
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Upgrade dialog (SME_USER) */}
+        <UpgradeAccountDialog
+          open={showUpgradeDialog}
+          onOpenChange={setShowUpgradeDialog}
+          email={formData.email}
+          passwordSet={upgradePasswordSet}
+          onUpgradeComplete={(password) => {
+            toast({
+              title: "Upgrade Initiated",
+              description: "Your account is being upgraded to a financial expert.",
+            });
+            // TODO: Call upgrade API with email + password
+          }}
+        />
       </div>
     </div>
   );
