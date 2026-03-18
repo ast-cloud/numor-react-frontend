@@ -159,6 +159,23 @@ const EmailVerification = ({ email, isVerified, onVerified, onOtpStep }: EmailVe
           </div>
         </div>
       )}
+
+      <AlertDialog open={showAlreadyRegistered} onOpenChange={setShowAlreadyRegistered}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Email Already Registered</AlertDialogTitle>
+            <AlertDialogDescription>
+              This email is already registered with us. Please log in instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate("/login")}>
+              Go to Login
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
