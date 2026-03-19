@@ -179,9 +179,9 @@ const UpgradeAccountDialog = ({
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={handleClose}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handlePasswordSubmit} disabled={!password}>
+              <Button onClick={(e) => { e.preventDefault(); handlePasswordSubmit(); }} disabled={!password}>
                 Continue
-              </AlertDialogAction>
+              </Button>
             </AlertDialogFooter>
           </>
         )}
