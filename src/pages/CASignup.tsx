@@ -35,6 +35,9 @@ const CASignup = () => {
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
+  const [showCAPasswordDialog, setShowCAPasswordDialog] = useState(false);
+  const [caLoginPassword, setCaLoginPassword] = useState("");
+  const [caLoginSubmitting, setCaLoginSubmitting] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [upgradePasswordSet, setUpgradePasswordSet] = useState(false);
 
