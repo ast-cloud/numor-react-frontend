@@ -135,7 +135,7 @@ const UpgradeAccountDialog = ({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={handleClose}>
+    <AlertDialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>
       <AlertDialogContent className="max-w-sm">
         {step === "prompt" && (
           <>
