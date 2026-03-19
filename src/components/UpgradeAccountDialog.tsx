@@ -147,10 +147,10 @@ const UpgradeAccountDialog = ({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={handleClose}>No</AlertDialogCancel>
-              <AlertDialogAction onClick={handleYes} disabled={isSubmitting}>
+              <Button onClick={(e) => { e.preventDefault(); handleYes(); }} disabled={isSubmitting}>
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
                 Yes
-              </AlertDialogAction>
+              </Button>
             </AlertDialogFooter>
           </>
         )}
