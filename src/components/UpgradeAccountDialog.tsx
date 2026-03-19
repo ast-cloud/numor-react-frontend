@@ -267,13 +267,13 @@ const UpgradeAccountDialog = ({
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={handleClose}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleResetPassword}
+              <Button
+                onClick={(e) => { e.preventDefault(); handleResetPassword(); }}
                 disabled={!password || password !== confirmPassword || isSubmitting}
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
                 Set Password & Upgrade
-              </AlertDialogAction>
+              </Button>
             </AlertDialogFooter>
           </>
         )}
