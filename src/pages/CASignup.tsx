@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { register } from "@/lib/api/auth";
+import { register, login } from "@/lib/api/auth";
 import { config } from "@/lib/config";
 import EmailVerification from "@/components/EmailVerification";
 import UpgradeAccountDialog from "@/components/UpgradeAccountDialog";
@@ -35,6 +35,9 @@ const CASignup = () => {
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
+  const [showCAPasswordDialog, setShowCAPasswordDialog] = useState(false);
+  const [caLoginPassword, setCaLoginPassword] = useState("");
+  const [caLoginSubmitting, setCaLoginSubmitting] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [upgradePasswordSet, setUpgradePasswordSet] = useState(false);
 
@@ -180,7 +183,11 @@ const CASignup = () => {
               onAlreadyRegistered={(data) => {
                 const role = data?.currentRole;
                 if (role === "CA_USER" || role === "ADMIN") {
-                  setShowAlreadyRegistered(true);
+                  if (data?.passwordSet) {
+                    setShowCAPasswordDialog(true);
+                  } else {
+                    setShowAlreadyRegistered(true);
+                  }
                 } else if (role === "SME_USER") {
                   setUpgradePasswordSet(!!data?.passwordSet);
                   setShowUpgradeDialog(true);
@@ -296,6 +303,56 @@ const CASignup = () => {
               <AlertDialogAction onClick={() => navigate("/login")}>
                 Go to Login
               </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* CA_USER password login dialog */}
+        <AlertDialog open={showCAPasswordDialog} onOpenChange={(isOpen) => { if (!isOpen) { setShowCAPasswordDialog(false); setCaLoginPassword(""); } }}>
+          <AlertDialogContent className="max-w-sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Account Already Exists</AlertDialogTitle>
+              <AlertDialogDescription>
+                This email is already registered as a financial expert. Enter your password to log in.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-2 py-2">
+              <Label htmlFor="ca-login-password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="ca-login-password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={caLoginPassword}
+                  onChange={(e) => setCaLoginPassword(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  setCaLoginSubmitting(true);
+                  try {
+                    const result = await login(formData.email, caLoginPassword);
+                    if (result.success) {
+                      toast({ title: "Logged In", description: "Welcome back!" });
+                      navigate("/ca/dashboard");
+                    } else {
+                      toast({ title: "Error", description: result.message || "Invalid password", variant: "destructive" });
+                    }
+                  } catch {
+                    toast({ title: "Error", description: "Something went wrong", variant: "destructive" });
+                  }
+                  setCaLoginSubmitting(false);
+                }}
+                disabled={!caLoginPassword || caLoginSubmitting}
+              >
+                Log In
+              </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
