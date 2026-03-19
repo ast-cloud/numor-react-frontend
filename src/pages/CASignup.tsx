@@ -183,7 +183,11 @@ const CASignup = () => {
               onAlreadyRegistered={(data) => {
                 const role = data?.currentRole;
                 if (role === "CA_USER" || role === "ADMIN") {
-                  setShowAlreadyRegistered(true);
+                  if (data?.passwordSet) {
+                    setShowCAPasswordDialog(true);
+                  } else {
+                    setShowAlreadyRegistered(true);
+                  }
                 } else if (role === "SME_USER") {
                   setUpgradePasswordSet(!!data?.passwordSet);
                   setShowUpgradeDialog(true);
