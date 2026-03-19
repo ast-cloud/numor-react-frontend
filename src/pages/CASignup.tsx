@@ -307,6 +307,56 @@ const CASignup = () => {
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* CA_USER password login dialog */}
+        <AlertDialog open={showCAPasswordDialog} onOpenChange={(isOpen) => { if (!isOpen) { setShowCAPasswordDialog(false); setCaLoginPassword(""); } }}>
+          <AlertDialogContent className="max-w-sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Account Already Exists</AlertDialogTitle>
+              <AlertDialogDescription>
+                This email is already registered as a financial expert. Enter your password to log in.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-2 py-2">
+              <Label htmlFor="ca-login-password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="ca-login-password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={caLoginPassword}
+                  onChange={(e) => setCaLoginPassword(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  setCaLoginSubmitting(true);
+                  try {
+                    const result = await login(formData.email, caLoginPassword);
+                    if (result.success) {
+                      toast({ title: "Logged In", description: "Welcome back!" });
+                      navigate("/ca/dashboard");
+                    } else {
+                      toast({ title: "Error", description: result.message || "Invalid password", variant: "destructive" });
+                    }
+                  } catch {
+                    toast({ title: "Error", description: "Something went wrong", variant: "destructive" });
+                  }
+                  setCaLoginSubmitting(false);
+                }}
+                disabled={!caLoginPassword || caLoginSubmitting}
+              >
+                Log In
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Upgrade dialog (SME_USER) */}
         <UpgradeAccountDialog
           open={showUpgradeDialog}
