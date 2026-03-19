@@ -88,7 +88,11 @@ const UpgradeAccountDialog = ({
       if (data.success) {
         setResetCode(otpCode);
         toast({ title: "Verified", description: "Code verified successfully" });
-        setStep("set-password-reset");
+        if (passwordSet) {
+          setStep("enter-password");
+        } else {
+          setStep("set-password-reset");
+        }
       } else {
         toast({ title: "Error", description: data.message || "Invalid code", variant: "destructive" });
       }
