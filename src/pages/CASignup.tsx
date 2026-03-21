@@ -70,6 +70,7 @@ const CASignup = () => {
         throw new Error(result.error);
       }
 
+      await refreshUser();
       toast({
         title: "Account Created",
         description: "Your account has been created successfully!",
