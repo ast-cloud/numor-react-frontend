@@ -314,6 +314,7 @@ const CASignup = () => {
               if (result.error) {
                 throw new Error(result.error);
               }
+              await refreshUser();
               toast({
                 title: "Account Upgraded",
                 description: "Your account has been upgraded to a financial expert!",
