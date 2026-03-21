@@ -24,6 +24,7 @@ import {
 const CASignup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
