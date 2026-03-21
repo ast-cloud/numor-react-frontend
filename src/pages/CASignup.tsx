@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { register } from "@/lib/api/auth";
 import { config } from "@/lib/config";
 import EmailVerification from "@/components/EmailVerification";
@@ -24,6 +25,7 @@ import {
 const CASignup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -68,6 +70,7 @@ const CASignup = () => {
         throw new Error(result.error);
       }
 
+      await refreshUser();
       toast({
         title: "Account Created",
         description: "Your account has been created successfully!",
@@ -312,6 +315,7 @@ const CASignup = () => {
               if (result.error) {
                 throw new Error(result.error);
               }
+              await refreshUser();
               toast({
                 title: "Account Upgraded",
                 description: "Your account has been upgraded to a financial expert!",
