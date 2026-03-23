@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { updateUserProfile, fetchCurrentUser, fetchProfilePhoto } from "@/lib/api/user";
-import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments, deleteCADocument, deriveCAProfileStatus, type CAProfileStatus } from "@/lib/api/caProfile";
+import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments, deleteCADocument, deriveCAProfileStatus, submitCAProfileForReview, type CAProfileStatus } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -407,7 +407,7 @@ const CASettings = () => {
     return personalComplete && addressComplete && professionalComplete && documentsComplete;
   };
 
-  const handleSubmitForReview = () => {
+  const handleSubmitForReview = async () => {
     if (!isFormComplete()) {
       toast({
         title: "Profile incomplete",
@@ -416,11 +416,20 @@ const CASettings = () => {
       });
       return;
     }
-    submitForReview();
-    toast({
-      title: "Profile submitted",
-      description: "Your profile has been submitted for review. We'll notify you once verified.",
-    });
+    try {
+      await submitCAProfileForReview();
+      setCaStatus("Under Review");
+      toast({
+        title: "Profile submitted",
+        description: "Your profile has been submitted for review. We'll notify you once verified.",
+      });
+    } catch (error) {
+      toast({
+        title: "Submission failed",
+        description: "Failed to submit profile for review. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const DocumentUploadCard = ({
