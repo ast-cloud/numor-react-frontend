@@ -333,15 +333,22 @@ const CAApplicationsReview = () => {
             <XCircle className="w-4 h-4" />
             Rejected ({rejectedApps.length})
           </TabsTrigger>
+          <TabsTrigger value="suspended" className="gap-2">
+            <Ban className="w-4 h-4" />
+            Suspended ({suspendedApps.length})
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="pending">
           <ApplicationTable apps={pendingApps} showActions={true} />
         </TabsContent>
         <TabsContent value="approved">
-          <ApplicationTable apps={approvedApps} showActions={false} />
+          <ApplicationTable apps={approvedApps} showActions={true} />
         </TabsContent>
         <TabsContent value="rejected">
           <ApplicationTable apps={rejectedApps} showActions={false} />
+        </TabsContent>
+        <TabsContent value="suspended">
+          <ApplicationTable apps={suspendedApps} showActions={false} />
         </TabsContent>
       </Tabs>
 
