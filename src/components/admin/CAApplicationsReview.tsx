@@ -72,6 +72,7 @@ const CAApplicationsReview = () => {
   const pendingApps = applications.filter((a) => a.status === "pending");
   const approvedApps = applications.filter((a) => a.status === "approved");
   const rejectedApps = applications.filter((a) => a.status === "rejected");
+  const suspendedApps = applications.filter((a) => a.status === "suspended");
 
   const getStatusBadge = (status: ApplicationStatus) => {
     switch (status) {
