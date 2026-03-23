@@ -81,54 +81,54 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-              <Users className="w-4 h-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Total Users</CardTitle>
+              <Users className="w-3.5 h-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{allUsers.length}</div>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold">{allUsers.length}</div>
               <p className="text-xs text-muted-foreground">{allUsers.filter(u => !u.isDisabled).length} active</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Regular Users</CardTitle>
-              <Users className="w-4 h-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Regular Users</CardTitle>
+              <Users className="w-3.5 h-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{regularUsers.length}</div>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold">{regularUsers.length}</div>
               <p className="text-xs text-muted-foreground">{regularUsers.filter(u => !u.isDisabled).length} active</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">CA Professionals</CardTitle>
-              <FileText className="w-4 h-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">CA Professionals</CardTitle>
+              <FileText className="w-3.5 h-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{caUsers.length}</div>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold">{caUsers.length}</div>
               <p className="text-xs text-muted-foreground">{caUsers.filter(u => !u.isDisabled).length} active</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Pending CA Applications</CardTitle>
-              <Clock className="w-4 h-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Pending CA Applications</CardTitle>
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pendingCAApplications.length}</div>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold">{pendingCAApplications.length}</div>
               <p className="text-xs text-muted-foreground">Awaiting review</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Recent Signups</CardTitle>
-              <UserPlus className="w-4 h-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Recent Signups</CardTitle>
+              <UserPlus className="w-3.5 h-3.5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{recentSignups.length}</div>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold">{recentSignups.length}</div>
               <p className="text-xs text-muted-foreground">Last 7 days</p>
             </CardContent>
           </Card>
