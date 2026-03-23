@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { updateUserProfile, fetchCurrentUser, fetchProfilePhoto } from "@/lib/api/user";
-import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments, deleteCADocument } from "@/lib/api/caProfile";
+import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments, deleteCADocument, deriveCAProfileStatus, type CAProfileStatus } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,7 +78,7 @@ const CASettings = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingProfessional, setIsEditingProfessional] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  
+  const [caStatus, setCaStatus] = useState<CAProfileStatus>("Unverified");
   const certificationInputRef = useRef<HTMLInputElement>(null);
   const idProofInputRef = useRef<HTMLInputElement>(null);
   
@@ -135,22 +135,29 @@ const CASettings = () => {
   useEffect(() => {
     const loadCAProfile = async () => {
       try {
-        const data = await fetchCAProfile();
+        const { currentProfile, pendingProfile } = await fetchCAProfile();
+        const status = deriveCAProfileStatus(currentProfile, pendingProfile);
+        setCaStatus(status);
+
+        // Use pendingProfile if it exists, otherwise currentProfile
+        const data = (pendingProfile ?? currentProfile) as Record<string, unknown> | null;
+        if (!data) return;
+
         const addr = {
-          streetAddress: data.streetAddress || "",
-          city: data.city || "",
-          state: data.state || "",
-          zipCode: data.zipCode || "",
-          country: data.country || "",
+          streetAddress: (data.streetAddress as string) || "",
+          city: (data.city as string) || "",
+          state: (data.state as string) || "",
+          zipCode: (data.zipCode as string) || "",
+          country: (data.country as string) || "",
         };
         setAddressData(addr);
         setOriginalAddressData(addr);
 
         const prof = {
-          membershipNumber: data.registrationNo || "",
+          membershipNumber: (data.registrationNo as string) || "",
           experience: data.experienceYears ? String(data.experienceYears) : "",
           specialization: Array.isArray(data.specializations) ? data.specializations : [],
-          bio: data.bio || "",
+          bio: (data.bio as string) || "",
           hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
           languages: Array.isArray(data.languages) ? data.languages : [],
         };
@@ -520,7 +527,7 @@ const CASettings = () => {
           <p className="text-muted-foreground mt-2 text-lg">Manage your professional profile and credentials.</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          {!caProfileData.isSubmitted && (
+          {(caStatus === "Unverified" || caStatus === "Unverified Updates") && (
             <Button 
               onClick={handleSubmitForReview}
               disabled={!isFormComplete()}
@@ -530,23 +537,29 @@ const CASettings = () => {
               Submit for Review
             </Button>
           )}
-          {caProfileData.isSubmitted && (
-            <Badge variant="secondary" className="text-sm py-1.5 px-3">
+          <Badge
+            variant="outline"
+            className={`text-sm py-1.5 px-3 ${
+              caStatus === "Verified"
+                ? "bg-green-500/10 text-green-600 border-green-500/20"
+                : caStatus === "Under Review" || caStatus === "Updates Under Review"
+                ? "bg-blue-500/10 text-blue-600 border-blue-500/20"
+                : caStatus === "Rejected" || caStatus === "Updates Rejected"
+                ? "bg-destructive/10 text-destructive border-destructive/20"
+                : caStatus === "Suspended"
+                ? "bg-destructive/10 text-destructive border-destructive/20"
+                : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+            }`}
+          >
+            {caStatus === "Verified" ? (
               <CheckCircle className="w-4 h-4 mr-2" />
-              Submitted for Review
-            </Badge>
-          )}
-          {caProfileData.isSubmitted ? (
-            <Badge variant="secondary" className="text-sm py-1.5 px-3 bg-amber-500/10 text-amber-600 border-amber-500/20">
+            ) : caStatus === "Rejected" || caStatus === "Updates Rejected" || caStatus === "Suspended" ? (
+              <X className="w-4 h-4 mr-2" />
+            ) : (
               <AlertCircle className="w-4 h-4 mr-2" />
-              Status: Unverified
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-sm py-1.5 px-3 text-muted-foreground">
-              <AlertCircle className="w-4 h-4 mr-2" />
-              Status: Unverified
-            </Badge>
-          )}
+            )}
+            Status: {caStatus}
+          </Badge>
         </div>
       </div>
 
