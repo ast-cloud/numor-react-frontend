@@ -146,6 +146,33 @@ const CAApplicationsReview = () => {
     setRejectDialogOpen(true);
   };
 
+  const openSuspendDialog = (app: CAApplication) => {
+    setSelectedApp(app);
+    setReviewNotes("");
+    setSuspendDialogOpen(true);
+  };
+
+  const handleSuspend = () => {
+    if (!selectedApp) return;
+    const result = suspendApplication(selectedApp.id, reviewNotes);
+    if (result.success) {
+      toast({
+        title: "Application Suspended",
+        description: `${selectedApp.userName}'s CA application has been suspended.`,
+      });
+      setSuspendDialogOpen(false);
+      setSelectedApp(null);
+      setReviewNotes("");
+      refreshApplications();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+  };
+
   const ApplicationTable = ({ apps, showActions = true }: { apps: CAApplication[]; showActions?: boolean }) => {
     if (apps.length === 0) {
       return (
