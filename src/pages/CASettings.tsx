@@ -135,22 +135,29 @@ const CASettings = () => {
   useEffect(() => {
     const loadCAProfile = async () => {
       try {
-        const data = await fetchCAProfile();
+        const { currentProfile, pendingProfile } = await fetchCAProfile();
+        const status = deriveCAProfileStatus(currentProfile, pendingProfile);
+        setCaStatus(status);
+
+        // Use pendingProfile if it exists, otherwise currentProfile
+        const data = (pendingProfile ?? currentProfile) as Record<string, unknown> | null;
+        if (!data) return;
+
         const addr = {
-          streetAddress: data.streetAddress || "",
-          city: data.city || "",
-          state: data.state || "",
-          zipCode: data.zipCode || "",
-          country: data.country || "",
+          streetAddress: (data.streetAddress as string) || "",
+          city: (data.city as string) || "",
+          state: (data.state as string) || "",
+          zipCode: (data.zipCode as string) || "",
+          country: (data.country as string) || "",
         };
         setAddressData(addr);
         setOriginalAddressData(addr);
 
         const prof = {
-          membershipNumber: data.registrationNo || "",
+          membershipNumber: (data.registrationNo as string) || "",
           experience: data.experienceYears ? String(data.experienceYears) : "",
           specialization: Array.isArray(data.specializations) ? data.specializations : [],
-          bio: data.bio || "",
+          bio: (data.bio as string) || "",
           hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
           languages: Array.isArray(data.languages) ? data.languages : [],
         };
