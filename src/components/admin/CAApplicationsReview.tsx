@@ -5,6 +5,7 @@ import {
   getAllApplications,
   approveApplication,
   rejectApplication,
+  suspendApplication,
 } from "@/lib/caApplicationsStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,7 @@ import {
   Award,
   Briefcase,
   Download,
+  Ban,
 } from "lucide-react";
 
 const CAApplicationsReview = () => {
@@ -60,6 +62,7 @@ const CAApplicationsReview = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
 
   const refreshApplications = () => {
@@ -69,6 +72,7 @@ const CAApplicationsReview = () => {
   const pendingApps = applications.filter((a) => a.status === "pending");
   const approvedApps = applications.filter((a) => a.status === "approved");
   const rejectedApps = applications.filter((a) => a.status === "rejected");
+  const suspendedApps = applications.filter((a) => a.status === "suspended");
 
   const getStatusBadge = (status: ApplicationStatus) => {
     switch (status) {
@@ -78,6 +82,8 @@ const CAApplicationsReview = () => {
         return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">Approved</Badge>;
       case "rejected":
         return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/20">Rejected</Badge>;
+      case "suspended":
+        return <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20">Suspended</Badge>;
     }
   };
 
@@ -138,6 +144,33 @@ const CAApplicationsReview = () => {
     setSelectedApp(app);
     setReviewNotes("");
     setRejectDialogOpen(true);
+  };
+
+  const openSuspendDialog = (app: CAApplication) => {
+    setSelectedApp(app);
+    setReviewNotes("");
+    setSuspendDialogOpen(true);
+  };
+
+  const handleSuspend = () => {
+    if (!selectedApp) return;
+    const result = suspendApplication(selectedApp.id, reviewNotes);
+    if (result.success) {
+      toast({
+        title: "Application Suspended",
+        description: `${selectedApp.userName}'s CA application has been suspended.`,
+      });
+      setSuspendDialogOpen(false);
+      setSelectedApp(null);
+      setReviewNotes("");
+      refreshApplications();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
   };
 
   const ApplicationTable = ({ apps, showActions = true }: { apps: CAApplication[]; showActions?: boolean }) => {
@@ -223,6 +256,17 @@ const CAApplicationsReview = () => {
                       </Button>
                     </>
                   )}
+                  {app.status === "approved" && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openSuspendDialog(app)}
+                      title="Suspend"
+                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    >
+                      <Ban className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
@@ -235,7 +279,7 @@ const CAApplicationsReview = () => {
   return (
     <>
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle>
@@ -263,6 +307,15 @@ const CAApplicationsReview = () => {
             <div className="text-2xl font-bold text-red-600">{rejectedApps.length}</div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Suspended</CardTitle>
+            <Ban className="w-4 h-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{suspendedApps.length}</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Applications Tabs */}
@@ -280,15 +333,22 @@ const CAApplicationsReview = () => {
             <XCircle className="w-4 h-4" />
             Rejected ({rejectedApps.length})
           </TabsTrigger>
+          <TabsTrigger value="suspended" className="gap-2">
+            <Ban className="w-4 h-4" />
+            Suspended ({suspendedApps.length})
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="pending">
           <ApplicationTable apps={pendingApps} showActions={true} />
         </TabsContent>
         <TabsContent value="approved">
-          <ApplicationTable apps={approvedApps} showActions={false} />
+          <ApplicationTable apps={approvedApps} showActions={true} />
         </TabsContent>
         <TabsContent value="rejected">
           <ApplicationTable apps={rejectedApps} showActions={false} />
+        </TabsContent>
+        <TabsContent value="suspended">
+          <ApplicationTable apps={suspendedApps} showActions={false} />
         </TabsContent>
       </Tabs>
 
@@ -431,7 +491,20 @@ const CAApplicationsReview = () => {
                 </Button>
               </>
             )}
-            {selectedApp?.status !== "pending" && (
+            {selectedApp?.status === "approved" && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setViewDialogOpen(false);
+                  openSuspendDialog(selectedApp);
+                }}
+                className="text-orange-600 border-orange-200 hover:bg-orange-50"
+              >
+                <Ban className="w-4 h-4 mr-2" />
+                Suspend
+              </Button>
+            )}
+            {(selectedApp?.status === "rejected" || selectedApp?.status === "suspended") && (
               <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
                 Close
               </Button>
@@ -501,6 +574,39 @@ const CAApplicationsReview = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Reject Application
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Suspend Dialog */}
+      <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-orange-600">
+              <Ban className="w-5 h-5" />
+              Suspend Application
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to suspend {selectedApp?.userName}'s CA privileges. Please provide a reason for suspension.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-4">
+            <Label htmlFor="suspend-notes">Reason for Suspension</Label>
+            <Textarea
+              id="suspend-notes"
+              placeholder="Explain why this application is being suspended..."
+              value={reviewNotes}
+              onChange={(e) => setReviewNotes(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspend}
+              className="bg-orange-600 text-white hover:bg-orange-700"
+            >
+              Suspend Application
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

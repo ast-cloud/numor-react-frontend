@@ -1,5 +1,5 @@
 // In-memory CA applications store
-export type ApplicationStatus = "pending" | "approved" | "rejected";
+export type ApplicationStatus = "pending" | "approved" | "rejected" | "suspended";
 
 export interface CAApplication {
   id: string;
@@ -124,6 +124,17 @@ export const rejectApplication = (id: string, notes?: string): { success: boolea
     return { success: false, error: "Application not found" };
   }
   app.status = "rejected";
+  app.reviewedAt = new Date();
+  app.reviewNotes = notes;
+  return { success: true };
+};
+
+export const suspendApplication = (id: string, notes?: string): { success: boolean; error?: string } => {
+  const app = store.applications.find((a) => a.id === id);
+  if (!app) {
+    return { success: false, error: "Application not found" };
+  }
+  app.status = "suspended";
   app.reviewedAt = new Date();
   app.reviewNotes = notes;
   return { success: true };
