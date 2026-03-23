@@ -81,7 +81,7 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
@@ -114,12 +114,22 @@ const AdminDashboard = () => {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">System Health</CardTitle>
-              <Settings className="w-4 h-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending CA Applications</CardTitle>
+              <Clock className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-500">99.9%</div>
-              <p className="text-xs text-muted-foreground">All systems operational</p>
+              <div className="text-2xl font-bold">{pendingCAApplications.length}</div>
+              <p className="text-xs text-muted-foreground">Awaiting review</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Recent Signups</CardTitle>
+              <UserPlus className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{recentSignups.length}</div>
+              <p className="text-xs text-muted-foreground">Last 7 days</p>
             </CardContent>
           </Card>
         </div>
