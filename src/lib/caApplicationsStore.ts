@@ -1,5 +1,5 @@
 // In-memory CA applications store
-export type ApplicationStatus = "pending" | "approved" | "rejected";
+export type ApplicationStatus = "pending" | "approved" | "rejected" | "suspended";
 
 export interface CAApplication {
   id: string;
