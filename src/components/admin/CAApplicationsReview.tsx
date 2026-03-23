@@ -5,6 +5,7 @@ import {
   getAllApplications,
   approveApplication,
   rejectApplication,
+  suspendApplication,
 } from "@/lib/caApplicationsStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
