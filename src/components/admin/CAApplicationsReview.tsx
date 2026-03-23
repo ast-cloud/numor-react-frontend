@@ -52,6 +52,7 @@ import {
   Award,
   Briefcase,
   Download,
+  Ban,
 } from "lucide-react";
 
 const CAApplicationsReview = () => {
