@@ -62,6 +62,7 @@ const CAApplicationsReview = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
 
   const refreshApplications = () => {
