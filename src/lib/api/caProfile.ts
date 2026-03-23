@@ -1,7 +1,45 @@
 import { config } from "@/lib/config";
 import { getToken } from "./authToken";
 
-export async function fetchCAProfile() {
+export type CAProfileStatus =
+  | "Unverified"
+  | "Under Review"
+  | "Verified"
+  | "Rejected"
+  | "Suspended"
+  | "Unverified Updates"
+  | "Updates Under Review"
+  | "Updates Rejected";
+
+export function deriveCAProfileStatus(
+  currentProfile: Record<string, unknown> | null,
+  pendingProfile: Record<string, unknown> | null
+): CAProfileStatus {
+  if (!currentProfile) return "Unverified";
+  const status = currentProfile.status as string;
+
+  if (status === "SUSPENDED") return "Suspended";
+
+  if (status === "APPROVED" && pendingProfile) {
+    const pendingStatus = pendingProfile.status as string;
+    if (pendingStatus === "UNDER_REVIEW") return "Updates Under Review";
+    if (pendingStatus === "REJECTED") return "Updates Rejected";
+    return "Unverified Updates";
+  }
+
+  if (status === "APPROVED") return "Verified";
+  if (status === "UNDER_REVIEW") return "Under Review";
+  if (status === "REJECTED") return "Rejected";
+
+  return "Unverified";
+}
+
+export interface CAProfileResponse {
+  currentProfile: Record<string, unknown> | null;
+  pendingProfile: Record<string, unknown> | null;
+}
+
+export async function fetchCAProfile(): Promise<CAProfileResponse> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
@@ -15,7 +53,11 @@ export async function fetchCAProfile() {
 
   if (!res.ok) throw new Error("Failed to fetch CA profile");
   const json = await res.json();
-  return json.data ?? json;
+  const data = json.data ?? json;
+  return {
+    currentProfile: data.currentProfile ?? data,
+    pendingProfile: data.pendingProfile ?? null,
+  };
 }
 
 export async function uploadCADocument(file: File, type: string, description: string) {
