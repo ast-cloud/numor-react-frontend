@@ -527,7 +527,7 @@ const CASettings = () => {
           <p className="text-muted-foreground mt-2 text-lg">Manage your professional profile and credentials.</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          {!caProfileData.isSubmitted && (
+          {(caStatus === "Unverified" || caStatus === "Unverified Updates") && (
             <Button 
               onClick={handleSubmitForReview}
               disabled={!isFormComplete()}
@@ -537,23 +537,29 @@ const CASettings = () => {
               Submit for Review
             </Button>
           )}
-          {caProfileData.isSubmitted && (
-            <Badge variant="secondary" className="text-sm py-1.5 px-3">
+          <Badge
+            variant="outline"
+            className={`text-sm py-1.5 px-3 ${
+              caStatus === "Verified"
+                ? "bg-green-500/10 text-green-600 border-green-500/20"
+                : caStatus === "Under Review" || caStatus === "Updates Under Review"
+                ? "bg-blue-500/10 text-blue-600 border-blue-500/20"
+                : caStatus === "Rejected" || caStatus === "Updates Rejected"
+                ? "bg-destructive/10 text-destructive border-destructive/20"
+                : caStatus === "Suspended"
+                ? "bg-destructive/10 text-destructive border-destructive/20"
+                : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+            }`}
+          >
+            {caStatus === "Verified" ? (
               <CheckCircle className="w-4 h-4 mr-2" />
-              Submitted for Review
-            </Badge>
-          )}
-          {caProfileData.isSubmitted ? (
-            <Badge variant="secondary" className="text-sm py-1.5 px-3 bg-amber-500/10 text-amber-600 border-amber-500/20">
+            ) : caStatus === "Rejected" || caStatus === "Updates Rejected" || caStatus === "Suspended" ? (
+              <X className="w-4 h-4 mr-2" />
+            ) : (
               <AlertCircle className="w-4 h-4 mr-2" />
-              Status: Unverified
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-sm py-1.5 px-3 text-muted-foreground">
-              <AlertCircle className="w-4 h-4 mr-2" />
-              Status: Unverified
-            </Badge>
-          )}
+            )}
+            Status: {caStatus}
+          </Badge>
         </div>
       </div>
 
