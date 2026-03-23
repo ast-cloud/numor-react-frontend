@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { fetchAllUsers } from "@/lib/api/admin";
 import { getPendingApplications } from "@/lib/caApplicationsStore";
 import { useToast } from "@/hooks/use-toast";
-import { Sun, Moon, Users, FileText, Settings, Shield, LogOut } from "lucide-react";
+import { Sun, Moon, Users, FileText, Settings, Shield, LogOut, Clock, UserPlus } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import UserManagementTable from "@/components/admin/UserManagementTable";
 import CAApplicationsReview from "@/components/admin/CAApplicationsReview";
