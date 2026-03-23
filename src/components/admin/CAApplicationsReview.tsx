@@ -82,6 +82,8 @@ const CAApplicationsReview = () => {
         return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">Approved</Badge>;
       case "rejected":
         return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/20">Rejected</Badge>;
+      case "suspended":
+        return <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20">Suspended</Badge>;
     }
   };
 
