@@ -34,6 +34,10 @@ const AdminDashboard = () => {
   const regularUsers = allUsers.filter(u => u.roles.includes("SME_USER") && !u.roles.includes("CA_USER"));
   const caUsers = allUsers.filter(u => u.roles.includes("CA_USER"));
 
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const recentSignups = allUsers.filter(u => (u as any).createdAt && new Date((u as any).createdAt) >= sevenDaysAgo);
+
   const handleLogout = () => {
     logout();
     toast({
