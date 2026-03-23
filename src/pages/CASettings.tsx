@@ -407,7 +407,7 @@ const CASettings = () => {
     return personalComplete && addressComplete && professionalComplete && documentsComplete;
   };
 
-  const handleSubmitForReview = () => {
+  const handleSubmitForReview = async () => {
     if (!isFormComplete()) {
       toast({
         title: "Profile incomplete",
@@ -416,11 +416,20 @@ const CASettings = () => {
       });
       return;
     }
-    submitForReview();
-    toast({
-      title: "Profile submitted",
-      description: "Your profile has been submitted for review. We'll notify you once verified.",
-    });
+    try {
+      await submitCAProfileForReview();
+      setCAStatus("Under Review");
+      toast({
+        title: "Profile submitted",
+        description: "Your profile has been submitted for review. We'll notify you once verified.",
+      });
+    } catch (error) {
+      toast({
+        title: "Submission failed",
+        description: "Failed to submit profile for review. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const DocumentUploadCard = ({
