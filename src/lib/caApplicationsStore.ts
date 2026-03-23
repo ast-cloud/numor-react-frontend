@@ -129,6 +129,17 @@ export const rejectApplication = (id: string, notes?: string): { success: boolea
   return { success: true };
 };
 
+export const suspendApplication = (id: string, notes?: string): { success: boolean; error?: string } => {
+  const app = store.applications.find((a) => a.id === id);
+  if (!app) {
+    return { success: false, error: "Application not found" };
+  }
+  app.status = "suspended";
+  app.reviewedAt = new Date();
+  app.reviewNotes = notes;
+  return { success: true };
+};
+
 export const getApplicationsByStatus = (status: ApplicationStatus): CAApplication[] => {
   return store.applications.filter((app) => app.status === status);
 };

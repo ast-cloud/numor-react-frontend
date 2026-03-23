@@ -578,6 +578,39 @@ const CAApplicationsReview = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Suspend Dialog */}
+      <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-orange-600">
+              <Ban className="w-5 h-5" />
+              Suspend Application
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to suspend {selectedApp?.userName}'s CA privileges. Please provide a reason for suspension.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-4">
+            <Label htmlFor="suspend-notes">Reason for Suspension</Label>
+            <Textarea
+              id="suspend-notes"
+              placeholder="Explain why this application is being suspended..."
+              value={reviewNotes}
+              onChange={(e) => setReviewNotes(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspend}
+              className="bg-orange-600 text-white hover:bg-orange-700"
+            >
+              Suspend Application
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
