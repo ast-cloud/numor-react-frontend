@@ -279,7 +279,7 @@ const CAApplicationsReview = () => {
   return (
     <>
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle>
@@ -305,6 +305,15 @@ const CAApplicationsReview = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{rejectedApps.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Suspended</CardTitle>
+            <Ban className="w-4 h-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{suspendedApps.length}</div>
           </CardContent>
         </Card>
       </div>
