@@ -256,6 +256,17 @@ const CAApplicationsReview = () => {
                       </Button>
                     </>
                   )}
+                  {app.status === "approved" && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openSuspendDialog(app)}
+                      title="Suspend"
+                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    >
+                      <Ban className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
