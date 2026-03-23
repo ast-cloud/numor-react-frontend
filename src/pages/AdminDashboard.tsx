@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { fetchAllUsers } from "@/lib/api/admin";
 import { getPendingApplications } from "@/lib/caApplicationsStore";
 import { useToast } from "@/hooks/use-toast";
-import { Sun, Moon, Users, FileText, Settings, Shield, LogOut } from "lucide-react";
+import { Sun, Moon, Users, FileText, Settings, Shield, LogOut, Clock, UserPlus } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import UserManagementTable from "@/components/admin/UserManagementTable";
 import CAApplicationsReview from "@/components/admin/CAApplicationsReview";
@@ -33,6 +33,10 @@ const AdminDashboard = () => {
 
   const regularUsers = allUsers.filter(u => u.roles.includes("SME_USER") && !u.roles.includes("CA_USER"));
   const caUsers = allUsers.filter(u => u.roles.includes("CA_USER"));
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const recentSignups = allUsers.filter(u => (u as any).createdAt && new Date((u as any).createdAt) >= sevenDaysAgo);
 
   const handleLogout = () => {
     logout();
@@ -77,7 +81,7 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
@@ -110,12 +114,22 @@ const AdminDashboard = () => {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">System Health</CardTitle>
-              <Settings className="w-4 h-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending CA Applications</CardTitle>
+              <Clock className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-500">99.9%</div>
-              <p className="text-xs text-muted-foreground">All systems operational</p>
+              <div className="text-2xl font-bold">{pendingCAApplications.length}</div>
+              <p className="text-xs text-muted-foreground">Awaiting review</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Recent Signups</CardTitle>
+              <UserPlus className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{recentSignups.length}</div>
+              <p className="text-xs text-muted-foreground">Last 7 days</p>
             </CardContent>
           </Card>
         </div>
