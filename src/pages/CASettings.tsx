@@ -78,7 +78,7 @@ const CASettings = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingProfessional, setIsEditingProfessional] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  
+  const [caStatus, setCaStatus] = useState<CAProfileStatus>("Unverified");
   const certificationInputRef = useRef<HTMLInputElement>(null);
   const idProofInputRef = useRef<HTMLInputElement>(null);
   
