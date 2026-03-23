@@ -148,5 +148,4 @@ export async function updateCAProfileAPI(data: Record<string, unknown>) {
   if (!res.ok) throw new Error("Failed to update CA profile");
   const json = await res.json();
   return json.data ?? json;
-
-
+}
