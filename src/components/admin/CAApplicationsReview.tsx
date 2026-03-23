@@ -491,7 +491,20 @@ const CAApplicationsReview = () => {
                 </Button>
               </>
             )}
-            {selectedApp?.status !== "pending" && (
+            {selectedApp?.status === "approved" && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setViewDialogOpen(false);
+                  openSuspendDialog(selectedApp);
+                }}
+                className="text-orange-600 border-orange-200 hover:bg-orange-50"
+              >
+                <Ban className="w-4 h-4 mr-2" />
+                Suspend
+              </Button>
+            )}
+            {(selectedApp?.status === "rejected" || selectedApp?.status === "suspended") && (
               <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
                 Close
               </Button>
