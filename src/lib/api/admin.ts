@@ -34,6 +34,15 @@ export async function updateUserRolesApi(email: string, roles: string[]) {
   return res.json();
 }
 
+export async function fetchCAProfileCounts() {
+  const res = await fetch(`${config.backendHost}/api/admin/ca-profiles/counts`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch CA profile counts');
+  const json = await res.json();
+  return json.data ?? json;
+}
+
 export async function deleteUserApi(email: string) {
   const res = await fetch(`${config.backendHost}/api/admin/users`, {
     method: 'DELETE',
