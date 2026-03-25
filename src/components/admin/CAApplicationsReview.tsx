@@ -7,6 +7,7 @@ import {
   rejectApplication,
   suspendApplication,
 } from "@/lib/caApplicationsStore";
+import { fetchCAProfileCounts } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,6 +73,17 @@ const CAApplicationsReview = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [counts, setCounts] = useState({
+    unverified: 0, underReview: 0, verified: 0, rejected: 0, suspended: 0,
+    unverifiedUpdates: 0, updatesUnderReview: 0, updatesRejected: 0,
+    pendingReview: 0, allRejected: 0, total: 0,
+  });
+
+  useEffect(() => {
+    fetchCAProfileCounts()
+      .then(setCounts)
+      .catch(() => {});
+  }, []);
 
   const refreshApplications = () => {
     setApplications(getAllApplications());
