@@ -39,6 +39,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import {
   Eye,
@@ -53,6 +59,8 @@ import {
   Briefcase,
   Download,
   Ban,
+  UserPlus,
+  Info,
 } from "lucide-react";
 
 const CAApplicationsReview = () => {
@@ -69,10 +77,19 @@ const CAApplicationsReview = () => {
     setApplications(getAllApplications());
   };
 
+  // Main category filters
   const pendingApps = applications.filter((a) => a.status === "pending");
+  const pendingNewApps = pendingApps.filter((a) => !a.isUpdate);
+  const pendingUpdateApps = pendingApps.filter((a) => a.isUpdate);
+
   const approvedApps = applications.filter((a) => a.status === "approved");
+
   const rejectedApps = applications.filter((a) => a.status === "rejected");
+  const rejectedProfileApps = rejectedApps.filter((a) => !a.hasBeenApproved);
+  const rejectedUpdateApps = rejectedApps.filter((a) => a.hasBeenApproved);
+
   const suspendedApps = applications.filter((a) => a.status === "suspended");
+  const unverifiedApps = applications.filter((a) => a.status === "unverified");
 
   const getStatusBadge = (status: ApplicationStatus) => {
     switch (status) {
@@ -84,6 +101,8 @@ const CAApplicationsReview = () => {
         return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/20">Rejected</Badge>;
       case "suspended":
         return <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20">Suspended</Badge>;
+      case "unverified":
+        return <Badge variant="outline" className="bg-slate-500/10 text-slate-600 border-slate-500/20">Unverified</Badge>;
     }
   };
 
@@ -91,20 +110,13 @@ const CAApplicationsReview = () => {
     if (!selectedApp) return;
     const result = approveApplication(selectedApp.id, reviewNotes);
     if (result.success) {
-      toast({
-        title: "Application Approved",
-        description: `${selectedApp.userName}'s CA application has been approved.`,
-      });
+      toast({ title: "Application Approved", description: `${selectedApp.userName}'s CA application has been approved.` });
       setApproveDialogOpen(false);
       setSelectedApp(null);
       setReviewNotes("");
       refreshApplications();
     } else {
-      toast({
-        title: "Error",
-        description: result.error,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: result.error, variant: "destructive" });
     }
   };
 
@@ -112,74 +124,38 @@ const CAApplicationsReview = () => {
     if (!selectedApp) return;
     const result = rejectApplication(selectedApp.id, reviewNotes);
     if (result.success) {
-      toast({
-        title: "Application Rejected",
-        description: `${selectedApp.userName}'s CA application has been rejected.`,
-      });
+      toast({ title: "Application Rejected", description: `${selectedApp.userName}'s CA application has been rejected.` });
       setRejectDialogOpen(false);
       setSelectedApp(null);
       setReviewNotes("");
       refreshApplications();
     } else {
-      toast({
-        title: "Error",
-        description: result.error,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: result.error, variant: "destructive" });
     }
-  };
-
-  const openViewDialog = (app: CAApplication) => {
-    setSelectedApp(app);
-    setViewDialogOpen(true);
-  };
-
-  const openApproveDialog = (app: CAApplication) => {
-    setSelectedApp(app);
-    setReviewNotes("");
-    setApproveDialogOpen(true);
-  };
-
-  const openRejectDialog = (app: CAApplication) => {
-    setSelectedApp(app);
-    setReviewNotes("");
-    setRejectDialogOpen(true);
-  };
-
-  const openSuspendDialog = (app: CAApplication) => {
-    setSelectedApp(app);
-    setReviewNotes("");
-    setSuspendDialogOpen(true);
   };
 
   const handleSuspend = () => {
     if (!selectedApp) return;
     const result = suspendApplication(selectedApp.id, reviewNotes);
     if (result.success) {
-      toast({
-        title: "Application Suspended",
-        description: `${selectedApp.userName}'s CA application has been suspended.`,
-      });
+      toast({ title: "Application Suspended", description: `${selectedApp.userName}'s CA application has been suspended.` });
       setSuspendDialogOpen(false);
       setSelectedApp(null);
       setReviewNotes("");
       refreshApplications();
     } else {
-      toast({
-        title: "Error",
-        description: result.error,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: result.error, variant: "destructive" });
     }
   };
 
+  const openViewDialog = (app: CAApplication) => { setSelectedApp(app); setViewDialogOpen(true); };
+  const openApproveDialog = (app: CAApplication) => { setSelectedApp(app); setReviewNotes(""); setApproveDialogOpen(true); };
+  const openRejectDialog = (app: CAApplication) => { setSelectedApp(app); setReviewNotes(""); setRejectDialogOpen(true); };
+  const openSuspendDialog = (app: CAApplication) => { setSelectedApp(app); setReviewNotes(""); setSuspendDialogOpen(true); };
+
   const ApplicationTable = ({ apps, showActions = true }: { apps: CAApplication[]; showActions?: boolean }) => {
     if (apps.length === 0) {
-      return (
-        <div className="text-center py-8 text-muted-foreground">
-          No applications found.
-        </div>
-      );
+      return <div className="text-center py-8 text-muted-foreground">No applications found.</div>;
     }
 
     return (
@@ -226,44 +202,21 @@ const CAApplicationsReview = () => {
               <TableCell>{getStatusBadge(app.status)}</TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => openViewDialog(app)}
-                    title="View Details"
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => openViewDialog(app)} title="View Details">
                     <Eye className="w-4 h-4" />
                   </Button>
                   {showActions && app.status === "pending" && (
                     <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openApproveDialog(app)}
-                        title="Approve"
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => openApproveDialog(app)} title="Approve" className="text-green-600 hover:text-green-700 hover:bg-green-50">
                         <CheckCircle className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openRejectDialog(app)}
-                        title="Reject"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => openRejectDialog(app)} title="Reject" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                         <XCircle className="w-4 h-4" />
                       </Button>
                     </>
                   )}
                   {app.status === "approved" && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openSuspendDialog(app)}
-                      title="Suspend"
-                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => openSuspendDialog(app)} title="Suspend" className="text-orange-600 hover:text-orange-700 hover:bg-orange-50">
                       <Ban className="w-4 h-4" />
                     </Button>
                   )}
@@ -276,10 +229,26 @@ const CAApplicationsReview = () => {
     );
   };
 
+  const TabLabelWithTooltip = ({ label, tooltip, count }: { label: string; tooltip: string; count: number }) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="flex items-center gap-1.5">
+            {label} ({count})
+            <Info className="w-3 h-3 text-muted-foreground" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <p className="text-xs max-w-[200px]">{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
   return (
     <>
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle>
@@ -316,14 +285,23 @@ const CAApplicationsReview = () => {
             <div className="text-2xl font-bold text-orange-600">{suspendedApps.length}</div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Unverified</CardTitle>
+            <UserPlus className="w-4 h-4 text-slate-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-slate-600">{unverifiedApps.length}</div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Applications Tabs */}
-      <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="pending" className="gap-2">
+      {/* Main Tabs */}
+      <Tabs defaultValue="pending-review" className="w-full">
+        <TabsList className="mb-4 flex-wrap h-auto gap-1">
+          <TabsTrigger value="pending-review" className="gap-2">
             <Clock className="w-4 h-4" />
-            Pending ({pendingApps.length})
+            <TabLabelWithTooltip label="Pending Review" tooltip="Profiles submitted for approval" count={pendingApps.length} />
           </TabsTrigger>
           <TabsTrigger value="approved" className="gap-2">
             <CheckCircle className="w-4 h-4" />
@@ -331,24 +309,71 @@ const CAApplicationsReview = () => {
           </TabsTrigger>
           <TabsTrigger value="rejected" className="gap-2">
             <XCircle className="w-4 h-4" />
-            Rejected ({rejectedApps.length})
+            <TabLabelWithTooltip label="Rejected" tooltip="Applications that were rejected" count={rejectedApps.length} />
           </TabsTrigger>
           <TabsTrigger value="suspended" className="gap-2">
             <Ban className="w-4 h-4" />
-            Suspended ({suspendedApps.length})
+            <TabLabelWithTooltip label="Suspended" tooltip="Suspended due to compliance violations" count={suspendedApps.length} />
+          </TabsTrigger>
+          <TabsTrigger value="unverified" className="gap-2">
+            <UserPlus className="w-4 h-4" />
+            <TabLabelWithTooltip label="New Unverified" tooltip="Newly created profiles that are yet to be submitted for first time approval" count={unverifiedApps.length} />
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="pending">
-          <ApplicationTable apps={pendingApps} showActions={true} />
+
+        {/* Pending Review — with sub-tabs */}
+        <TabsContent value="pending-review">
+          <Tabs defaultValue="new-profiles">
+            <TabsList className="mb-4">
+              <TabsTrigger value="new-profiles">
+                <TabLabelWithTooltip label="New Profiles" tooltip="Profiles submitted for approval for the first time after creation" count={pendingNewApps.length} />
+              </TabsTrigger>
+              <TabsTrigger value="updates">
+                <TabLabelWithTooltip label="Updates" tooltip="CA added some updates after last approval" count={pendingUpdateApps.length} />
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="new-profiles">
+              <ApplicationTable apps={pendingNewApps} showActions={true} />
+            </TabsContent>
+            <TabsContent value="updates">
+              <ApplicationTable apps={pendingUpdateApps} showActions={true} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
+
+        {/* Approved */}
         <TabsContent value="approved">
           <ApplicationTable apps={approvedApps} showActions={true} />
         </TabsContent>
+
+        {/* Rejected — with sub-tabs */}
         <TabsContent value="rejected">
-          <ApplicationTable apps={rejectedApps} showActions={false} />
+          <Tabs defaultValue="rejected-profiles">
+            <TabsList className="mb-4">
+              <TabsTrigger value="rejected-profiles">
+                <TabLabelWithTooltip label="Rejected Profiles" tooltip="Never been approved" count={rejectedProfileApps.length} />
+              </TabsTrigger>
+              <TabsTrigger value="rejected-updates">
+                <TabLabelWithTooltip label="Rejected Updates" tooltip="Updates after last approval have been rejected" count={rejectedUpdateApps.length} />
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="rejected-profiles">
+              <ApplicationTable apps={rejectedProfileApps} showActions={false} />
+            </TabsContent>
+            <TabsContent value="rejected-updates">
+              <ApplicationTable apps={rejectedUpdateApps} showActions={false} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
+
+        {/* Suspended */}
         <TabsContent value="suspended">
           <ApplicationTable apps={suspendedApps} showActions={false} />
+        </TabsContent>
+
+        {/* New Unverified */}
+        <TabsContent value="unverified">
+          <ApplicationTable apps={unverifiedApps} showActions={false} />
         </TabsContent>
       </Tabs>
 
@@ -357,13 +382,10 @@ const CAApplicationsReview = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Application Details</DialogTitle>
-            <DialogDescription>
-              Review the complete CA application
-            </DialogDescription>
+            <DialogDescription>Review the complete CA application</DialogDescription>
           </DialogHeader>
           {selectedApp && (
             <div className="space-y-6">
-              {/* Applicant Info */}
               <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="w-8 h-8 text-primary" />
@@ -371,95 +393,69 @@ const CAApplicationsReview = () => {
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold">{selectedApp.userName}</h3>
                   <p className="text-muted-foreground">{selectedApp.userEmail}</p>
-                  <div className="mt-2">{getStatusBadge(selectedApp.status)}</div>
+                  <div className="mt-2 flex items-center gap-2">
+                    {getStatusBadge(selectedApp.status)}
+                    {selectedApp.isUpdate && (
+                      <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20">Update</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Details Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="w-4 h-4" />
-                    Phone
-                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Phone className="w-4 h-4" /> Phone</div>
                   <p className="font-medium">{selectedApp.phone}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Building className="w-4 h-4" />
-                    Firm Name
-                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Firm Name</div>
                   <p className="font-medium">{selectedApp.firmName}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Award className="w-4 h-4" />
-                    Qualification
-                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Qualification</div>
                   <p className="font-medium">{selectedApp.qualification}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <FileText className="w-4 h-4" />
-                    Membership Number
-                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><FileText className="w-4 h-4" /> Membership Number</div>
                   <p className="font-medium">{selectedApp.membershipNumber}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Briefcase className="w-4 h-4" />
-                    Experience
-                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Briefcase className="w-4 h-4" /> Experience</div>
                   <p className="font-medium">{selectedApp.experience}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Award className="w-4 h-4" />
-                    Specialization
-                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Specialization</div>
                   <p className="font-medium">{selectedApp.specialization}</p>
                 </div>
               </div>
 
-              {/* Bio */}
               <div className="space-y-2">
                 <Label className="text-muted-foreground">Professional Bio</Label>
                 <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedApp.bio}</p>
               </div>
 
-              {/* Documents */}
               <div className="space-y-3">
                 <Label className="text-muted-foreground">Submitted Documents</Label>
                 <div className="flex flex-wrap gap-3">
                   {selectedApp.certificationDoc && (
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Download className="w-4 h-4" />
-                      CA Certificate
-                    </Button>
+                    <Button variant="outline" size="sm" className="gap-2"><Download className="w-4 h-4" /> CA Certificate</Button>
                   )}
                   {selectedApp.idProofDoc && (
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Download className="w-4 h-4" />
-                      ID Proof
-                    </Button>
+                    <Button variant="outline" size="sm" className="gap-2"><Download className="w-4 h-4" /> ID Proof</Button>
                   )}
                 </div>
               </div>
 
-              {/* Review Notes (if reviewed) */}
               {selectedApp.reviewNotes && (
                 <div className="space-y-2">
                   <Label className="text-muted-foreground">Review Notes</Label>
                   <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedApp.reviewNotes}</p>
                   {selectedApp.reviewedAt && (
-                    <p className="text-xs text-muted-foreground">
-                      Reviewed on {selectedApp.reviewedAt.toLocaleDateString()}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Reviewed on {selectedApp.reviewedAt.toLocaleDateString()}</p>
                   )}
                 </div>
               )}
 
-              {/* Timestamps */}
               <div className="text-sm text-muted-foreground border-t pt-4">
                 <p>Submitted: {selectedApp.submittedAt.toLocaleDateString()}</p>
               </div>
@@ -468,46 +464,21 @@ const CAApplicationsReview = () => {
           <DialogFooter className="flex gap-2">
             {selectedApp?.status === "pending" && (
               <>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setViewDialogOpen(false);
-                    openRejectDialog(selectedApp);
-                  }}
-                  className="text-red-600 border-red-200 hover:bg-red-50"
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Reject
+                <Button variant="outline" onClick={() => { setViewDialogOpen(false); openRejectDialog(selectedApp); }} className="text-red-600 border-red-200 hover:bg-red-50">
+                  <XCircle className="w-4 h-4 mr-2" /> Reject
                 </Button>
-                <Button
-                  onClick={() => {
-                    setViewDialogOpen(false);
-                    openApproveDialog(selectedApp);
-                  }}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Approve
+                <Button onClick={() => { setViewDialogOpen(false); openApproveDialog(selectedApp); }} className="bg-green-600 hover:bg-green-700">
+                  <CheckCircle className="w-4 h-4 mr-2" /> Approve
                 </Button>
               </>
             )}
             {selectedApp?.status === "approved" && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setViewDialogOpen(false);
-                  openSuspendDialog(selectedApp);
-                }}
-                className="text-orange-600 border-orange-200 hover:bg-orange-50"
-              >
-                <Ban className="w-4 h-4 mr-2" />
-                Suspend
+              <Button variant="outline" onClick={() => { setViewDialogOpen(false); openSuspendDialog(selectedApp); }} className="text-orange-600 border-orange-200 hover:bg-orange-50">
+                <Ban className="w-4 h-4 mr-2" /> Suspend
               </Button>
             )}
-            {(selectedApp?.status === "rejected" || selectedApp?.status === "suspended") && (
-              <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
-                Close
-              </Button>
+            {(selectedApp?.status === "rejected" || selectedApp?.status === "suspended" || selectedApp?.status === "unverified") && (
+              <Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
             )}
           </DialogFooter>
         </DialogContent>
@@ -517,31 +488,16 @@ const CAApplicationsReview = () => {
       <AlertDialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-green-600">
-              <CheckCircle className="w-5 h-5" />
-              Approve Application
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              You are about to approve {selectedApp?.userName}'s CA application. They will be granted CA privileges on the platform.
-            </AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center gap-2 text-green-600"><CheckCircle className="w-5 h-5" /> Approve Application</AlertDialogTitle>
+            <AlertDialogDescription>You are about to approve {selectedApp?.userName}'s CA application. They will be granted CA privileges on the platform.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-4">
             <Label htmlFor="approve-notes">Notes (optional)</Label>
-            <Textarea
-              id="approve-notes"
-              placeholder="Add any notes about this approval..."
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-            />
+            <Textarea id="approve-notes" placeholder="Add any notes about this approval..." value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} />
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleApprove}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Approve Application
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">Approve Application</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -550,31 +506,16 @@ const CAApplicationsReview = () => {
       <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
-              <XCircle className="w-5 h-5" />
-              Reject Application
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              You are about to reject {selectedApp?.userName}'s CA application. Please provide a reason for rejection.
-            </AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600"><XCircle className="w-5 h-5" /> Reject Application</AlertDialogTitle>
+            <AlertDialogDescription>You are about to reject {selectedApp?.userName}'s CA application. Please provide a reason for rejection.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-4">
             <Label htmlFor="reject-notes">Reason for Rejection</Label>
-            <Textarea
-              id="reject-notes"
-              placeholder="Explain why this application is being rejected..."
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-            />
+            <Textarea id="reject-notes" placeholder="Explain why this application is being rejected..." value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} />
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleReject}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Reject Application
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleReject} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Reject Application</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -583,31 +524,16 @@ const CAApplicationsReview = () => {
       <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-orange-600">
-              <Ban className="w-5 h-5" />
-              Suspend Application
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              You are about to suspend {selectedApp?.userName}'s CA privileges. Please provide a reason for suspension.
-            </AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center gap-2 text-orange-600"><Ban className="w-5 h-5" /> Suspend Application</AlertDialogTitle>
+            <AlertDialogDescription>You are about to suspend {selectedApp?.userName}'s CA privileges. Please provide a reason for suspension.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-4">
             <Label htmlFor="suspend-notes">Reason for Suspension</Label>
-            <Textarea
-              id="suspend-notes"
-              placeholder="Explain why this application is being suspended..."
-              value={reviewNotes}
-              onChange={(e) => setReviewNotes(e.target.value)}
-            />
+            <Textarea id="suspend-notes" placeholder="Explain why this application is being suspended..." value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} />
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSuspend}
-              className="bg-orange-600 text-white hover:bg-orange-700"
-            >
-              Suspend Application
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleSuspend} className="bg-orange-600 text-white hover:bg-orange-700">Suspend Application</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
