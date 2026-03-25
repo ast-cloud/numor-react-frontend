@@ -371,9 +371,39 @@ const CAApplicationsReview = () => {
           <ApplicationTable apps={suspendedApps} showActions={false} />
         </TabsContent>
 
-        {/* New Unverified */}
+        {/* New Unverified — simplified table with basic info only */}
         <TabsContent value="unverified">
-          <ApplicationTable apps={unverifiedApps} showActions={false} />
+          {unverifiedApps.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No applications found.</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {unverifiedApps.map((app) => (
+                  <TableRow key={app.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="w-4 h-4 text-primary" />
+                        </div>
+                        <p className="font-medium">{app.userName}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{app.userEmail}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{app.phone}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{app.submittedAt.toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </TabsContent>
       </Tabs>
 
