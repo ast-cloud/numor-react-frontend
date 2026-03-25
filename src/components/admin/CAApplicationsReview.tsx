@@ -153,79 +153,84 @@ const CAApplicationsReview = () => {
   const openRejectDialog = (app: CAApplication) => { setSelectedApp(app); setReviewNotes(""); setRejectDialogOpen(true); };
   const openSuspendDialog = (app: CAApplication) => { setSelectedApp(app); setReviewNotes(""); setSuspendDialogOpen(true); };
 
-  const ApplicationTable = ({ apps, showActions = true }: { apps: CAApplication[]; showActions?: boolean }) => {
+  const ApplicationTable = ({ apps, showActions = true, status }: { apps: CAApplication[]; showActions?: boolean; status: ApplicationStatus }) => {
     if (apps.length === 0) {
       return <div className="text-center py-8 text-muted-foreground">No applications found.</div>;
     }
 
     return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Applicant</TableHead>
-            <TableHead>Qualification</TableHead>
-            <TableHead>Experience</TableHead>
-            <TableHead>Submitted</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {apps.map((app) => (
-            <TableRow key={app.id}>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium">{app.userName}</p>
-                    <p className="text-sm text-muted-foreground">{app.userEmail}</p>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{app.qualification}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{app.experience}</span>
-                </div>
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {app.submittedAt.toLocaleDateString()}
-              </TableCell>
-              <TableCell>{getStatusBadge(app.status)}</TableCell>
-              <TableCell>
-                <div className="flex items-center justify-end gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => openViewDialog(app)} title="View Details">
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  {showActions && app.status === "pending" && (
-                    <>
-                      <Button variant="ghost" size="icon" onClick={() => openApproveDialog(app)} title="Approve" className="text-green-600 hover:text-green-700 hover:bg-green-50">
-                        <CheckCircle className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openRejectDialog(app)} title="Reject" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                        <XCircle className="w-4 h-4" />
-                      </Button>
-                    </>
-                  )}
-                  {app.status === "approved" && (
-                    <Button variant="ghost" size="icon" onClick={() => openSuspendDialog(app)} title="Suspend" className="text-orange-600 hover:text-orange-700 hover:bg-orange-50">
-                      <Ban className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
+      <div>
+        <div className="flex items-center justify-end mb-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            Status: {getStatusBadge(status)}
+          </div>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Applicant</TableHead>
+              <TableHead>Qualification</TableHead>
+              <TableHead>Experience</TableHead>
+              <TableHead>Submitted</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {apps.map((app) => (
+              <TableRow key={app.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{app.userName}</p>
+                      <p className="text-sm text-muted-foreground">{app.userEmail}</p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Award className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{app.qualification}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{app.experience}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {app.submittedAt.toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => openViewDialog(app)} title="View Details">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    {showActions && app.status === "pending" && (
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => openApproveDialog(app)} title="Approve" className="text-green-600 hover:text-green-700 hover:bg-green-50">
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => openRejectDialog(app)} title="Reject" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                          <XCircle className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
+                    {app.status === "approved" && (
+                      <Button variant="ghost" size="icon" onClick={() => openSuspendDialog(app)} title="Suspend" className="text-orange-600 hover:text-orange-700 hover:bg-orange-50">
+                        <Ban className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     );
   };
 
@@ -333,17 +338,17 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="new-profiles">
-              <ApplicationTable apps={pendingNewApps} showActions={true} />
+              <ApplicationTable apps={pendingNewApps} showActions={true} status="pending" />
             </TabsContent>
             <TabsContent value="updates">
-              <ApplicationTable apps={pendingUpdateApps} showActions={true} />
+              <ApplicationTable apps={pendingUpdateApps} showActions={true} status="pending" />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Approved */}
         <TabsContent value="approved">
-          <ApplicationTable apps={approvedApps} showActions={true} />
+          <ApplicationTable apps={approvedApps} showActions={true} status="approved" />
         </TabsContent>
 
         {/* Rejected — with sub-tabs */}
@@ -358,17 +363,17 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="rejected-profiles">
-              <ApplicationTable apps={rejectedProfileApps} showActions={false} />
+              <ApplicationTable apps={rejectedProfileApps} showActions={false} status="rejected" />
             </TabsContent>
             <TabsContent value="rejected-updates">
-              <ApplicationTable apps={rejectedUpdateApps} showActions={false} />
+              <ApplicationTable apps={rejectedUpdateApps} showActions={false} status="rejected" />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Suspended */}
         <TabsContent value="suspended">
-          <ApplicationTable apps={suspendedApps} showActions={false} />
+          <ApplicationTable apps={suspendedApps} showActions={false} status="suspended" />
         </TabsContent>
 
         {/* New Unverified — simplified table with basic info only */}
