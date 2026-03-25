@@ -169,10 +169,32 @@ const store: CAApplicationsStore = {
       isUpdate: false,
       hasBeenApproved: false,
     },
+    // Suspended (compliance violation)
+    {
+      id: "app-008",
+      userEmail: "vikram.joshi@example.com",
+      userName: "Vikram Joshi",
+      company: "Joshi & Associates",
+      phone: "+91 55443 32211",
+      qualification: "Chartered Accountant (CA)",
+      membershipNumber: "890123",
+      experience: "9 years",
+      specialization: "International Taxation",
+      firmName: "Joshi & Associates",
+      bio: "International tax specialist with cross-border compliance expertise.",
+      certificationDoc: "ca_certificate_vikram.pdf",
+      idProofDoc: "passport_vikram.pdf",
+      status: "suspended",
+      submittedAt: new Date("2023-12-20"),
+      reviewedAt: new Date("2024-01-13"),
+      reviewNotes: "Suspended due to non-compliance with platform guidelines.",
+      isUpdate: false,
+      hasBeenApproved: true,
+    },
   ],
 };
 
-let idCounter = 8;
+let idCounter = 9;
 
 export const submitCAApplication = (application: Omit<CAApplication, "id" | "status" | "submittedAt" | "isUpdate" | "hasBeenApproved">): CAApplication => {
   const newApplication: CAApplication = {
