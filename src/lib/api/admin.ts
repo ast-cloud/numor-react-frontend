@@ -52,11 +52,3 @@ export async function deleteUserApi(email: string) {
   if (!res.ok) throw new Error('Failed to delete user');
   return res.json();
 }
-  const res = await fetch(`${config.backendHost}/api/admin/users`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-    body: JSON.stringify({ email }),
-  });
-  if (!res.ok) throw new Error('Failed to delete user');
-  return res.json();
-}
