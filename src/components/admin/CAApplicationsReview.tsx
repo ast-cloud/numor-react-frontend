@@ -338,17 +338,17 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="new-profiles">
-              <ApplicationTable apps={pendingNewApps} showActions={true} />
+              <ApplicationTable apps={pendingNewApps} showActions={true} status="pending" />
             </TabsContent>
             <TabsContent value="updates">
-              <ApplicationTable apps={pendingUpdateApps} showActions={true} />
+              <ApplicationTable apps={pendingUpdateApps} showActions={true} status="pending" />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Approved */}
         <TabsContent value="approved">
-          <ApplicationTable apps={approvedApps} showActions={true} />
+          <ApplicationTable apps={approvedApps} showActions={true} status="approved" />
         </TabsContent>
 
         {/* Rejected — with sub-tabs */}
@@ -363,17 +363,17 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="rejected-profiles">
-              <ApplicationTable apps={rejectedProfileApps} showActions={false} />
+              <ApplicationTable apps={rejectedProfileApps} showActions={false} status="rejected" />
             </TabsContent>
             <TabsContent value="rejected-updates">
-              <ApplicationTable apps={rejectedUpdateApps} showActions={false} />
+              <ApplicationTable apps={rejectedUpdateApps} showActions={false} status="rejected" />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Suspended */}
         <TabsContent value="suspended">
-          <ApplicationTable apps={suspendedApps} showActions={false} />
+          <ApplicationTable apps={suspendedApps} showActions={false} status="suspended" />
         </TabsContent>
 
         {/* New Unverified — simplified table with basic info only */}
