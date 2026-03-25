@@ -272,7 +272,7 @@ const CAApplicationsReview = () => {
             <Clock className="w-4 h-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{pendingApps.length}</div>
+            <div className="text-2xl font-bold text-amber-600">{counts.pendingReview}</div>
           </CardContent>
         </Card>
         <Card>
@@ -281,7 +281,7 @@ const CAApplicationsReview = () => {
             <CheckCircle className="w-4 h-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{approvedApps.length}</div>
+            <div className="text-2xl font-bold text-green-600">{counts.verified}</div>
           </CardContent>
         </Card>
         <Card>
@@ -290,7 +290,7 @@ const CAApplicationsReview = () => {
             <XCircle className="w-4 h-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{rejectedApps.length}</div>
+            <div className="text-2xl font-bold text-red-600">{counts.allRejected}</div>
           </CardContent>
         </Card>
         <Card>
@@ -299,7 +299,7 @@ const CAApplicationsReview = () => {
             <Ban className="w-4 h-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{suspendedApps.length}</div>
+            <div className="text-2xl font-bold text-orange-600">{counts.suspended}</div>
           </CardContent>
         </Card>
         <Card>
@@ -308,7 +308,7 @@ const CAApplicationsReview = () => {
             <UserPlus className="w-4 h-4 text-slate-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-600">{unverifiedApps.length}</div>
+            <div className="text-2xl font-bold text-slate-600">{counts.unverified}</div>
           </CardContent>
         </Card>
       </div>
@@ -318,23 +318,23 @@ const CAApplicationsReview = () => {
         <TabsList className="mb-4 flex-wrap h-auto gap-1">
           <TabsTrigger value="pending-review" className="gap-2">
             <Clock className="w-4 h-4" />
-            <TabLabelWithTooltip label="Pending Review" tooltip="Profiles submitted for approval" count={pendingApps.length} />
+            <TabLabelWithTooltip label="Pending Review" tooltip="Profiles submitted for approval" count={counts.pendingReview} />
           </TabsTrigger>
           <TabsTrigger value="approved" className="gap-2">
             <CheckCircle className="w-4 h-4" />
-            Approved ({approvedApps.length})
+            Approved ({counts.verified})
           </TabsTrigger>
           <TabsTrigger value="rejected" className="gap-2">
             <XCircle className="w-4 h-4" />
-            <TabLabelWithTooltip label="Rejected" tooltip="Applications that were rejected" count={rejectedApps.length} />
+            <TabLabelWithTooltip label="Rejected" tooltip="Applications that were rejected" count={counts.allRejected} />
           </TabsTrigger>
           <TabsTrigger value="suspended" className="gap-2">
             <Ban className="w-4 h-4" />
-            <TabLabelWithTooltip label="Suspended" tooltip="Suspended due to compliance violations" count={suspendedApps.length} />
+            <TabLabelWithTooltip label="Suspended" tooltip="Suspended due to compliance violations" count={counts.suspended} />
           </TabsTrigger>
           <TabsTrigger value="unverified" className="gap-2">
             <UserPlus className="w-4 h-4" />
-            <TabLabelWithTooltip label="New Unverified" tooltip="Newly created profiles that are yet to be submitted for first time approval" count={unverifiedApps.length} />
+            <TabLabelWithTooltip label="New Unverified" tooltip="Newly created profiles that are yet to be submitted for first time approval" count={counts.unverified} />
           </TabsTrigger>
         </TabsList>
 
@@ -343,10 +343,10 @@ const CAApplicationsReview = () => {
           <Tabs defaultValue="new-profiles">
             <TabsList className="mb-4">
               <TabsTrigger value="new-profiles">
-                <TabLabelWithTooltip label="New Profiles" tooltip="Profiles submitted for approval for the first time after creation" count={pendingNewApps.length} />
+                <TabLabelWithTooltip label="New Profiles" tooltip="Profiles submitted for approval for the first time after creation" count={counts.underReview} />
               </TabsTrigger>
               <TabsTrigger value="updates">
-                <TabLabelWithTooltip label="Updates" tooltip="CA added some updates after last approval" count={pendingUpdateApps.length} />
+                <TabLabelWithTooltip label="Updates" tooltip="CA added some updates after last approval" count={counts.updatesUnderReview} />
               </TabsTrigger>
             </TabsList>
             <TabsContent value="new-profiles">
@@ -368,10 +368,10 @@ const CAApplicationsReview = () => {
           <Tabs defaultValue="rejected-profiles">
             <TabsList className="mb-4">
               <TabsTrigger value="rejected-profiles">
-                <TabLabelWithTooltip label="Rejected Profiles" tooltip="Never been approved" count={rejectedProfileApps.length} />
+                <TabLabelWithTooltip label="Rejected Profiles" tooltip="Never been approved" count={counts.rejected} />
               </TabsTrigger>
               <TabsTrigger value="rejected-updates">
-                <TabLabelWithTooltip label="Rejected Updates" tooltip="Updates after last approval have been rejected" count={rejectedUpdateApps.length} />
+                <TabLabelWithTooltip label="Rejected Updates" tooltip="Updates after last approval have been rejected" count={counts.updatesRejected} />
               </TabsTrigger>
             </TabsList>
             <TabsContent value="rejected-profiles">
