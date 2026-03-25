@@ -171,7 +171,7 @@ const CAApplicationsReview = () => {
               <TableHead>Applicant</TableHead>
               <TableHead>Qualification</TableHead>
               <TableHead>Experience</TableHead>
-              <TableHead>{status === "approved" ? "Approved" : "Submitted"}</TableHead>
+              <TableHead>{status === "approved" ? "Approved" : status === "rejected" ? "Rejected" : "Submitted"}</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -202,7 +202,7 @@ const CAApplicationsReview = () => {
                   </div>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {(status === "approved" && app.reviewedAt ? app.reviewedAt : app.submittedAt).toLocaleDateString()}
+                  {((status === "approved" || status === "rejected") && app.reviewedAt ? app.reviewedAt : app.submittedAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
