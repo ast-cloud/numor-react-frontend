@@ -243,8 +243,8 @@ const CAApplicationsReview = () => {
             <Info className="w-3 h-3 text-muted-foreground" />
           </span>
         </TooltipTrigger>
-        <TooltipContent side="bottom">
-          <p className="text-xs max-w-[200px]">{tooltip}</p>
+        <TooltipContent side="bottom" className="z-[9999] max-w-[300px] break-words whitespace-normal">
+          <p className="text-xs">{tooltip}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
