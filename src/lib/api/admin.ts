@@ -43,7 +43,35 @@ export async function fetchCAProfileCounts() {
   return json.data ?? json;
 }
 
+export type CAProfileTab = 'unverified' | 'underReview' | 'verified' | 'rejected' | 'suspended' | 'unverifiedUpdates' | 'updatesUnderReview' | 'updatesRejected';
+
+export interface CAProfilesResponse {
+  profiles: any[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export async function fetchCAProfiles(tab: CAProfileTab, page = 1, limit = 20): Promise<CAProfilesResponse> {
+  const res = await fetch(
+    `${config.backendHost}/api/admin/ca-profiles?tab=${tab}&page=${page}&limit=${limit}`,
+    { headers: authHeaders() }
+  );
+  if (!res.ok) throw new Error('Failed to fetch CA profiles');
+  const json = await res.json();
+  return json.data ?? json;
+}
+
 export async function deleteUserApi(email: string) {
+  const res = await fetch(`${config.backendHost}/api/admin/users`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new Error('Failed to delete user');
+  return res.json();
+}
   const res = await fetch(`${config.backendHost}/api/admin/users`, {
     method: 'DELETE',
     headers: authHeaders(),
