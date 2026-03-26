@@ -1,78 +1,336 @@
-import { useState, useEffect } from "react";
-import {
-  CAApplication,
-  ApplicationStatus,
-  getAllApplications,
-  approveApplication,
-  rejectApplication,
-  suspendApplication,
-} from "@/lib/caApplicationsStore";
-import { fetchCAProfileCounts } from "@/lib/api/admin";
+import { useState, useEffect, useCallback } from "react";
+import { fetchCAProfileCounts, fetchCAProfiles, type CAProfileTab } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Pagination, PaginationContent, PaginationItem, PaginationLink,
+  PaginationNext, PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Eye,
-  CheckCircle,
-  XCircle,
-  FileText,
-  Clock,
-  User,
-  Building,
-  Phone,
-  Award,
-  Briefcase,
-  Download,
-  Ban,
-  UserPlus,
-  Info,
+  Eye, CheckCircle, XCircle, FileText, Clock, User, Building, Phone,
+  Award, Briefcase, Download, Ban, UserPlus, Info,
 } from "lucide-react";
 
+// ─── Types ───────────────────────────────────────────────────────────
+interface CAProfile {
+  id: string;
+  status: string;
+  firmName?: string;
+  qualification?: string;
+  membershipNumber?: string;
+  experience?: string;
+  specialization?: string;
+  bio?: string;
+  createdAt: string;
+  updatedAt: string;
+  reviewedAt?: string;
+  submittedAt?: string;
+  reviewNotes?: string;
+  user?: { name: string; email: string; phone?: string };
+  documents?: any[];
+  pendingProfile?: any;
+}
+
+type TabStatusLabel = "pending" | "approved" | "rejected" | "suspended" | "unverified";
+
+// ─── Hook: per-tab paginated data ────────────────────────────────────
+function useTabProfiles(tab: CAProfileTab, active: boolean) {
+  const [profiles, setProfiles] = useState<CAProfile[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback((p: number) => {
+    setLoading(true);
+    fetchCAProfiles(tab, p, 20)
+      .then((res) => {
+        setProfiles(res.profiles);
+        setTotalPages(res.totalPages);
+        setPage(res.page);
+      })
+      .catch(() => setProfiles([]))
+      .finally(() => setLoading(false));
+  }, [tab]);
+
+  useEffect(() => {
+    if (active) load(1);
+  }, [active, load]);
+
+  return { profiles, page, totalPages, loading, goToPage: load };
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────
+function getDisplayDate(profile: CAProfile, status: TabStatusLabel): string {
+  const dateStr =
+    (status === "approved" || status === "rejected") && profile.reviewedAt
+      ? profile.reviewedAt
+      : profile.submittedAt || profile.updatedAt || profile.createdAt;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+function getStatusBadge(status: TabStatusLabel) {
+  const map: Record<TabStatusLabel, { label: string; cls: string }> = {
+    pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+    approved: { label: "Approved", cls: "bg-green-500/10 text-green-600 border-green-500/20" },
+    rejected: { label: "Rejected", cls: "bg-red-500/10 text-red-600 border-red-500/20" },
+    suspended: { label: "Suspended", cls: "bg-orange-500/10 text-orange-600 border-orange-500/20" },
+    unverified: { label: "Unverified", cls: "bg-slate-500/10 text-slate-600 border-slate-500/20" },
+  };
+  const m = map[status];
+  return <Badge variant="outline" className={m.cls}>{m.label}</Badge>;
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────
+const TabLabelWithTooltip = ({ label, tooltip, count }: { label: string; tooltip: string; count: number }) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex items-center gap-1.5">
+          {label} ({count})
+          <Info className="w-3 h-3 text-muted-foreground" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="z-[9999] max-w-[300px] break-words whitespace-normal">
+        <p className="text-xs">{tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
+const TableSkeleton = () => (
+  <div className="space-y-3">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <Skeleton key={i} className="h-12 w-full" />
+    ))}
+  </div>
+);
+
+const PaginationControls = ({ page, totalPages, onPageChange }: { page: number; totalPages: number; onPageChange: (p: number) => void }) => {
+  if (totalPages <= 1) return null;
+  return (
+    <Pagination className="mt-4">
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            onClick={() => page > 1 && onPageChange(page - 1)}
+            className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+          />
+        </PaginationItem>
+        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+          const p = i + 1;
+          return (
+            <PaginationItem key={p}>
+              <PaginationLink isActive={p === page} onClick={() => onPageChange(p)} className="cursor-pointer">
+                {p}
+              </PaginationLink>
+            </PaginationItem>
+          );
+        })}
+        <PaginationItem>
+          <PaginationNext
+            onClick={() => page < totalPages && onPageChange(page + 1)}
+            className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+};
+
+// ─── Profile Table ───────────────────────────────────────────────────
+interface ProfileTableProps {
+  profiles: CAProfile[];
+  loading: boolean;
+  status: TabStatusLabel;
+  showActions?: boolean;
+  page: number;
+  totalPages: number;
+  onPageChange: (p: number) => void;
+  onView: (p: CAProfile) => void;
+  onApprove?: (p: CAProfile) => void;
+  onReject?: (p: CAProfile) => void;
+  onSuspend?: (p: CAProfile) => void;
+}
+
+const ProfileTable = ({
+  profiles, loading, status, showActions = true,
+  page, totalPages, onPageChange, onView, onApprove, onReject, onSuspend,
+}: ProfileTableProps) => {
+  if (loading) return <TableSkeleton />;
+  if (profiles.length === 0)
+    return <div className="text-center py-8 text-muted-foreground">No profiles found.</div>;
+
+  return (
+    <div>
+      <div className="flex items-center justify-end mb-3">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          Status: {getStatusBadge(status)}
+        </div>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Applicant</TableHead>
+            <TableHead>Qualification</TableHead>
+            <TableHead>Experience</TableHead>
+            <TableHead>{status === "approved" ? "Approved" : status === "rejected" ? "Rejected" : "Submitted"}</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {profiles.map((p) => (
+            <TableRow key={p.id}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{p.user?.name ?? "—"}</p>
+                    <p className="text-sm text-muted-foreground">{p.user?.email ?? "—"}</p>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">{p.qualification ?? "—"}</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">{p.experience ?? "—"}</span>
+                </div>
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {getDisplayDate(p, status)}
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center justify-end gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => onView(p)} title="View Details">
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  {showActions && (status === "pending") && (
+                    <>
+                      <Button variant="ghost" size="icon" onClick={() => onApprove?.(p)} title="Approve" className="text-green-600 hover:text-green-700 hover:bg-green-50">
+                        <CheckCircle className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => onReject?.(p)} title="Reject" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                        <XCircle className="w-4 h-4" />
+                      </Button>
+                    </>
+                  )}
+                  {status === "approved" && (
+                    <Button variant="ghost" size="icon" onClick={() => onSuspend?.(p)} title="Suspend" className="text-orange-600 hover:text-orange-700 hover:bg-orange-50">
+                      <Ban className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <PaginationControls page={page} totalPages={totalPages} onPageChange={onPageChange} />
+    </div>
+  );
+};
+
+// ─── Unverified Table (basic info only) ──────────────────────────────
+const UnverifiedTable = ({ profiles, loading, page, totalPages, onPageChange }: {
+  profiles: CAProfile[]; loading: boolean; page: number; totalPages: number; onPageChange: (p: number) => void;
+}) => {
+  if (loading) return <TableSkeleton />;
+  if (profiles.length === 0)
+    return <div className="text-center py-8 text-muted-foreground">No profiles found.</div>;
+
+  return (
+    <div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
+            <TableHead>Created</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {profiles.map((p) => (
+            <TableRow key={p.id}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                  <p className="font-medium">{p.user?.name ?? "—"}</p>
+                </div>
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">{p.user?.email ?? "—"}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{p.user?.phone ?? "—"}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <PaginationControls page={page} totalPages={totalPages} onPageChange={onPageChange} />
+    </div>
+  );
+};
+
+// ─── Tab Content Wrapper ─────────────────────────────────────────────
+const TabProfileContent = ({ tab, status, active, showActions, onView, onApprove, onReject, onSuspend }: {
+  tab: CAProfileTab; status: TabStatusLabel; active: boolean; showActions?: boolean;
+  onView: (p: CAProfile) => void; onApprove?: (p: CAProfile) => void;
+  onReject?: (p: CAProfile) => void; onSuspend?: (p: CAProfile) => void;
+}) => {
+  const { profiles, page, totalPages, loading, goToPage } = useTabProfiles(tab, active);
+
+  if (tab === "unverified") {
+    return <UnverifiedTable profiles={profiles} loading={loading} page={page} totalPages={totalPages} onPageChange={goToPage} />;
+  }
+
+  return (
+    <ProfileTable
+      profiles={profiles} loading={loading} status={status} showActions={showActions}
+      page={page} totalPages={totalPages} onPageChange={goToPage}
+      onView={onView} onApprove={onApprove} onReject={onReject} onSuspend={onSuspend}
+    />
+  );
+};
+
+// ─── Main Component ──────────────────────────────────────────────────
 const CAApplicationsReview = () => {
   const { toast } = useToast();
-  const [applications, setApplications] = useState<CAApplication[]>(getAllApplications());
-  const [selectedApp, setSelectedApp] = useState<CAApplication | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<CAProfile | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [mainTab, setMainTab] = useState("pendingReview");
+  const [pendingSubTab, setPendingSubTab] = useState("underReview");
+  const [rejectedSubTab, setRejectedSubTab] = useState("rejected");
   const [counts, setCounts] = useState({
     unverified: 0, underReview: 0, verified: 0, rejected: 0, suspended: 0,
     unverifiedUpdates: 0, updatesUnderReview: 0, updatesRejected: 0,
@@ -80,187 +338,34 @@ const CAApplicationsReview = () => {
   });
 
   useEffect(() => {
-    fetchCAProfileCounts()
-      .then(setCounts)
-      .catch(() => {});
+    fetchCAProfileCounts().then(setCounts).catch(() => {});
   }, []);
 
-  const refreshApplications = () => {
-    setApplications(getAllApplications());
-  };
-
-  // Main category filters
-  const pendingApps = applications.filter((a) => a.status === "pending");
-  const pendingNewApps = pendingApps.filter((a) => !a.isUpdate);
-  const pendingUpdateApps = pendingApps.filter((a) => a.isUpdate);
-
-  const approvedApps = applications.filter((a) => a.status === "approved");
-
-  const rejectedApps = applications.filter((a) => a.status === "rejected");
-  const rejectedProfileApps = rejectedApps.filter((a) => !a.hasBeenApproved);
-  const rejectedUpdateApps = rejectedApps.filter((a) => a.hasBeenApproved);
-
-  const suspendedApps = applications.filter((a) => a.status === "suspended");
-  const unverifiedApps = applications.filter((a) => a.status === "unverified");
-
-  const getStatusBadge = (status: ApplicationStatus) => {
-    switch (status) {
-      case "pending":
-        return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20">Pending</Badge>;
-      case "approved":
-        return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">Approved</Badge>;
-      case "rejected":
-        return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/20">Rejected</Badge>;
-      case "suspended":
-        return <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20">Suspended</Badge>;
-      case "unverified":
-        return <Badge variant="outline" className="bg-slate-500/10 text-slate-600 border-slate-500/20">Unverified</Badge>;
-    }
-  };
+  const openView = (p: CAProfile) => { setSelectedProfile(p); setViewDialogOpen(true); };
+  const openApprove = (p: CAProfile) => { setSelectedProfile(p); setReviewNotes(""); setApproveDialogOpen(true); };
+  const openReject = (p: CAProfile) => { setSelectedProfile(p); setReviewNotes(""); setRejectDialogOpen(true); };
+  const openSuspend = (p: CAProfile) => { setSelectedProfile(p); setReviewNotes(""); setSuspendDialogOpen(true); };
 
   const handleApprove = () => {
-    if (!selectedApp) return;
-    const result = approveApplication(selectedApp.id, reviewNotes);
-    if (result.success) {
-      toast({ title: "Application Approved", description: `${selectedApp.userName}'s CA application has been approved.` });
-      setApproveDialogOpen(false);
-      setSelectedApp(null);
-      setReviewNotes("");
-      refreshApplications();
-    } else {
-      toast({ title: "Error", description: result.error, variant: "destructive" });
-    }
+    toast({ title: "Application Approved", description: `${selectedProfile?.user?.name}'s CA application has been approved.` });
+    setApproveDialogOpen(false);
+    setSelectedProfile(null);
+    setReviewNotes("");
   };
 
   const handleReject = () => {
-    if (!selectedApp) return;
-    const result = rejectApplication(selectedApp.id, reviewNotes);
-    if (result.success) {
-      toast({ title: "Application Rejected", description: `${selectedApp.userName}'s CA application has been rejected.` });
-      setRejectDialogOpen(false);
-      setSelectedApp(null);
-      setReviewNotes("");
-      refreshApplications();
-    } else {
-      toast({ title: "Error", description: result.error, variant: "destructive" });
-    }
+    toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
+    setRejectDialogOpen(false);
+    setSelectedProfile(null);
+    setReviewNotes("");
   };
 
   const handleSuspend = () => {
-    if (!selectedApp) return;
-    const result = suspendApplication(selectedApp.id, reviewNotes);
-    if (result.success) {
-      toast({ title: "Application Suspended", description: `${selectedApp.userName}'s CA application has been suspended.` });
-      setSuspendDialogOpen(false);
-      setSelectedApp(null);
-      setReviewNotes("");
-      refreshApplications();
-    } else {
-      toast({ title: "Error", description: result.error, variant: "destructive" });
-    }
+    toast({ title: "Application Suspended", description: `${selectedProfile?.user?.name}'s CA application has been suspended.` });
+    setSuspendDialogOpen(false);
+    setSelectedProfile(null);
+    setReviewNotes("");
   };
-
-  const openViewDialog = (app: CAApplication) => { setSelectedApp(app); setViewDialogOpen(true); };
-  const openApproveDialog = (app: CAApplication) => { setSelectedApp(app); setReviewNotes(""); setApproveDialogOpen(true); };
-  const openRejectDialog = (app: CAApplication) => { setSelectedApp(app); setReviewNotes(""); setRejectDialogOpen(true); };
-  const openSuspendDialog = (app: CAApplication) => { setSelectedApp(app); setReviewNotes(""); setSuspendDialogOpen(true); };
-
-  const ApplicationTable = ({ apps, showActions = true, status }: { apps: CAApplication[]; showActions?: boolean; status: ApplicationStatus }) => {
-    if (apps.length === 0) {
-      return <div className="text-center py-8 text-muted-foreground">No applications found.</div>;
-    }
-
-    return (
-      <div>
-        <div className="flex items-center justify-end mb-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            Status: {getStatusBadge(status)}
-          </div>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Applicant</TableHead>
-              <TableHead>Qualification</TableHead>
-              <TableHead>Experience</TableHead>
-              <TableHead>{status === "approved" ? "Approved" : status === "rejected" ? "Rejected" : "Submitted"}</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {apps.map((app) => (
-              <TableRow key={app.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{app.userName}</p>
-                      <p className="text-sm text-muted-foreground">{app.userEmail}</p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{app.qualification}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{app.experience}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {((status === "approved" || status === "rejected") && app.reviewedAt ? app.reviewedAt : app.submittedAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => openViewDialog(app)} title="View Details">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    {showActions && app.status === "pending" && (
-                      <>
-                        <Button variant="ghost" size="icon" onClick={() => openApproveDialog(app)} title="Approve" className="text-green-600 hover:text-green-700 hover:bg-green-50">
-                          <CheckCircle className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => openRejectDialog(app)} title="Reject" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                          <XCircle className="w-4 h-4" />
-                        </Button>
-                      </>
-                    )}
-                    {app.status === "approved" && (
-                      <Button variant="ghost" size="icon" onClick={() => openSuspendDialog(app)} title="Suspend" className="text-orange-600 hover:text-orange-700 hover:bg-orange-50">
-                        <Ban className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
-  };
-
-  const TabLabelWithTooltip = ({ label, tooltip, count }: { label: string; tooltip: string; count: number }) => (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="flex items-center gap-1.5">
-            {label} ({count})
-            <Info className="w-3 h-3 text-muted-foreground" />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="z-[9999] max-w-[300px] break-words whitespace-normal">
-          <p className="text-xs">{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
 
   return (
     <>
@@ -271,50 +376,40 @@ const CAApplicationsReview = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle>
             <Clock className="w-4 h-4 text-amber-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{counts.pendingReview}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold text-amber-600">{counts.pendingReview}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Approved</CardTitle>
             <CheckCircle className="w-4 h-4 text-green-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{counts.verified}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold text-green-600">{counts.verified}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Rejected</CardTitle>
             <XCircle className="w-4 h-4 text-red-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{counts.allRejected}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold text-red-600">{counts.allRejected}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Suspended</CardTitle>
             <Ban className="w-4 h-4 text-orange-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{counts.suspended}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold text-orange-600">{counts.suspended}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Unverified</CardTitle>
             <UserPlus className="w-4 h-4 text-slate-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-600">{counts.unverified}</div>
-          </CardContent>
+          <CardContent><div className="text-2xl font-bold text-slate-600">{counts.unverified}</div></CardContent>
         </Card>
       </div>
 
       {/* Main Tabs */}
-      <Tabs defaultValue="pendingReview" className="w-full">
+      <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">
         <TabsList className="mb-4 flex-wrap h-auto gap-1">
           <TabsTrigger value="pendingReview" className="gap-2">
             <Clock className="w-4 h-4" />
@@ -338,9 +433,9 @@ const CAApplicationsReview = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Pending Review — with sub-tabs */}
+        {/* Pending Review — sub-tabs */}
         <TabsContent value="pendingReview">
-          <Tabs defaultValue="underReview">
+          <Tabs value={pendingSubTab} onValueChange={setPendingSubTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="underReview">
                 <TabLabelWithTooltip label="New Profiles" tooltip="Profiles submitted for approval for the first time after creation" count={counts.underReview} />
@@ -350,22 +445,22 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="underReview">
-              <ApplicationTable apps={pendingNewApps} showActions={true} status="pending" />
+              <TabProfileContent tab="underReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "underReview"} showActions onView={openView} onApprove={openApprove} onReject={openReject} />
             </TabsContent>
             <TabsContent value="updatesUnderReview">
-              <ApplicationTable apps={pendingUpdateApps} showActions={true} status="pending" />
+              <TabProfileContent tab="updatesUnderReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "updatesUnderReview"} showActions onView={openView} onApprove={openApprove} onReject={openReject} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Approved */}
         <TabsContent value="verified">
-          <ApplicationTable apps={approvedApps} showActions={true} status="approved" />
+          <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions onView={openView} onSuspend={openSuspend} />
         </TabsContent>
 
-        {/* Rejected — with sub-tabs */}
+        {/* Rejected — sub-tabs */}
         <TabsContent value="allRejected">
-          <Tabs defaultValue="rejected">
+          <Tabs value={rejectedSubTab} onValueChange={setRejectedSubTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="rejected">
                 <TabLabelWithTooltip label="Rejected Profiles" tooltip="Never been approved" count={counts.rejected} />
@@ -375,156 +470,119 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="rejected">
-              <ApplicationTable apps={rejectedProfileApps} showActions={false} status="rejected" />
+              <TabProfileContent tab="rejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "rejected"} showActions={false} onView={openView} />
             </TabsContent>
             <TabsContent value="updatesRejected">
-              <ApplicationTable apps={rejectedUpdateApps} showActions={false} status="rejected" />
+              <TabProfileContent tab="updatesRejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "updatesRejected"} showActions={false} onView={openView} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Suspended */}
         <TabsContent value="suspended">
-          <ApplicationTable apps={suspendedApps} showActions={false} status="suspended" />
+          <TabProfileContent tab="suspended" status="suspended" active={mainTab === "suspended"} showActions={false} onView={openView} />
         </TabsContent>
 
-        {/* New Unverified — simplified table with basic info only */}
+        {/* New Unverified */}
         <TabsContent value="unverified">
-          {unverifiedApps.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No applications found.</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {unverifiedApps.map((app) => (
-                  <TableRow key={app.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="w-4 h-4 text-primary" />
-                        </div>
-                        <p className="font-medium">{app.userName}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{app.userEmail}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{app.phone}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{app.submittedAt.toLocaleDateString()}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <TabProfileContent tab="unverified" status="unverified" active={mainTab === "unverified"} onView={openView} />
         </TabsContent>
       </Tabs>
 
-      {/* View Application Dialog */}
+      {/* View Profile Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Application Details</DialogTitle>
-            <DialogDescription>Review the complete CA application</DialogDescription>
+            <DialogTitle>Profile Details</DialogTitle>
+            <DialogDescription>Review the complete CA profile</DialogDescription>
           </DialogHeader>
-          {selectedApp && (
+          {selectedProfile && (
             <div className="space-y-6">
               <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="w-8 h-8 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{selectedApp.userName}</h3>
-                  <p className="text-muted-foreground">{selectedApp.userEmail}</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    {getStatusBadge(selectedApp.status)}
-                    {selectedApp.isUpdate && (
-                      <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20">Update</Badge>
-                    )}
-                  </div>
+                  <h3 className="text-lg font-semibold">{selectedProfile.user?.name}</h3>
+                  <p className="text-muted-foreground">{selectedProfile.user?.email}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground"><Phone className="w-4 h-4" /> Phone</div>
-                  <p className="font-medium">{selectedApp.phone}</p>
+                  <p className="font-medium">{selectedProfile.user?.phone ?? "—"}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Firm Name</div>
-                  <p className="font-medium">{selectedApp.firmName}</p>
+                  <p className="font-medium">{selectedProfile.firmName ?? "—"}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Qualification</div>
-                  <p className="font-medium">{selectedApp.qualification}</p>
+                  <p className="font-medium">{selectedProfile.qualification ?? "—"}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground"><FileText className="w-4 h-4" /> Membership Number</div>
-                  <p className="font-medium">{selectedApp.membershipNumber}</p>
+                  <p className="font-medium">{selectedProfile.membershipNumber ?? "—"}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground"><Briefcase className="w-4 h-4" /> Experience</div>
-                  <p className="font-medium">{selectedApp.experience}</p>
+                  <p className="font-medium">{selectedProfile.experience ?? "—"}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Specialization</div>
-                  <p className="font-medium">{selectedApp.specialization}</p>
+                  <p className="font-medium">{selectedProfile.specialization ?? "—"}</p>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-muted-foreground">Professional Bio</Label>
-                <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedApp.bio}</p>
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-muted-foreground">Submitted Documents</Label>
-                <div className="flex flex-wrap gap-3">
-                  {selectedApp.certificationDoc && (
-                    <Button variant="outline" size="sm" className="gap-2"><Download className="w-4 h-4" /> CA Certificate</Button>
-                  )}
-                  {selectedApp.idProofDoc && (
-                    <Button variant="outline" size="sm" className="gap-2"><Download className="w-4 h-4" /> ID Proof</Button>
-                  )}
-                </div>
-              </div>
-
-              {selectedApp.reviewNotes && (
+              {selectedProfile.bio && (
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground">Review Notes</Label>
-                  <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedApp.reviewNotes}</p>
-                  {selectedApp.reviewedAt && (
-                    <p className="text-xs text-muted-foreground">Reviewed on {selectedApp.reviewedAt.toLocaleDateString()}</p>
-                  )}
+                  <Label className="text-muted-foreground">Professional Bio</Label>
+                  <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedProfile.bio}</p>
                 </div>
               )}
 
-              <div className="text-sm text-muted-foreground border-t pt-4">
-                <p>Submitted: {selectedApp.submittedAt.toLocaleDateString()}</p>
-              </div>
+              {selectedProfile.documents && selectedProfile.documents.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="text-muted-foreground">Submitted Documents</Label>
+                  <div className="flex flex-wrap gap-3">
+                    {selectedProfile.documents.map((doc: any) => (
+                      <Button key={doc.id} variant="outline" size="sm" className="gap-2">
+                        <Download className="w-4 h-4" /> {doc.type || doc.description || "Document"}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedProfile.reviewNotes && (
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">Review Notes</Label>
+                  <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedProfile.reviewNotes}</p>
+                  {selectedProfile.reviewedAt && (
+                    <p className="text-xs text-muted-foreground">Reviewed on {new Date(selectedProfile.reviewedAt).toLocaleDateString()}</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
           <DialogFooter className="flex gap-2">
-            {selectedApp?.status === "pending" && (
+            {selectedProfile?.status === "UNDER_REVIEW" && (
               <>
-                <Button variant="outline" onClick={() => { setViewDialogOpen(false); openRejectDialog(selectedApp); }} className="text-red-600 border-red-200 hover:bg-red-50">
+                <Button variant="outline" onClick={() => { setViewDialogOpen(false); openReject(selectedProfile); }} className="text-red-600 border-red-200 hover:bg-red-50">
                   <XCircle className="w-4 h-4 mr-2" /> Reject
                 </Button>
-                <Button onClick={() => { setViewDialogOpen(false); openApproveDialog(selectedApp); }} className="bg-green-600 hover:bg-green-700">
+                <Button onClick={() => { setViewDialogOpen(false); openApprove(selectedProfile); }} className="bg-green-600 hover:bg-green-700">
                   <CheckCircle className="w-4 h-4 mr-2" /> Approve
                 </Button>
               </>
             )}
-            {selectedApp?.status === "approved" && (
-              <Button variant="outline" onClick={() => { setViewDialogOpen(false); openSuspendDialog(selectedApp); }} className="text-orange-600 border-orange-200 hover:bg-orange-50">
+            {selectedProfile?.status === "APPROVED" && (
+              <Button variant="outline" onClick={() => { setViewDialogOpen(false); openSuspend(selectedProfile); }} className="text-orange-600 border-orange-200 hover:bg-orange-50">
                 <Ban className="w-4 h-4 mr-2" /> Suspend
               </Button>
             )}
-            {(selectedApp?.status === "rejected" || selectedApp?.status === "suspended" || selectedApp?.status === "unverified") && (
+            {(selectedProfile?.status === "REJECTED" || selectedProfile?.status === "SUSPENDED" || selectedProfile?.status === "PENDING") && (
               <Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
             )}
           </DialogFooter>
@@ -536,7 +594,7 @@ const CAApplicationsReview = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-green-600"><CheckCircle className="w-5 h-5" /> Approve Application</AlertDialogTitle>
-            <AlertDialogDescription>You are about to approve {selectedApp?.userName}'s CA application. They will be granted CA privileges on the platform.</AlertDialogDescription>
+            <AlertDialogDescription>You are about to approve {selectedProfile?.user?.name}'s CA application.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-4">
             <Label htmlFor="approve-notes">Notes (optional)</Label>
@@ -554,7 +612,7 @@ const CAApplicationsReview = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-red-600"><XCircle className="w-5 h-5" /> Reject Application</AlertDialogTitle>
-            <AlertDialogDescription>You are about to reject {selectedApp?.userName}'s CA application. Please provide a reason for rejection.</AlertDialogDescription>
+            <AlertDialogDescription>You are about to reject {selectedProfile?.user?.name}'s CA application.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-4">
             <Label htmlFor="reject-notes">Reason for Rejection</Label>
@@ -572,7 +630,7 @@ const CAApplicationsReview = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-orange-600"><Ban className="w-5 h-5" /> Suspend Application</AlertDialogTitle>
-            <AlertDialogDescription>You are about to suspend {selectedApp?.userName}'s CA privileges. Please provide a reason for suspension.</AlertDialogDescription>
+            <AlertDialogDescription>You are about to suspend {selectedProfile?.user?.name}'s CA privileges.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-4">
             <Label htmlFor="suspend-notes">Reason for Suspension</Label>
