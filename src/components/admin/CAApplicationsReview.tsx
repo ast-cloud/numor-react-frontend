@@ -684,6 +684,47 @@ const CAApplicationsReview = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={(open) => { if (!open) { setPreviewDoc(null); setPreviewLoading(true); } }}>
+        <DialogContent className="max-w-3xl w-full max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle>{previewDoc?.description || "Document"}</DialogTitle>
+            <DialogDescription>Document preview</DialogDescription>
+          </DialogHeader>
+          <div className="relative flex items-center justify-center overflow-hidden max-h-[65vh]" style={{ minHeight: 200 }}>
+            {previewLoading && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {(() => {
+              const url = previewDoc?.url?.replace(/[&?]download=?[^&]*/gi, '') || '';
+              if (previewDoc?.mimeType?.startsWith("image/")) {
+                return (
+                  <img
+                    src={url}
+                    alt={previewDoc.description}
+                    className="max-w-full max-h-[60vh] object-contain rounded"
+                    onLoad={() => setPreviewLoading(false)}
+                    onError={() => setPreviewLoading(false)}
+                  />
+                );
+              } else if (previewDoc?.mimeType === "application/pdf") {
+                return (
+                  <iframe
+                    src={url}
+                    title={previewDoc.description}
+                    className="w-full h-[60vh] rounded border-0"
+                    onLoad={() => setPreviewLoading(false)}
+                  />
+                );
+              }
+              return <p className="text-sm text-muted-foreground py-8">Preview not available for this file type.</p>;
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
