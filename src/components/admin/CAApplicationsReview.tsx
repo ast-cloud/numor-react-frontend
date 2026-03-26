@@ -202,7 +202,6 @@ const ProfileTable = ({
         <TableHeader>
           <TableRow>
             <TableHead>Applicant</TableHead>
-            <TableHead>Qualification</TableHead>
             <TableHead>Experience</TableHead>
             <TableHead>{status === "approved" ? "Approved" : status === "rejected" ? "Rejected" : "Submitted"}</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -224,14 +223,8 @@ const ProfileTable = ({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{p.qualification ?? "—"}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{p.experience ?? "—"}</span>
+                  <span className="text-sm">{p.experienceYears != null ? `${p.experienceYears} yrs` : "—"}</span>
                 </div>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
@@ -526,24 +519,20 @@ const CAApplicationsReview = () => {
                   <p className="font-medium">{selectedProfile.user?.phone ?? "—"}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Firm Name</div>
-                  <p className="font-medium">{selectedProfile.firmName ?? "—"}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Qualification</div>
-                  <p className="font-medium">{selectedProfile.qualification ?? "—"}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><FileText className="w-4 h-4" /> Membership Number</div>
-                  <p className="font-medium">{selectedProfile.membershipNumber ?? "—"}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><FileText className="w-4 h-4" /> Registration No</div>
+                  <p className="font-medium">{selectedProfile.registrationNo ?? "—"}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground"><Briefcase className="w-4 h-4" /> Experience</div>
-                  <p className="font-medium">{selectedProfile.experience ?? "—"}</p>
+                  <p className="font-medium">{selectedProfile.experienceYears != null ? `${selectedProfile.experienceYears} years` : "—"}</p>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Specialization</div>
-                  <p className="font-medium">{selectedProfile.specialization ?? "—"}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Specializations</div>
+                  <p className="font-medium">{selectedProfile.specializations?.join(", ") || "—"}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Type</div>
+                  <p className="font-medium">{selectedProfile.type ?? "—"}</p>
                 </div>
               </div>
 
@@ -567,10 +556,10 @@ const CAApplicationsReview = () => {
                 </div>
               )}
 
-              {selectedProfile.reviewNotes && (
+              {selectedProfile.comment && (
                 <div className="space-y-2">
                   <Label className="text-muted-foreground">Review Notes</Label>
-                  <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedProfile.reviewNotes}</p>
+                  <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedProfile.comment}</p>
                   {selectedProfile.reviewedAt && (
                     <p className="text-xs text-muted-foreground">Reviewed on {new Date(selectedProfile.reviewedAt).toLocaleDateString("en-GB")}</p>
                   )}
