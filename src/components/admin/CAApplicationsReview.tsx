@@ -565,7 +565,7 @@ const CAApplicationsReview = () => {
                           <div
                             key={doc.id}
                             className="p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
-                            onClick={() => doc.url && setPreviewDoc({ url: doc.url, description: doc.description || doc.type, mimeType: doc.mimeType })}
+                            onClick={() => (doc.signedUrl || doc.url) && setPreviewDoc({ url: doc.signedUrl || doc.url, description: doc.description || doc.type, mimeType: doc.mimeType })}
                           >
                             <div className="flex items-center gap-3">
                               <div className="p-2 bg-background rounded shrink-0">
