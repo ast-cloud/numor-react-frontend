@@ -532,10 +532,6 @@ const CAApplicationsReview = () => {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Specializations</div>
                   <p className="font-medium">{selectedProfile.specializations?.join(", ") || "—"}</p>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Type</div>
-                  <p className="font-medium">{selectedProfile.type ?? "—"}</p>
-                </div>
               </div>
 
               {selectedProfile.bio && (
