@@ -314,17 +314,17 @@ const CAApplicationsReview = () => {
       </div>
 
       {/* Main Tabs */}
-      <Tabs defaultValue="pending-review" className="w-full">
+      <Tabs defaultValue="pendingReview" className="w-full">
         <TabsList className="mb-4 flex-wrap h-auto gap-1">
-          <TabsTrigger value="pending-review" className="gap-2">
+          <TabsTrigger value="pendingReview" className="gap-2">
             <Clock className="w-4 h-4" />
             <TabLabelWithTooltip label="Pending Review" tooltip="Profiles submitted for approval" count={counts.pendingReview} />
           </TabsTrigger>
-          <TabsTrigger value="approved" className="gap-2">
+          <TabsTrigger value="verified" className="gap-2">
             <CheckCircle className="w-4 h-4" />
             Approved ({counts.verified})
           </TabsTrigger>
-          <TabsTrigger value="rejected" className="gap-2">
+          <TabsTrigger value="allRejected" className="gap-2">
             <XCircle className="w-4 h-4" />
             <TabLabelWithTooltip label="Rejected" tooltip="Applications that were rejected" count={counts.allRejected} />
           </TabsTrigger>
@@ -339,45 +339,45 @@ const CAApplicationsReview = () => {
         </TabsList>
 
         {/* Pending Review — with sub-tabs */}
-        <TabsContent value="pending-review">
-          <Tabs defaultValue="new-profiles">
+        <TabsContent value="pendingReview">
+          <Tabs defaultValue="underReview">
             <TabsList className="mb-4">
-              <TabsTrigger value="new-profiles">
+              <TabsTrigger value="underReview">
                 <TabLabelWithTooltip label="New Profiles" tooltip="Profiles submitted for approval for the first time after creation" count={counts.underReview} />
               </TabsTrigger>
-              <TabsTrigger value="updates">
+              <TabsTrigger value="updatesUnderReview">
                 <TabLabelWithTooltip label="Updates" tooltip="CA added some updates after last approval" count={counts.updatesUnderReview} />
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="new-profiles">
+            <TabsContent value="underReview">
               <ApplicationTable apps={pendingNewApps} showActions={true} status="pending" />
             </TabsContent>
-            <TabsContent value="updates">
+            <TabsContent value="updatesUnderReview">
               <ApplicationTable apps={pendingUpdateApps} showActions={true} status="pending" />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Approved */}
-        <TabsContent value="approved">
+        <TabsContent value="verified">
           <ApplicationTable apps={approvedApps} showActions={true} status="approved" />
         </TabsContent>
 
         {/* Rejected — with sub-tabs */}
-        <TabsContent value="rejected">
-          <Tabs defaultValue="rejected-profiles">
+        <TabsContent value="allRejected">
+          <Tabs defaultValue="rejected">
             <TabsList className="mb-4">
-              <TabsTrigger value="rejected-profiles">
+              <TabsTrigger value="rejected">
                 <TabLabelWithTooltip label="Rejected Profiles" tooltip="Never been approved" count={counts.rejected} />
               </TabsTrigger>
-              <TabsTrigger value="rejected-updates">
+              <TabsTrigger value="updatesRejected">
                 <TabLabelWithTooltip label="Rejected Updates" tooltip="Updates after last approval have been rejected" count={counts.updatesRejected} />
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="rejected-profiles">
+            <TabsContent value="rejected">
               <ApplicationTable apps={rejectedProfileApps} showActions={false} status="rejected" />
             </TabsContent>
-            <TabsContent value="rejected-updates">
+            <TabsContent value="updatesRejected">
               <ApplicationTable apps={rejectedUpdateApps} showActions={false} status="rejected" />
             </TabsContent>
           </Tabs>
