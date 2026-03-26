@@ -84,7 +84,7 @@ function getDisplayDate(profile: CAProfile, status: TabStatusLabel): string {
     (status === "approved" || status === "rejected") && profile.reviewedAt
       ? profile.reviewedAt
       : profile.submittedAt || profile.updatedAt || profile.createdAt;
-  return new Date(dateStr).toLocaleDateString();
+  return new Date(dateStr).toLocaleDateString("en-GB");
 }
 
 function getStatusBadge(status: TabStatusLabel) {
@@ -288,7 +288,7 @@ const UnverifiedTable = ({ profiles, loading, page, totalPages, onPageChange }: 
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">{p.user?.email ?? "—"}</TableCell>
               <TableCell className="text-sm text-muted-foreground">{p.user?.phone ?? "—"}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{new Date(p.createdAt).toLocaleDateString("en-GB")}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -560,7 +560,7 @@ const CAApplicationsReview = () => {
                   <Label className="text-muted-foreground">Review Notes</Label>
                   <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedProfile.reviewNotes}</p>
                   {selectedProfile.reviewedAt && (
-                    <p className="text-xs text-muted-foreground">Reviewed on {new Date(selectedProfile.reviewedAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground">Reviewed on {new Date(selectedProfile.reviewedAt).toLocaleDateString("en-GB")}</p>
                   )}
                 </div>
               )}
