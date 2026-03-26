@@ -27,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import {
   Eye, CheckCircle, XCircle, FileText, Clock, User, Building, Phone,
-  Award, Briefcase, Download, Ban, UserPlus, Info,
+  Award, Briefcase, Download, Ban, UserPlus, Info, GraduationCap, ShieldCheck, Loader2,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -333,6 +333,8 @@ const CAApplicationsReview = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [previewDoc, setPreviewDoc] = useState<{ url: string; description: string; mimeType?: string } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(true);
   const [mainTab, setMainTab] = useState("pendingReview");
   const [pendingSubTab, setPendingSubTab] = useState("underReview");
   const [rejectedSubTab, setRejectedSubTab] = useState("rejected");
@@ -543,18 +545,57 @@ const CAApplicationsReview = () => {
                 </div>
               )}
 
-              {selectedProfile.documents && selectedProfile.documents.length > 0 && (
-                <div className="space-y-3">
-                  <Label className="text-muted-foreground">Submitted Documents</Label>
-                  <div className="flex flex-wrap gap-3">
-                    {selectedProfile.documents.map((doc: any) => (
-                      <Button key={doc.id} variant="outline" size="sm" className="gap-2">
-                        <Download className="w-4 h-4" /> {doc.type || doc.description || "Document"}
-                      </Button>
-                    ))}
+              {(() => {
+                const docs = selectedProfile.documents || [];
+                const certs = docs.filter((d: any) => d.type === "CERTIFICATION");
+                const idProofs = docs.filter((d: any) => d.type === "ID_PROOF");
+
+                const renderDocList = (title: string, Icon: React.ElementType, list: any[]) => {
+                  if (list.length === 0) return null;
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-primary/10 rounded">
+                          <Icon className="w-4 h-4 text-primary" />
+                        </div>
+                        <Label className="text-sm font-medium">{title}</Label>
+                      </div>
+                      <div className="space-y-2">
+                        {list.map((doc: any) => (
+                          <div
+                            key={doc.id}
+                            className="p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+                            onClick={() => doc.url && setPreviewDoc({ url: doc.url, description: doc.description || doc.type, mimeType: doc.mimeType })}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-background rounded shrink-0">
+                                <FileText className="w-4 h-4 text-muted-foreground" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">{doc.description || doc.type || "Document"}</p>
+                                {doc.createdAt && (
+                                  <p className="text-xs text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString("en-GB")}</p>
+                                )}
+                              </div>
+                              <Eye className="w-4 h-4 text-muted-foreground shrink-0" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                };
+
+                return (
+                  <div className="space-y-4">
+                    {renderDocList("Certifications", GraduationCap, certs)}
+                    {renderDocList("ID Proofs", ShieldCheck, idProofs)}
+                    {certs.length === 0 && idProofs.length === 0 && (
+                      <p className="text-sm text-muted-foreground">No documents submitted.</p>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {selectedProfile.comment && (
                 <div className="space-y-2">
@@ -643,6 +684,47 @@ const CAApplicationsReview = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={(open) => { if (!open) { setPreviewDoc(null); setPreviewLoading(true); } }}>
+        <DialogContent className="max-w-3xl w-full max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle>{previewDoc?.description || "Document"}</DialogTitle>
+            <DialogDescription>Document preview</DialogDescription>
+          </DialogHeader>
+          <div className="relative flex items-center justify-center overflow-hidden max-h-[65vh]" style={{ minHeight: 200 }}>
+            {previewLoading && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {(() => {
+              const url = previewDoc?.url?.replace(/[&?]download=?[^&]*/gi, '') || '';
+              if (previewDoc?.mimeType?.startsWith("image/")) {
+                return (
+                  <img
+                    src={url}
+                    alt={previewDoc.description}
+                    className="max-w-full max-h-[60vh] object-contain rounded"
+                    onLoad={() => setPreviewLoading(false)}
+                    onError={() => setPreviewLoading(false)}
+                  />
+                );
+              } else if (previewDoc?.mimeType === "application/pdf") {
+                return (
+                  <iframe
+                    src={url}
+                    title={previewDoc.description}
+                    className="w-full h-[60vh] rounded border-0"
+                    onLoad={() => setPreviewLoading(false)}
+                  />
+                );
+              }
+              return <p className="text-sm text-muted-foreground py-8">Preview not available for this file type.</p>;
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
