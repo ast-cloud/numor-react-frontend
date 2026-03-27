@@ -4,8 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { fetchAllUsers } from "@/lib/api/admin";
-import { getPendingApplications } from "@/lib/caApplicationsStore";
+import { fetchAllUsers, fetchCAProfileCounts } from "@/lib/api/admin";
 import { useToast } from "@/hooks/use-toast";
 import { Sun, Moon, Users, FileText, Settings, Shield, LogOut, Clock, UserPlus } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
@@ -20,7 +19,7 @@ const AdminDashboard = () => {
   const { user: currentUser, logout } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
   const [allUsers, setAllUsers] = useState<User[]>([]);
-  const pendingCAApplications = getPendingApplications();
+  const [caCounts, setCaCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchAllUsers()
@@ -29,6 +28,10 @@ const AdminDashboard = () => {
         setAllUsers(users);
       })
       .catch(() => setAllUsers([]));
+  }, [refreshKey]);
+
+  useEffect(() => {
+    fetchCAProfileCounts().then(setCaCounts).catch(console.error);
   }, [refreshKey]);
 
   const regularUsers = allUsers.filter(u => u.roles.includes("SME_USER") && !u.roles.includes("CA_USER"));
@@ -118,7 +121,7 @@ const AdminDashboard = () => {
               <Clock className="w-3.5 h-3.5 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-4 pt-0">
-              <div className="text-xl font-bold">{pendingCAApplications.length}</div>
+              <div className="text-xl font-bold">{(caCounts.underReview ?? 0) + (caCounts.updatesUnderReview ?? 0)}</div>
               <p className="text-xs text-muted-foreground">Awaiting review</p>
             </CardContent>
           </Card>
@@ -169,9 +172,9 @@ const AdminDashboard = () => {
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5" />
               CA Applications
-              {pendingCAApplications.length > 0 && (
+              {((caCounts.underReview ?? 0) + (caCounts.updatesUnderReview ?? 0)) > 0 && (
                 <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-500/10 text-amber-600 rounded-full">
-                  {pendingCAApplications.length} pending
+                  {(caCounts.underReview ?? 0) + (caCounts.updatesUnderReview ?? 0)} pending
                 </span>
               )}
             </CardTitle>
