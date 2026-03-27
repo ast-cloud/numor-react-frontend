@@ -30,6 +30,10 @@ const AdminDashboard = () => {
       .catch(() => setAllUsers([]));
   }, [refreshKey]);
 
+  useEffect(() => {
+    fetchCAProfileCounts().then(setCaCounts).catch(console.error);
+  }, [refreshKey]);
+
   const regularUsers = allUsers.filter(u => u.roles.includes("SME_USER") && !u.roles.includes("CA_USER"));
   const caUsers = allUsers.filter(u => u.roles.includes("CA_USER"));
 
