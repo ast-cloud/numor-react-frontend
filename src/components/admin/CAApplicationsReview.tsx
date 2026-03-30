@@ -111,6 +111,37 @@ function getStatusBadge(status: TabStatusLabel) {
   return <Badge variant="outline" className={m.cls}>{m.label}</Badge>;
 }
 
+// ─── Diff Field Display ──────────────────────────────────────────────
+function hasChange(currentVal: unknown, pendingVal: unknown): boolean {
+  if (pendingVal == null) return false;
+  if (Array.isArray(currentVal) && Array.isArray(pendingVal)) {
+    return JSON.stringify([...currentVal].sort()) !== JSON.stringify([...pendingVal].sort());
+  }
+  return String(currentVal ?? "") !== String(pendingVal);
+}
+
+const DiffField = ({ label, icon: Icon, currentVal, pendingVal }: {
+  label: string; icon: React.ElementType; currentVal: unknown; pendingVal: unknown;
+}) => {
+  const changed = hasChange(currentVal, pendingVal);
+  const formatVal = (v: unknown) => Array.isArray(v) ? v.join(", ") : String(v ?? "—");
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground"><Icon className="w-4 h-4" /> {label}</div>
+      {changed ? (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm line-through text-muted-foreground">{formatVal(currentVal)}</span>
+          <ArrowRight className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span className="font-medium text-primary">{formatVal(pendingVal)}</span>
+        </div>
+      ) : (
+        <p className="font-medium">{formatVal(currentVal)}</p>
+      )}
+    </div>
+  );
+};
+
 // ─── Sub-components ──────────────────────────────────────────────────
 const TabLabelWithTooltip = ({ label, tooltip, count }: { label: string; tooltip: string; count: number }) => (
   <TooltipProvider>
