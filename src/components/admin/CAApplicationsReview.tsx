@@ -482,9 +482,24 @@ const CAApplicationsReview = () => {
           </Tabs>
         </TabsContent>
 
-        {/* Approved */}
+        {/* Approved — sub-tabs */}
         <TabsContent value="verified">
-          <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions refreshKey={refreshKey} onView={openView} onSuspend={openSuspend} />
+          <Tabs defaultValue="verified">
+            <TabsList className="mb-4">
+              <TabsTrigger value="verified">
+                <TabLabelWithTooltip label="Approved Profiles" tooltip="Profiles that have been approved" count={counts.verified} />
+              </TabsTrigger>
+              <TabsTrigger value="unverifiedUpdates">
+                <TabLabelWithTooltip label="Unverified Updates" tooltip="Approved profiles with unsaved/unsubmitted updates" count={counts.unverifiedUpdates} />
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="verified">
+              <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions refreshKey={refreshKey} onView={openView} onSuspend={openSuspend} />
+            </TabsContent>
+            <TabsContent value="unverifiedUpdates">
+              <TabProfileContent tab="unverifiedUpdates" status="approved" active={mainTab === "verified"} refreshKey={refreshKey} onView={openView} onSuspend={openSuspend} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* Rejected — sub-tabs */}
