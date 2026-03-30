@@ -719,7 +719,17 @@ const CAApplicationsReview = () => {
                 </Button>
               </>
             )}
-            {selectedProfile?.status === "APPROVED" && (
+            {selectedProfile?.status === "APPROVED" && selectedProfile?.pendingProfile && (
+              <>
+                <Button variant="outline" onClick={() => { setViewDialogOpen(false); openReject(selectedProfile); }} className="text-red-600 border-red-200 hover:bg-red-50">
+                  <XCircle className="w-4 h-4 mr-2" /> Reject Update
+                </Button>
+                <Button onClick={() => { setViewDialogOpen(false); openApprove(selectedProfile); }} className="bg-green-600 hover:bg-green-700">
+                  <CheckCircle className="w-4 h-4 mr-2" /> Approve Update
+                </Button>
+              </>
+            )}
+            {selectedProfile?.status === "APPROVED" && !selectedProfile?.pendingProfile && (
               <Button variant="outline" onClick={() => { setViewDialogOpen(false); openSuspend(selectedProfile); }} className="text-orange-600 border-orange-200 hover:bg-orange-50">
                 <Ban className="w-4 h-4 mr-2" /> Suspend
               </Button>
