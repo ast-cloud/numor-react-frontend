@@ -65,7 +65,7 @@ interface CAProfile {
 type TabStatusLabel = "pending" | "approved" | "rejected" | "suspended" | "unverified";
 
 // ─── Hook: per-tab paginated data ────────────────────────────────────
-function useTabProfiles(tab: CAProfileTab, active: boolean) {
+function useTabProfiles(tab: CAProfileTab, active: boolean, refreshKey: number) {
   const [profiles, setProfiles] = useState<CAProfile[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -85,7 +85,7 @@ function useTabProfiles(tab: CAProfileTab, active: boolean) {
 
   useEffect(() => {
     if (active) load(1);
-  }, [active, load]);
+  }, [active, load, refreshKey]);
 
   return { profiles, page, totalPages, loading, goToPage: load };
 }
