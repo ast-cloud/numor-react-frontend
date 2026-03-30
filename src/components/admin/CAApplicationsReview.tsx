@@ -27,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import {
   Eye, CheckCircle, XCircle, FileText, Clock, User, Building, Phone,
-  Award, Briefcase, Download, Ban, UserPlus, Info, GraduationCap, ShieldCheck, Loader2,
+  Award, Briefcase, Download, Ban, UserPlus, Info, GraduationCap, ShieldCheck, Loader2, ArrowRight,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -110,6 +110,37 @@ function getStatusBadge(status: TabStatusLabel) {
   const m = map[status];
   return <Badge variant="outline" className={m.cls}>{m.label}</Badge>;
 }
+
+// ─── Diff Field Display ──────────────────────────────────────────────
+function hasChange(currentVal: unknown, pendingVal: unknown): boolean {
+  if (pendingVal == null) return false;
+  if (Array.isArray(currentVal) && Array.isArray(pendingVal)) {
+    return JSON.stringify([...currentVal].sort()) !== JSON.stringify([...pendingVal].sort());
+  }
+  return String(currentVal ?? "") !== String(pendingVal);
+}
+
+const DiffField = ({ label, icon: Icon, currentVal, pendingVal }: {
+  label: string; icon: React.ElementType; currentVal: unknown; pendingVal: unknown;
+}) => {
+  const changed = hasChange(currentVal, pendingVal);
+  const formatVal = (v: unknown) => Array.isArray(v) ? v.join(", ") : String(v ?? "—");
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground"><Icon className="w-4 h-4" /> {label}</div>
+      {changed ? (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm line-through text-muted-foreground">{formatVal(currentVal)}</span>
+          <ArrowRight className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span className="font-medium text-primary">{formatVal(pendingVal)}</span>
+        </div>
+      ) : (
+        <p className="font-medium">{formatVal(currentVal)}</p>
+      )}
+    </div>
+  );
+};
 
 // ─── Sub-components ──────────────────────────────────────────────────
 const TabLabelWithTooltip = ({ label, tooltip, count }: { label: string; tooltip: string; count: number }) => (
@@ -552,31 +583,67 @@ const CAApplicationsReview = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Phone className="w-4 h-4" /> Phone</div>
-                  <p className="font-medium">{selectedProfile.user?.phone ?? "—"}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><FileText className="w-4 h-4" /> Registration No</div>
-                  <p className="font-medium">{selectedProfile.registrationNo ?? "—"}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Briefcase className="w-4 h-4" /> Experience</div>
-                  <p className="font-medium">{selectedProfile.experienceYears != null ? `${selectedProfile.experienceYears} years` : "—"}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Award className="w-4 h-4" /> Specializations</div>
-                  <p className="font-medium">{selectedProfile.specializations?.join(", ") || "—"}</p>
-                </div>
-              </div>
+              {(() => {
+                const pending = selectedProfile.pendingProfile;
+                return (
+                  <div className="grid grid-cols-2 gap-4">
+                    <DiffField label="Phone" icon={Phone} currentVal={selectedProfile.user?.phone} pendingVal={null} />
+                    <DiffField label="Registration No" icon={FileText} currentVal={selectedProfile.registrationNo} pendingVal={pending?.registrationNo} />
+                    <DiffField label="Experience" icon={Briefcase} currentVal={selectedProfile.experienceYears != null ? `${selectedProfile.experienceYears} years` : null} pendingVal={pending?.experienceYears != null ? `${pending.experienceYears} years` : null} />
+                    <DiffField label="Specializations" icon={Award} currentVal={selectedProfile.specializations} pendingVal={pending?.specializations} />
+                    <DiffField label="Hourly Fee" icon={Briefcase} currentVal={selectedProfile.hourlyFee ? `₹${selectedProfile.hourlyFee}` : null} pendingVal={pending?.hourlyFee ? `₹${pending.hourlyFee}` : null} />
+                    <DiffField label="Languages" icon={Award} currentVal={selectedProfile.languages} pendingVal={pending?.languages} />
+                    <DiffField label="City" icon={Building} currentVal={selectedProfile.city} pendingVal={pending?.city} />
+                    <DiffField label="State" icon={Building} currentVal={selectedProfile.state} pendingVal={pending?.state} />
+                    <DiffField label="Country" icon={Building} currentVal={selectedProfile.country} pendingVal={pending?.country} />
+                    <DiffField label="Zip Code" icon={Building} currentVal={selectedProfile.zipCode} pendingVal={pending?.zipCode} />
+                  </div>
+                );
+              })()}
 
-              {selectedProfile.bio && (
-                <div className="space-y-2">
-                  <Label className="text-muted-foreground">Professional Bio</Label>
-                  <p className="text-sm p-3 bg-muted/50 rounded-lg">{selectedProfile.bio}</p>
-                </div>
-              )}
+              {(() => {
+                const pending = selectedProfile.pendingProfile;
+                const bioChanged = hasChange(selectedProfile.bio, pending?.bio);
+                const currentBio = selectedProfile.bio;
+                const newBio = pending?.bio;
+                return (currentBio || newBio) ? (
+                  <div className="space-y-2">
+                    <Label className="text-muted-foreground">Professional Bio</Label>
+                    {bioChanged ? (
+                      <div className="space-y-2">
+                        <p className="text-sm p-3 bg-muted/50 rounded-lg line-through text-muted-foreground">{currentBio || "—"}</p>
+                        <div className="flex items-center gap-1.5 text-primary">
+                          <ArrowRight className="w-3.5 h-3.5" />
+                          <span className="text-xs font-medium">Updated to:</span>
+                        </div>
+                        <p className="text-sm p-3 bg-primary/5 rounded-lg border border-primary/20 text-primary font-medium">{newBio}</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm p-3 bg-muted/50 rounded-lg">{currentBio}</p>
+                    )}
+                  </div>
+                ) : null;
+              })()}
+
+              {(() => {
+                const pending = selectedProfile.pendingProfile;
+                const streetChanged = hasChange(selectedProfile.streetAddress, pending?.streetAddress);
+                return streetChanged ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Street Address</div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm line-through text-muted-foreground">{selectedProfile.streetAddress || "—"}</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span className="font-medium text-primary">{pending?.streetAddress}</span>
+                    </div>
+                  </div>
+                ) : selectedProfile.streetAddress ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Street Address</div>
+                    <p className="font-medium">{selectedProfile.streetAddress}</p>
+                  </div>
+                ) : null;
+              })()}
 
               {(() => {
                 const docs = selectedProfile.documents || [];
