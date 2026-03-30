@@ -434,7 +434,7 @@ const CASettings = () => {
     }
     try {
       await submitCAProfileForReview();
-      setCaStatus("Under Review");
+      await loadCAProfile();
       toast({
         title: "Profile submitted",
         description: "Your profile has been submitted for review. We'll notify you once verified.",
