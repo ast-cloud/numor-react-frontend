@@ -600,6 +600,29 @@ const CAApplicationsReview = () => {
                         <DiffField label="Hourly Fee" icon={Briefcase} currentVal={selectedProfile.hourlyFee ? `₹${selectedProfile.hourlyFee}` : null} pendingVal={pending?.hourlyFee ? `₹${pending.hourlyFee}` : null} />
                         <DiffField label="Languages" icon={Award} currentVal={selectedProfile.languages} pendingVal={pending?.languages} />
                       </div>
+                      {/* Professional Bio inside professional section */}
+                      {(() => {
+                        const bioChanged = hasChange(selectedProfile.bio, pending?.bio);
+                        const currentBio = selectedProfile.bio;
+                        const newBio = pending?.bio;
+                        return (currentBio || newBio) ? (
+                          <div className="space-y-2 mt-4">
+                            <Label className="text-muted-foreground">Professional Bio</Label>
+                            {bioChanged ? (
+                              <div className="space-y-2">
+                                <p className="text-sm p-3 bg-muted/50 rounded-lg line-through text-muted-foreground">{currentBio || "—"}</p>
+                                <div className="flex items-center gap-1.5 text-primary">
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                  <span className="text-xs font-medium">Updated to:</span>
+                                </div>
+                                <p className="text-sm p-3 bg-primary/5 rounded-lg border border-primary/20 text-primary font-medium">{newBio}</p>
+                              </div>
+                            ) : (
+                              <p className="text-sm p-3 bg-muted/50 rounded-lg">{currentBio}</p>
+                            )}
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
 
                     {/* Address Details */}
@@ -618,31 +641,6 @@ const CAApplicationsReview = () => {
                   </div>
                 );
               })()}
-
-              {(() => {
-                const pending = selectedProfile.pendingProfile;
-                const bioChanged = hasChange(selectedProfile.bio, pending?.bio);
-                const currentBio = selectedProfile.bio;
-                const newBio = pending?.bio;
-                return (currentBio || newBio) ? (
-                  <div className="space-y-2">
-                    <Label className="text-muted-foreground">Professional Bio</Label>
-                    {bioChanged ? (
-                      <div className="space-y-2">
-                        <p className="text-sm p-3 bg-muted/50 rounded-lg line-through text-muted-foreground">{currentBio || "—"}</p>
-                        <div className="flex items-center gap-1.5 text-primary">
-                          <ArrowRight className="w-3.5 h-3.5" />
-                          <span className="text-xs font-medium">Updated to:</span>
-                        </div>
-                        <p className="text-sm p-3 bg-primary/5 rounded-lg border border-primary/20 text-primary font-medium">{newBio}</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm p-3 bg-muted/50 rounded-lg">{currentBio}</p>
-                    )}
-                  </div>
-                ) : null;
-              })()}
-
 
               {(() => {
                 const docs = selectedProfile.documents || [];
