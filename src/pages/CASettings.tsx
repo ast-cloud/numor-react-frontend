@@ -709,8 +709,8 @@ const CASettings = () => {
                     return;
                   }
                   await updateCAProfileAPI(payload);
-                  setOriginalAddressData({ ...addressData });
                   setIsEditingAddress(false);
+                  await loadCAProfile();
                   toast({ title: "Address saved", description: "Your address has been updated successfully." });
                 } catch {
                   toast({ title: "Failed to save", description: "Could not update address. Please try again.", variant: "destructive" });
