@@ -212,12 +212,12 @@ const CASettings = () => {
   const [specializationOpen, setSpecializationOpen] = useState(false);
 
   const SPECIALIZATIONS = [
-    { value: "tax", label: "Tax Advisory" },
-    { value: "audit", label: "Audit & Assurance" },
-    { value: "corporate", label: "Corporate Finance" },
-    { value: "consulting", label: "Financial Consulting" },
-    { value: "bookkeeping", label: "Bookkeeping & Accounting" },
-    { value: "compliance", label: "Regulatory Compliance" },
+    { value: "Tax Advisory", label: "Tax Advisory" },
+    { value: "Audit & Assurance", label: "Audit & Assurance" },
+    { value: "Corporate Finance", label: "Corporate Finance" },
+    { value: "Financial Consulting", label: "Financial Consulting" },
+    { value: "Bookkeeping & Accounting", label: "Bookkeeping & Accounting" },
+    { value: "Regulatory Compliance", label: "Regulatory Compliance" },
   ];
 
   const [certificationDocuments, setCertificationDocuments] = useState<UploadedDocument[]>([]);
