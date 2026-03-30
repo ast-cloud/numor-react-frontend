@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchCAProfileCounts, fetchCAProfiles, type CAProfileTab } from "@/lib/api/admin";
+import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, type CAProfileTab } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,7 +65,7 @@ interface CAProfile {
 type TabStatusLabel = "pending" | "approved" | "rejected" | "suspended" | "unverified";
 
 // ─── Hook: per-tab paginated data ────────────────────────────────────
-function useTabProfiles(tab: CAProfileTab, active: boolean) {
+function useTabProfiles(tab: CAProfileTab, active: boolean, refreshKey: number) {
   const [profiles, setProfiles] = useState<CAProfile[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -85,7 +85,7 @@ function useTabProfiles(tab: CAProfileTab, active: boolean) {
 
   useEffect(() => {
     if (active) load(1);
-  }, [active, load]);
+  }, [active, load, refreshKey]);
 
   return { profiles, page, totalPages, loading, goToPage: load };
 }
@@ -304,12 +304,12 @@ const UnverifiedTable = ({ profiles, loading, page, totalPages, onPageChange }: 
 };
 
 // ─── Tab Content Wrapper ─────────────────────────────────────────────
-const TabProfileContent = ({ tab, status, active, showActions, onView, onApprove, onReject, onSuspend }: {
-  tab: CAProfileTab; status: TabStatusLabel; active: boolean; showActions?: boolean;
+const TabProfileContent = ({ tab, status, active, showActions, refreshKey = 0, onView, onApprove, onReject, onSuspend }: {
+  tab: CAProfileTab; status: TabStatusLabel; active: boolean; showActions?: boolean; refreshKey?: number;
   onView: (p: CAProfile) => void; onApprove?: (p: CAProfile) => void;
   onReject?: (p: CAProfile) => void; onSuspend?: (p: CAProfile) => void;
 }) => {
-  const { profiles, page, totalPages, loading, goToPage } = useTabProfiles(tab, active);
+  const { profiles, page, totalPages, loading, goToPage } = useTabProfiles(tab, active, refreshKey);
 
   if (tab === "unverified") {
     return <UnverifiedTable profiles={profiles} loading={loading} page={page} totalPages={totalPages} onPageChange={goToPage} />;
@@ -335,14 +335,21 @@ const CAApplicationsReview = () => {
   const [reviewNotes, setReviewNotes] = useState("");
   const [previewDoc, setPreviewDoc] = useState<{ url: string; description: string; mimeType?: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [mainTab, setMainTab] = useState("pendingReview");
   const [pendingSubTab, setPendingSubTab] = useState("underReview");
   const [rejectedSubTab, setRejectedSubTab] = useState("rejected");
+  const [refreshKey, setRefreshKey] = useState(0);
   const [counts, setCounts] = useState({
     unverified: 0, underReview: 0, verified: 0, rejected: 0, suspended: 0,
     unverifiedUpdates: 0, updatesUnderReview: 0, updatesRejected: 0,
     pendingReview: 0, allRejected: 0, total: 0,
   });
+
+  const refreshData = useCallback(() => {
+    setRefreshKey(k => k + 1);
+    fetchCAProfileCounts().then(setCounts).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchCAProfileCounts().then(setCounts).catch(() => {});
@@ -353,11 +360,21 @@ const CAApplicationsReview = () => {
   const openReject = (p: CAProfile) => { setSelectedProfile(p); setReviewNotes(""); setRejectDialogOpen(true); };
   const openSuspend = (p: CAProfile) => { setSelectedProfile(p); setReviewNotes(""); setSuspendDialogOpen(true); };
 
-  const handleApprove = () => {
-    toast({ title: "Application Approved", description: `${selectedProfile?.user?.name}'s CA application has been approved.` });
-    setApproveDialogOpen(false);
-    setSelectedProfile(null);
-    setReviewNotes("");
+  const handleApprove = async () => {
+    if (!selectedProfile) return;
+    setActionLoading(true);
+    try {
+      await approveCAProfileApi(selectedProfile.id);
+      toast({ title: "Application Approved", description: `${selectedProfile.user?.name}'s CA application has been approved.` });
+      refreshData();
+    } catch {
+      toast({ title: "Error", description: "Failed to approve the application. Please try again.", variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+      setApproveDialogOpen(false);
+      setSelectedProfile(null);
+      setReviewNotes("");
+    }
   };
 
   const handleReject = () => {
@@ -452,17 +469,17 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="underReview">
-              <TabProfileContent tab="underReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "underReview"} showActions onView={openView} onApprove={openApprove} onReject={openReject} />
+              <TabProfileContent tab="underReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "underReview"} showActions refreshKey={refreshKey} onView={openView} onApprove={openApprove} onReject={openReject} />
             </TabsContent>
             <TabsContent value="updatesUnderReview">
-              <TabProfileContent tab="updatesUnderReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "updatesUnderReview"} showActions onView={openView} onApprove={openApprove} onReject={openReject} />
+              <TabProfileContent tab="updatesUnderReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "updatesUnderReview"} showActions refreshKey={refreshKey} onView={openView} onApprove={openApprove} onReject={openReject} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Approved */}
         <TabsContent value="verified">
-          <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions onView={openView} onSuspend={openSuspend} />
+          <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions refreshKey={refreshKey} onView={openView} onSuspend={openSuspend} />
         </TabsContent>
 
         {/* Rejected — sub-tabs */}
@@ -477,22 +494,22 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="rejected">
-              <TabProfileContent tab="rejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "rejected"} showActions={false} onView={openView} />
+              <TabProfileContent tab="rejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "rejected"} showActions={false} refreshKey={refreshKey} onView={openView} />
             </TabsContent>
             <TabsContent value="updatesRejected">
-              <TabProfileContent tab="updatesRejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "updatesRejected"} showActions={false} onView={openView} />
+              <TabProfileContent tab="updatesRejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "updatesRejected"} showActions={false} refreshKey={refreshKey} onView={openView} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Suspended */}
         <TabsContent value="suspended">
-          <TabProfileContent tab="suspended" status="suspended" active={mainTab === "suspended"} showActions={false} onView={openView} />
+          <TabProfileContent tab="suspended" status="suspended" active={mainTab === "suspended"} showActions={false} refreshKey={refreshKey} onView={openView} />
         </TabsContent>
 
         {/* New Unverified */}
         <TabsContent value="unverified">
-          <TabProfileContent tab="unverified" status="unverified" active={mainTab === "unverified"} onView={openView} />
+          <TabProfileContent tab="unverified" status="unverified" active={mainTab === "unverified"} refreshKey={refreshKey} onView={openView} />
         </TabsContent>
       </Tabs>
 
@@ -639,8 +656,11 @@ const CAApplicationsReview = () => {
             <Textarea id="approve-notes" placeholder="Add any notes about this approval..." value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">Approve Application</AlertDialogAction>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleApprove} disabled={actionLoading} className="bg-green-600 hover:bg-green-700">
+              {actionLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Approve Application
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
