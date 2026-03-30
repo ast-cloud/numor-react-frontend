@@ -353,7 +353,7 @@ const CAApplicationsReview = () => {
 
   useEffect(() => {
     fetchCAProfileCounts().then(setCounts).catch(() => {});
-  }, []);
+  }, [mainTab]);
 
   const openView = (p: CAProfile) => { setSelectedProfile(p); setViewDialogOpen(true); };
   const openApprove = (p: CAProfile) => { setSelectedProfile(p); setReviewNotes(""); setApproveDialogOpen(true); };
