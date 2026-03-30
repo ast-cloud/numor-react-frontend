@@ -384,8 +384,8 @@ const CASettings = () => {
         specialization: professionalData.specialization.join(","),
         bio: professionalData.bio,
       });
-      setOriginalProfessionalData({ ...professionalData });
       setIsEditingProfessional(false);
+      await loadCAProfile();
       toast({
         title: "Professional details saved",
         description: "Your professional information has been updated successfully.",
