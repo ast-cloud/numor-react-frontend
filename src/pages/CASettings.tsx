@@ -696,11 +696,16 @@ const CASettings = () => {
                 setIsSavingAddress(true);
                 try {
                   const payload: Record<string, unknown> = {};
-                  if (addressData.streetAddress) payload.streetAddress = addressData.streetAddress;
-                  if (addressData.city) payload.city = addressData.city;
-                  if (addressData.state) payload.state = addressData.state;
-                  if (addressData.zipCode) payload.zipCode = addressData.zipCode;
-                  if (addressData.country) payload.country = addressData.country;
+                  if (addressData.streetAddress !== originalAddressData.streetAddress) payload.streetAddress = addressData.streetAddress;
+                  if (addressData.city !== originalAddressData.city) payload.city = addressData.city;
+                  if (addressData.state !== originalAddressData.state) payload.state = addressData.state;
+                  if (addressData.zipCode !== originalAddressData.zipCode) payload.zipCode = addressData.zipCode;
+                  if (addressData.country !== originalAddressData.country) payload.country = addressData.country;
+                  if (Object.keys(payload).length === 0) {
+                    setIsEditingAddress(false);
+                    setIsSavingAddress(false);
+                    return;
+                  }
                   await updateCAProfileAPI(payload);
                   setOriginalAddressData({ ...addressData });
                   setIsEditingAddress(false);
