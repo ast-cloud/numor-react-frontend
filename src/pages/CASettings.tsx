@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { updateUserProfile, fetchCurrentUser, fetchProfilePhoto } from "@/lib/api/user";
 import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments, deleteCADocument, deriveCAProfileStatus, submitCAProfileForReview, type CAProfileStatus } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
@@ -132,43 +132,43 @@ const CASettings = () => {
     });
   }, []);
 
+  const loadCAProfile = useCallback(async () => {
+    try {
+      const { currentProfile, pendingProfile } = await fetchCAProfile();
+      const status = deriveCAProfileStatus(currentProfile, pendingProfile);
+      setCaStatus(status);
+
+      const data = pendingProfile
+        ? { ...currentProfile, ...Object.fromEntries(Object.entries(pendingProfile).filter(([, v]) => v != null)) }
+        : currentProfile;
+      if (!data) return;
+
+      const addr = {
+        streetAddress: (data.streetAddress as string) || "",
+        city: (data.city as string) || "",
+        state: (data.state as string) || "",
+        zipCode: (data.zipCode as string) || "",
+        country: (data.country as string) || "",
+      };
+      setAddressData(addr);
+      setOriginalAddressData(addr);
+
+      const prof = {
+        membershipNumber: (data.registrationNo as string) || "",
+        experience: data.experienceYears ? String(data.experienceYears) : "",
+        specialization: Array.isArray(data.specializations) ? data.specializations : [],
+        bio: (data.bio as string) || "",
+        hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
+        languages: Array.isArray(data.languages) ? data.languages : [],
+      };
+      setProfessionalData(prof);
+      setOriginalProfessionalData(prof);
+    } catch {
+      // fallback to defaults
+    }
+  }, []);
+
   useEffect(() => {
-    const loadCAProfile = async () => {
-      try {
-        const { currentProfile, pendingProfile } = await fetchCAProfile();
-        const status = deriveCAProfileStatus(currentProfile, pendingProfile);
-        setCaStatus(status);
-
-        // Use pendingProfile if it exists, otherwise currentProfile
-        const data = pendingProfile
-          ? { ...currentProfile, ...Object.fromEntries(Object.entries(pendingProfile).filter(([, v]) => v != null)) }
-          : currentProfile;
-        if (!data) return;
-
-        const addr = {
-          streetAddress: (data.streetAddress as string) || "",
-          city: (data.city as string) || "",
-          state: (data.state as string) || "",
-          zipCode: (data.zipCode as string) || "",
-          country: (data.country as string) || "",
-        };
-        setAddressData(addr);
-        setOriginalAddressData(addr);
-
-        const prof = {
-          membershipNumber: (data.registrationNo as string) || "",
-          experience: data.experienceYears ? String(data.experienceYears) : "",
-          specialization: Array.isArray(data.specializations) ? data.specializations : [],
-          bio: (data.bio as string) || "",
-          hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
-          languages: Array.isArray(data.languages) ? data.languages : [],
-        };
-        setProfessionalData(prof);
-        setOriginalProfessionalData(prof);
-      } catch {
-        // fallback to defaults
-      }
-    };
     loadCAProfile();
 
     const loadDocuments = async () => {
@@ -197,7 +197,7 @@ const CASettings = () => {
       }
     };
     loadDocuments();
-  }, []);
+  }, [loadCAProfile]);
 
   const [professionalData, setProfessionalData] = useState({
     membershipNumber: caProfileData.membershipNumber || "",
@@ -288,6 +288,7 @@ const CASettings = () => {
       };
       pendingSetDocuments((prev) => [...prev, newDocument]);
       toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
+      await loadCAProfile();
       setUploadDialogOpen(false);
       setPendingFile(null);
       setPendingDescription("");
@@ -310,6 +311,7 @@ const CASettings = () => {
       await deleteCADocument(documentId);
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
       toast({ title: "Document deleted", description: "The document has been deleted successfully." });
+      await loadCAProfile();
     } catch (error) {
       toast({ title: "Error", description: "Failed to delete document. Please try again.", variant: "destructive" });
     } finally {
@@ -384,8 +386,8 @@ const CASettings = () => {
         specialization: professionalData.specialization.join(","),
         bio: professionalData.bio,
       });
-      setOriginalProfessionalData({ ...professionalData });
       setIsEditingProfessional(false);
+      await loadCAProfile();
       toast({
         title: "Professional details saved",
         description: "Your professional information has been updated successfully.",
@@ -709,8 +711,8 @@ const CASettings = () => {
                     return;
                   }
                   await updateCAProfileAPI(payload);
-                  setOriginalAddressData({ ...addressData });
                   setIsEditingAddress(false);
+                  await loadCAProfile();
                   toast({ title: "Address saved", description: "Your address has been updated successfully." });
                 } catch {
                   toast({ title: "Failed to save", description: "Could not update address. Please try again.", variant: "destructive" });
