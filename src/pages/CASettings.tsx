@@ -132,43 +132,43 @@ const CASettings = () => {
     });
   }, []);
 
+  const loadCAProfile = useCallback(async () => {
+    try {
+      const { currentProfile, pendingProfile } = await fetchCAProfile();
+      const status = deriveCAProfileStatus(currentProfile, pendingProfile);
+      setCaStatus(status);
+
+      const data = pendingProfile
+        ? { ...currentProfile, ...Object.fromEntries(Object.entries(pendingProfile).filter(([, v]) => v != null)) }
+        : currentProfile;
+      if (!data) return;
+
+      const addr = {
+        streetAddress: (data.streetAddress as string) || "",
+        city: (data.city as string) || "",
+        state: (data.state as string) || "",
+        zipCode: (data.zipCode as string) || "",
+        country: (data.country as string) || "",
+      };
+      setAddressData(addr);
+      setOriginalAddressData(addr);
+
+      const prof = {
+        membershipNumber: (data.registrationNo as string) || "",
+        experience: data.experienceYears ? String(data.experienceYears) : "",
+        specialization: Array.isArray(data.specializations) ? data.specializations : [],
+        bio: (data.bio as string) || "",
+        hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
+        languages: Array.isArray(data.languages) ? data.languages : [],
+      };
+      setProfessionalData(prof);
+      setOriginalProfessionalData(prof);
+    } catch {
+      // fallback to defaults
+    }
+  }, []);
+
   useEffect(() => {
-    const loadCAProfile = async () => {
-      try {
-        const { currentProfile, pendingProfile } = await fetchCAProfile();
-        const status = deriveCAProfileStatus(currentProfile, pendingProfile);
-        setCaStatus(status);
-
-        // Use pendingProfile if it exists, otherwise currentProfile
-        const data = pendingProfile
-          ? { ...currentProfile, ...Object.fromEntries(Object.entries(pendingProfile).filter(([, v]) => v != null)) }
-          : currentProfile;
-        if (!data) return;
-
-        const addr = {
-          streetAddress: (data.streetAddress as string) || "",
-          city: (data.city as string) || "",
-          state: (data.state as string) || "",
-          zipCode: (data.zipCode as string) || "",
-          country: (data.country as string) || "",
-        };
-        setAddressData(addr);
-        setOriginalAddressData(addr);
-
-        const prof = {
-          membershipNumber: (data.registrationNo as string) || "",
-          experience: data.experienceYears ? String(data.experienceYears) : "",
-          specialization: Array.isArray(data.specializations) ? data.specializations : [],
-          bio: (data.bio as string) || "",
-          hourlyFee: data.hourlyFee ? String(data.hourlyFee) : "",
-          languages: Array.isArray(data.languages) ? data.languages : [],
-        };
-        setProfessionalData(prof);
-        setOriginalProfessionalData(prof);
-      } catch {
-        // fallback to defaults
-      }
-    };
     loadCAProfile();
 
     const loadDocuments = async () => {
@@ -197,7 +197,7 @@ const CASettings = () => {
       }
     };
     loadDocuments();
-  }, []);
+  }, [loadCAProfile]);
 
   const [professionalData, setProfessionalData] = useState({
     membershipNumber: caProfileData.membershipNumber || "",
