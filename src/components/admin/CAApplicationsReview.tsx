@@ -487,7 +487,7 @@ const CAApplicationsReview = () => {
           <Tabs defaultValue="verified">
             <TabsList className="mb-4">
               <TabsTrigger value="verified">
-                <TabLabelWithTooltip label="Approved Profiles" tooltip="Profiles that have been approved" count={counts.verified} />
+                <TabLabelWithTooltip label="Approved Profiles" tooltip="Profile that have been approved with no new pending updates since last approval" count={counts.verified} />
               </TabsTrigger>
               <TabsTrigger value="unverifiedUpdates">
                 <TabLabelWithTooltip label="Unverified Updates" tooltip="Approved profiles with unsaved/unsubmitted updates" count={counts.unverifiedUpdates} />
