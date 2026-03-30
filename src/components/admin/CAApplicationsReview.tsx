@@ -304,12 +304,12 @@ const UnverifiedTable = ({ profiles, loading, page, totalPages, onPageChange }: 
 };
 
 // ─── Tab Content Wrapper ─────────────────────────────────────────────
-const TabProfileContent = ({ tab, status, active, showActions, onView, onApprove, onReject, onSuspend }: {
-  tab: CAProfileTab; status: TabStatusLabel; active: boolean; showActions?: boolean;
+const TabProfileContent = ({ tab, status, active, showActions, refreshKey = 0, onView, onApprove, onReject, onSuspend }: {
+  tab: CAProfileTab; status: TabStatusLabel; active: boolean; showActions?: boolean; refreshKey?: number;
   onView: (p: CAProfile) => void; onApprove?: (p: CAProfile) => void;
   onReject?: (p: CAProfile) => void; onSuspend?: (p: CAProfile) => void;
 }) => {
-  const { profiles, page, totalPages, loading, goToPage } = useTabProfiles(tab, active);
+  const { profiles, page, totalPages, loading, goToPage } = useTabProfiles(tab, active, refreshKey);
 
   if (tab === "unverified") {
     return <UnverifiedTable profiles={profiles} loading={loading} page={page} totalPages={totalPages} onPageChange={goToPage} />;
