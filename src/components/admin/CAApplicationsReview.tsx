@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, type CAProfileTab } from "@/lib/api/admin";
+import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, approveCAProfileUpdateApi, type CAProfileTab } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -364,11 +364,16 @@ const CAApplicationsReview = () => {
     if (!selectedProfile) return;
     setActionLoading(true);
     try {
-      await approveCAProfileApi(selectedProfile.id);
-      toast({ title: "Application Approved", description: `${selectedProfile.user?.name}'s CA application has been approved.` });
+      const isUpdate = pendingSubTab === "updatesUnderReview";
+      if (isUpdate) {
+        await approveCAProfileUpdateApi(selectedProfile.id);
+      } else {
+        await approveCAProfileApi(selectedProfile.id);
+      }
+      toast({ title: isUpdate ? "Update Approved" : "Application Approved", description: `${selectedProfile.user?.name}'s CA ${isUpdate ? "profile update" : "application"} has been approved.` });
       refreshData();
     } catch {
-      toast({ title: "Error", description: "Failed to approve the application. Please try again.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to approve. Please try again.", variant: "destructive" });
     } finally {
       setActionLoading(false);
       setApproveDialogOpen(false);
