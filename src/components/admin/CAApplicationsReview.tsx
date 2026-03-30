@@ -626,25 +626,6 @@ const CAApplicationsReview = () => {
                 ) : null;
               })()}
 
-              {(() => {
-                const pending = selectedProfile.pendingProfile;
-                const streetChanged = hasChange(selectedProfile.streetAddress, pending?.streetAddress);
-                return streetChanged ? (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Street Address</div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm line-through text-muted-foreground">{selectedProfile.streetAddress || "—"}</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span className="font-medium text-primary">{pending?.streetAddress}</span>
-                    </div>
-                  </div>
-                ) : selectedProfile.streetAddress ? (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4" /> Street Address</div>
-                    <p className="font-medium">{selectedProfile.streetAddress}</p>
-                  </div>
-                ) : null;
-              })()}
 
               {(() => {
                 const docs = selectedProfile.documents || [];
