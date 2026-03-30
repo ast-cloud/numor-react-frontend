@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { updateUserProfile, fetchCurrentUser, fetchProfilePhoto } from "@/lib/api/user";
 import { fetchCAProfile, updateCAProfileAPI, uploadCADocument, fetchCADocuments, deleteCADocument, deriveCAProfileStatus, submitCAProfileForReview, type CAProfileStatus } from "@/lib/api/caProfile";
 import { Helmet } from "react-helmet-async";
