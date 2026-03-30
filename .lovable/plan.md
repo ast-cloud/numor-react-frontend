@@ -1,23 +1,58 @@
 
 
-## Plan: Fix "3 pending" Badge to Use Real API Data
+## Plan: Only Send Modified Fields in CA Profile PUT Requests
 
 ### Problem
-`AdminDashboard.tsx` imports `getPendingApplications()` from `caApplicationsStore.ts` — a mock in-memory store with 3 hardcoded pending entries. This produces the incorrect "3 pending" badge and card count, ignoring the real backend data.
+Both the address and professional save handlers currently send all fields that have a value, even if they haven't changed. This should only send fields that differ from their original values.
 
-### Fix
+### Changes
 
-**`src/pages/AdminDashboard.tsx`**:
-1. Remove the `import { getPendingApplications }` from `caApplicationsStore`
-2. Import `fetchCAProfileCounts` from `@/lib/api/admin`
-3. Add a `counts` state (with zeros default) and fetch real counts via `useEffect`
-4. Replace `pendingCAApplications.length` with `counts.pendingReview` (sum of `underReview + updatesUnderReview`) for:
-   - The "Pending CA Applications" stats card
-   - The "X pending" badge next to "CA Applications" heading
+**`src/pages/CASettings.tsx`** — two save handlers need updating:
+
+1. **Address save (inline handler, ~line 686-691)**: Compare each field in `addressData` against `originalAddressData`. Only include fields where the value differs.
+
+2. **`handleSaveProfessional` (~line 355-366)**: Compare each field in `professionalData` against `originalProfessionalData`. Only include fields where the value differs. For arrays (`specializations`, `languages`), compare by sorting and joining.
+
+Both handlers should skip the API call entirely if no fields changed, showing a toast like "No changes to save".
 
 ### Technical detail
-The counts API returns `underReview` and `updatesUnderReview` separately. The `pendingReview` aggregate field from the API can be used directly for the badge and card.
+
+```text
+// Address save — replace lines 686-691
+const payload: Record<string, unknown> = {};
+if (addressData.streetAddress !== originalAddressData.streetAddress) payload.streetAddress = addressData.streetAddress;
+if (addressData.city !== originalAddressData.city) payload.city = addressData.city;
+if (addressData.state !== originalAddressData.state) payload.state = addressData.state;
+if (addressData.zipCode !== originalAddressData.zipCode) payload.zipCode = addressData.zipCode;
+if (addressData.country !== originalAddressData.country) payload.country = addressData.country;
+
+if (Object.keys(payload).length === 0) {
+  // no changes — skip API call, just exit edit mode
+  setIsEditingAddress(false);
+  return;
+}
+
+// Professional save — replace lines 358-364
+const payload: Record<string, unknown> = {};
+if (professionalData.membershipNumber !== originalProfessionalData.membershipNumber)
+  payload.registrationNo = professionalData.membershipNumber;
+if (professionalData.experience !== originalProfessionalData.experience)
+  payload.experienceYears = parseInt(professionalData.experience, 10);
+if (JSON.stringify([...professionalData.specialization].sort()) !== JSON.stringify([...originalProfessionalData.specialization].sort()))
+  payload.specializations = professionalData.specialization;
+if (professionalData.bio !== originalProfessionalData.bio)
+  payload.bio = professionalData.bio;
+if (professionalData.hourlyFee !== originalProfessionalData.hourlyFee)
+  payload.hourlyFee = Number(professionalData.hourlyFee);
+if (JSON.stringify([...professionalData.languages].sort()) !== JSON.stringify([...originalProfessionalData.languages].sort()))
+  payload.languages = professionalData.languages;
+
+if (Object.keys(payload).length === 0) {
+  setIsEditingProfessional(false);
+  return;
+}
+```
 
 ### Files modified
-- `src/pages/AdminDashboard.tsx`
+- `src/pages/CASettings.tsx`
 
