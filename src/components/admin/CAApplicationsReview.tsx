@@ -27,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import {
   Eye, CheckCircle, XCircle, FileText, Clock, User, Building, Phone,
-  Award, Briefcase, Download, Ban, UserPlus, Info, GraduationCap, ShieldCheck, Loader2,
+  Award, Briefcase, Download, Ban, UserPlus, Info, GraduationCap, ShieldCheck, Loader2, ArrowRight,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────
