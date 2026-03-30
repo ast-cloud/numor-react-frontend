@@ -71,6 +71,15 @@ export async function approveCAProfileApi(caId: string) {
   return res.json();
 }
 
+export async function approveCAProfileUpdateApi(caProfileId: string) {
+  const res = await fetch(`${config.backendHost}/api/admin/ca/caprofile/${caProfileId}/approveUpdate`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to approve CA profile update');
+  return res.json();
+}
+
 export async function deleteUserApi(email: string) {
   const res = await fetch(`${config.backendHost}/api/admin/users`, {
     method: 'DELETE',
