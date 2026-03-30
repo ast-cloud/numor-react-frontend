@@ -586,18 +586,35 @@ const CAApplicationsReview = () => {
               {(() => {
                 const pending = selectedProfile.pendingProfile;
                 return (
-                  <div className="grid grid-cols-2 gap-4">
-                    <DiffField label="Phone" icon={Phone} currentVal={selectedProfile.user?.phone} pendingVal={null} />
-                    <DiffField label="Registration No" icon={FileText} currentVal={selectedProfile.registrationNo} pendingVal={pending?.registrationNo} />
-                    <DiffField label="Experience" icon={Briefcase} currentVal={selectedProfile.experienceYears != null ? `${selectedProfile.experienceYears} years` : null} pendingVal={pending?.experienceYears != null ? `${pending.experienceYears} years` : null} />
-                    <DiffField label="Specializations" icon={Award} currentVal={selectedProfile.specializations} pendingVal={pending?.specializations} />
-                    <DiffField label="Hourly Fee" icon={Briefcase} currentVal={selectedProfile.hourlyFee ? `₹${selectedProfile.hourlyFee}` : null} pendingVal={pending?.hourlyFee ? `₹${pending.hourlyFee}` : null} />
-                    <DiffField label="Languages" icon={Award} currentVal={selectedProfile.languages} pendingVal={pending?.languages} />
-                    <DiffField label="Street Address" icon={Building} currentVal={selectedProfile.streetAddress} pendingVal={pending?.streetAddress} />
-                    <DiffField label="City" icon={Building} currentVal={selectedProfile.city} pendingVal={pending?.city} />
-                    <DiffField label="State" icon={Building} currentVal={selectedProfile.state} pendingVal={pending?.state} />
-                    <DiffField label="Zip Code" icon={Building} currentVal={selectedProfile.zipCode} pendingVal={pending?.zipCode} />
-                    <DiffField label="Country" icon={Building} currentVal={selectedProfile.country} pendingVal={pending?.country} />
+                  <div className="space-y-6">
+                    {/* Professional Details */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" /> Professional Details
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <DiffField label="Phone" icon={Phone} currentVal={selectedProfile.user?.phone} pendingVal={null} />
+                        <DiffField label="Registration No" icon={FileText} currentVal={selectedProfile.registrationNo} pendingVal={pending?.registrationNo} />
+                        <DiffField label="Experience" icon={Briefcase} currentVal={selectedProfile.experienceYears != null ? `${selectedProfile.experienceYears} years` : null} pendingVal={pending?.experienceYears != null ? `${pending.experienceYears} years` : null} />
+                        <DiffField label="Specializations" icon={Award} currentVal={selectedProfile.specializations} pendingVal={pending?.specializations} />
+                        <DiffField label="Hourly Fee" icon={Briefcase} currentVal={selectedProfile.hourlyFee ? `₹${selectedProfile.hourlyFee}` : null} pendingVal={pending?.hourlyFee ? `₹${pending.hourlyFee}` : null} />
+                        <DiffField label="Languages" icon={Award} currentVal={selectedProfile.languages} pendingVal={pending?.languages} />
+                      </div>
+                    </div>
+
+                    {/* Address Details */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" /> Address Details
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <DiffField label="Street Address" icon={Building} currentVal={selectedProfile.streetAddress} pendingVal={pending?.streetAddress} />
+                        <DiffField label="City" icon={Building} currentVal={selectedProfile.city} pendingVal={pending?.city} />
+                        <DiffField label="State" icon={Building} currentVal={selectedProfile.state} pendingVal={pending?.state} />
+                        <DiffField label="Zip Code" icon={Building} currentVal={selectedProfile.zipCode} pendingVal={pending?.zipCode} />
+                        <DiffField label="Country" icon={Building} currentVal={selectedProfile.country} pendingVal={pending?.country} />
+                      </div>
+                    </div>
                   </div>
                 );
               })()}
