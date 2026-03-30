@@ -640,7 +640,7 @@ const CAApplicationsReview = () => {
                     </div>
                   </div>
                 );
-
+              })()}
 
               {(() => {
                 const docs = selectedProfile.documents || [];
