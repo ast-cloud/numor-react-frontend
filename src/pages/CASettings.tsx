@@ -357,6 +357,14 @@ const CASettings = () => {
   };
 
   const handleSaveProfessional = async () => {
+    if (professionalData.specialization.length === 0) {
+      toast({ title: "Validation Error", description: "Please select at least one specialization.", variant: "destructive" });
+      return;
+    }
+    if (professionalData.languages.length === 0) {
+      toast({ title: "Validation Error", description: "Please select at least one language.", variant: "destructive" });
+      return;
+    }
     setIsSavingProfessional(true);
     try {
       const payload: Record<string, unknown> = {};
