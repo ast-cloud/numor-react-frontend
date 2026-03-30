@@ -140,7 +140,9 @@ const CASettings = () => {
         setCaStatus(status);
 
         // Use pendingProfile if it exists, otherwise currentProfile
-        const data = (pendingProfile ?? currentProfile) as Record<string, unknown> | null;
+        const data = pendingProfile
+          ? { ...currentProfile, ...Object.fromEntries(Object.entries(pendingProfile).filter(([, v]) => v != null)) }
+          : currentProfile;
         if (!data) return;
 
         const addr = {
