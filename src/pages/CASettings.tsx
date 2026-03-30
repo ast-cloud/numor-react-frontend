@@ -356,12 +356,24 @@ const CASettings = () => {
     setIsSavingProfessional(true);
     try {
       const payload: Record<string, unknown> = {};
-      if (professionalData.membershipNumber) payload.registrationNo = professionalData.membershipNumber;
-      if (professionalData.experience) payload.experienceYears = parseInt(professionalData.experience, 10);
-      if (professionalData.specialization.length > 0) payload.specializations = professionalData.specialization;
-      if (professionalData.bio) payload.bio = professionalData.bio;
-      if (professionalData.hourlyFee) payload.hourlyFee = Number(professionalData.hourlyFee);
-      if (professionalData.languages.length > 0) payload.languages = professionalData.languages;
+      if (professionalData.membershipNumber !== originalProfessionalData.membershipNumber)
+        payload.registrationNo = professionalData.membershipNumber;
+      if (professionalData.experience !== originalProfessionalData.experience)
+        payload.experienceYears = parseInt(professionalData.experience, 10);
+      if (JSON.stringify([...professionalData.specialization].sort()) !== JSON.stringify([...originalProfessionalData.specialization].sort()))
+        payload.specializations = professionalData.specialization;
+      if (professionalData.bio !== originalProfessionalData.bio)
+        payload.bio = professionalData.bio;
+      if (professionalData.hourlyFee !== originalProfessionalData.hourlyFee)
+        payload.hourlyFee = Number(professionalData.hourlyFee);
+      if (JSON.stringify([...professionalData.languages].sort()) !== JSON.stringify([...originalProfessionalData.languages].sort()))
+        payload.languages = professionalData.languages;
+
+      if (Object.keys(payload).length === 0) {
+        setIsEditingProfessional(false);
+        setIsSavingProfessional(false);
+        return;
+      }
 
       await updateCAProfileAPI(payload);
       updateCAProfile({
