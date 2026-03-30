@@ -63,6 +63,14 @@ export async function fetchCAProfiles(tab: CAProfileTab, page = 1, limit = 20): 
   return json.data ?? json;
 }
 
+export async function approveCAProfileApi(caId: string) {
+  const res = await fetch(`${config.backendHost}/api/admin/ca/caprofile/${caId}/approve`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to approve CA profile');
+  return res.json();
+}
+
 export async function deleteUserApi(email: string) {
   const res = await fetch(`${config.backendHost}/api/admin/users`, {
     method: 'DELETE',
