@@ -356,12 +356,24 @@ const CASettings = () => {
     setIsSavingProfessional(true);
     try {
       const payload: Record<string, unknown> = {};
-      if (professionalData.membershipNumber) payload.registrationNo = professionalData.membershipNumber;
-      if (professionalData.experience) payload.experienceYears = parseInt(professionalData.experience, 10);
-      if (professionalData.specialization.length > 0) payload.specializations = professionalData.specialization;
-      if (professionalData.bio) payload.bio = professionalData.bio;
-      if (professionalData.hourlyFee) payload.hourlyFee = Number(professionalData.hourlyFee);
-      if (professionalData.languages.length > 0) payload.languages = professionalData.languages;
+      if (professionalData.membershipNumber !== originalProfessionalData.membershipNumber)
+        payload.registrationNo = professionalData.membershipNumber;
+      if (professionalData.experience !== originalProfessionalData.experience)
+        payload.experienceYears = parseInt(professionalData.experience, 10);
+      if (JSON.stringify([...professionalData.specialization].sort()) !== JSON.stringify([...originalProfessionalData.specialization].sort()))
+        payload.specializations = professionalData.specialization;
+      if (professionalData.bio !== originalProfessionalData.bio)
+        payload.bio = professionalData.bio;
+      if (professionalData.hourlyFee !== originalProfessionalData.hourlyFee)
+        payload.hourlyFee = Number(professionalData.hourlyFee);
+      if (JSON.stringify([...professionalData.languages].sort()) !== JSON.stringify([...originalProfessionalData.languages].sort()))
+        payload.languages = professionalData.languages;
+
+      if (Object.keys(payload).length === 0) {
+        setIsEditingProfessional(false);
+        setIsSavingProfessional(false);
+        return;
+      }
 
       await updateCAProfileAPI(payload);
       updateCAProfile({
@@ -684,11 +696,16 @@ const CASettings = () => {
                 setIsSavingAddress(true);
                 try {
                   const payload: Record<string, unknown> = {};
-                  if (addressData.streetAddress) payload.streetAddress = addressData.streetAddress;
-                  if (addressData.city) payload.city = addressData.city;
-                  if (addressData.state) payload.state = addressData.state;
-                  if (addressData.zipCode) payload.zipCode = addressData.zipCode;
-                  if (addressData.country) payload.country = addressData.country;
+                  if (addressData.streetAddress !== originalAddressData.streetAddress) payload.streetAddress = addressData.streetAddress;
+                  if (addressData.city !== originalAddressData.city) payload.city = addressData.city;
+                  if (addressData.state !== originalAddressData.state) payload.state = addressData.state;
+                  if (addressData.zipCode !== originalAddressData.zipCode) payload.zipCode = addressData.zipCode;
+                  if (addressData.country !== originalAddressData.country) payload.country = addressData.country;
+                  if (Object.keys(payload).length === 0) {
+                    setIsEditingAddress(false);
+                    setIsSavingAddress(false);
+                    return;
+                  }
                   await updateCAProfileAPI(payload);
                   setOriginalAddressData({ ...addressData });
                   setIsEditingAddress(false);
