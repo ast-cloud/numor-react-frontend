@@ -311,6 +311,7 @@ const CASettings = () => {
       await deleteCADocument(documentId);
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
       toast({ title: "Document deleted", description: "The document has been deleted successfully." });
+      await loadCAProfile();
     } catch (error) {
       toast({ title: "Error", description: "Failed to delete document. Please try again.", variant: "destructive" });
     } finally {
