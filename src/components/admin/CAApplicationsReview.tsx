@@ -335,14 +335,21 @@ const CAApplicationsReview = () => {
   const [reviewNotes, setReviewNotes] = useState("");
   const [previewDoc, setPreviewDoc] = useState<{ url: string; description: string; mimeType?: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [mainTab, setMainTab] = useState("pendingReview");
   const [pendingSubTab, setPendingSubTab] = useState("underReview");
   const [rejectedSubTab, setRejectedSubTab] = useState("rejected");
+  const [refreshKey, setRefreshKey] = useState(0);
   const [counts, setCounts] = useState({
     unverified: 0, underReview: 0, verified: 0, rejected: 0, suspended: 0,
     unverifiedUpdates: 0, updatesUnderReview: 0, updatesRejected: 0,
     pendingReview: 0, allRejected: 0, total: 0,
   });
+
+  const refreshData = useCallback(() => {
+    setRefreshKey(k => k + 1);
+    fetchCAProfileCounts().then(setCounts).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchCAProfileCounts().then(setCounts).catch(() => {});
@@ -353,11 +360,21 @@ const CAApplicationsReview = () => {
   const openReject = (p: CAProfile) => { setSelectedProfile(p); setReviewNotes(""); setRejectDialogOpen(true); };
   const openSuspend = (p: CAProfile) => { setSelectedProfile(p); setReviewNotes(""); setSuspendDialogOpen(true); };
 
-  const handleApprove = () => {
-    toast({ title: "Application Approved", description: `${selectedProfile?.user?.name}'s CA application has been approved.` });
-    setApproveDialogOpen(false);
-    setSelectedProfile(null);
-    setReviewNotes("");
+  const handleApprove = async () => {
+    if (!selectedProfile) return;
+    setActionLoading(true);
+    try {
+      await approveCAProfileApi(selectedProfile.id);
+      toast({ title: "Application Approved", description: `${selectedProfile.user?.name}'s CA application has been approved.` });
+      refreshData();
+    } catch {
+      toast({ title: "Error", description: "Failed to approve the application. Please try again.", variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+      setApproveDialogOpen(false);
+      setSelectedProfile(null);
+      setReviewNotes("");
+    }
   };
 
   const handleReject = () => {
