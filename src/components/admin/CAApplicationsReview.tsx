@@ -593,10 +593,11 @@ const CAApplicationsReview = () => {
                     <DiffField label="Specializations" icon={Award} currentVal={selectedProfile.specializations} pendingVal={pending?.specializations} />
                     <DiffField label="Hourly Fee" icon={Briefcase} currentVal={selectedProfile.hourlyFee ? `₹${selectedProfile.hourlyFee}` : null} pendingVal={pending?.hourlyFee ? `₹${pending.hourlyFee}` : null} />
                     <DiffField label="Languages" icon={Award} currentVal={selectedProfile.languages} pendingVal={pending?.languages} />
+                    <DiffField label="Street Address" icon={Building} currentVal={selectedProfile.streetAddress} pendingVal={pending?.streetAddress} />
                     <DiffField label="City" icon={Building} currentVal={selectedProfile.city} pendingVal={pending?.city} />
                     <DiffField label="State" icon={Building} currentVal={selectedProfile.state} pendingVal={pending?.state} />
-                    <DiffField label="Country" icon={Building} currentVal={selectedProfile.country} pendingVal={pending?.country} />
                     <DiffField label="Zip Code" icon={Building} currentVal={selectedProfile.zipCode} pendingVal={pending?.zipCode} />
+                    <DiffField label="Country" icon={Building} currentVal={selectedProfile.country} pendingVal={pending?.country} />
                   </div>
                 );
               })()}
