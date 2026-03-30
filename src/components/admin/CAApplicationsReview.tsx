@@ -446,7 +446,7 @@ const CAApplicationsReview = () => {
           </TabsTrigger>
           <TabsTrigger value="verified" className="gap-2">
             <CheckCircle className="w-4 h-4" />
-            Approved ({counts.verified})
+            Approved ({counts.verified + counts.unverifiedUpdates})
           </TabsTrigger>
           <TabsTrigger value="allRejected" className="gap-2">
             <XCircle className="w-4 h-4" />
