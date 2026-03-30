@@ -412,7 +412,7 @@ const CAApplicationsReview = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">Approved</CardTitle>
             <CheckCircle className="w-4 h-4 text-green-500" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold text-green-600">{counts.verified}</div></CardContent>
+          <CardContent><div className="text-2xl font-bold text-green-600">{counts.verified + counts.unverifiedUpdates}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
