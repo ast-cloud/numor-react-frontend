@@ -469,17 +469,17 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="underReview">
-              <TabProfileContent tab="underReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "underReview"} showActions onView={openView} onApprove={openApprove} onReject={openReject} />
+              <TabProfileContent tab="underReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "underReview"} showActions refreshKey={refreshKey} onView={openView} onApprove={openApprove} onReject={openReject} />
             </TabsContent>
             <TabsContent value="updatesUnderReview">
-              <TabProfileContent tab="updatesUnderReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "updatesUnderReview"} showActions onView={openView} onApprove={openApprove} onReject={openReject} />
+              <TabProfileContent tab="updatesUnderReview" status="pending" active={mainTab === "pendingReview" && pendingSubTab === "updatesUnderReview"} showActions refreshKey={refreshKey} onView={openView} onApprove={openApprove} onReject={openReject} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Approved */}
         <TabsContent value="verified">
-          <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions onView={openView} onSuspend={openSuspend} />
+          <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions refreshKey={refreshKey} onView={openView} onSuspend={openSuspend} />
         </TabsContent>
 
         {/* Rejected — sub-tabs */}
@@ -494,22 +494,22 @@ const CAApplicationsReview = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="rejected">
-              <TabProfileContent tab="rejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "rejected"} showActions={false} onView={openView} />
+              <TabProfileContent tab="rejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "rejected"} showActions={false} refreshKey={refreshKey} onView={openView} />
             </TabsContent>
             <TabsContent value="updatesRejected">
-              <TabProfileContent tab="updatesRejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "updatesRejected"} showActions={false} onView={openView} />
+              <TabProfileContent tab="updatesRejected" status="rejected" active={mainTab === "allRejected" && rejectedSubTab === "updatesRejected"} showActions={false} refreshKey={refreshKey} onView={openView} />
             </TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* Suspended */}
         <TabsContent value="suspended">
-          <TabProfileContent tab="suspended" status="suspended" active={mainTab === "suspended"} showActions={false} onView={openView} />
+          <TabProfileContent tab="suspended" status="suspended" active={mainTab === "suspended"} showActions={false} refreshKey={refreshKey} onView={openView} />
         </TabsContent>
 
         {/* New Unverified */}
         <TabsContent value="unverified">
-          <TabProfileContent tab="unverified" status="unverified" active={mainTab === "unverified"} onView={openView} />
+          <TabProfileContent tab="unverified" status="unverified" active={mainTab === "unverified"} refreshKey={refreshKey} onView={openView} />
         </TabsContent>
       </Tabs>
 
@@ -656,8 +656,11 @@ const CAApplicationsReview = () => {
             <Textarea id="approve-notes" placeholder="Add any notes about this approval..." value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">Approve Application</AlertDialogAction>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleApprove} disabled={actionLoading} className="bg-green-600 hover:bg-green-700">
+              {actionLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Approve Application
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
