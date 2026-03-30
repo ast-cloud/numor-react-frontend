@@ -288,6 +288,7 @@ const CASettings = () => {
       };
       pendingSetDocuments((prev) => [...prev, newDocument]);
       toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
+      await loadCAProfile();
       setUploadDialogOpen(false);
       setPendingFile(null);
       setPendingDescription("");
