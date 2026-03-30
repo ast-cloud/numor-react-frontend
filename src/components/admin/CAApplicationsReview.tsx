@@ -412,7 +412,7 @@ const CAApplicationsReview = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">Approved</CardTitle>
             <CheckCircle className="w-4 h-4 text-green-500" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold text-green-600">{counts.verified}</div></CardContent>
+          <CardContent><div className="text-2xl font-bold text-green-600">{counts.verified + counts.unverifiedUpdates}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -446,7 +446,7 @@ const CAApplicationsReview = () => {
           </TabsTrigger>
           <TabsTrigger value="verified" className="gap-2">
             <CheckCircle className="w-4 h-4" />
-            Approved ({counts.verified})
+            Approved ({counts.verified + counts.unverifiedUpdates})
           </TabsTrigger>
           <TabsTrigger value="allRejected" className="gap-2">
             <XCircle className="w-4 h-4" />
@@ -482,9 +482,24 @@ const CAApplicationsReview = () => {
           </Tabs>
         </TabsContent>
 
-        {/* Approved */}
+        {/* Approved — sub-tabs */}
         <TabsContent value="verified">
-          <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions refreshKey={refreshKey} onView={openView} onSuspend={openSuspend} />
+          <Tabs defaultValue="verified">
+            <TabsList className="mb-4">
+              <TabsTrigger value="verified">
+                <TabLabelWithTooltip label="Approved Profiles" tooltip="Profiles that have been approved" count={counts.verified} />
+              </TabsTrigger>
+              <TabsTrigger value="unverifiedUpdates">
+                <TabLabelWithTooltip label="Unverified Updates" tooltip="Approved profiles with unsaved/unsubmitted updates" count={counts.unverifiedUpdates} />
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="verified">
+              <TabProfileContent tab="verified" status="approved" active={mainTab === "verified"} showActions refreshKey={refreshKey} onView={openView} onSuspend={openSuspend} />
+            </TabsContent>
+            <TabsContent value="unverifiedUpdates">
+              <TabProfileContent tab="unverifiedUpdates" status="approved" active={mainTab === "verified"} refreshKey={refreshKey} onView={openView} onSuspend={openSuspend} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* Rejected — sub-tabs */}
