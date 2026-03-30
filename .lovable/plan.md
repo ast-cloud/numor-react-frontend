@@ -1,20 +1,15 @@
 
 
-## Plan: Re-fetch CA Profile Status After Every Save Action
+## Plan: Fix Status After "Submit for Review" With Pending Updates
 
 ### Problem
-After saving address or professional details, the backend may create a `pendingProfile`, changing the derived status (e.g., "Verified" → "Unverified Updates"). But the code never re-fetches the profile after save — it only updates the local form state. The status badge stays stale until a full page refresh. Only "Submit for Review" manually sets `setCaStatus("Under Review")`.
+In `CASettings.tsx` line 437, after `submitCAProfileForReview()`, the status is hardcoded to `"Under Review"`. This is wrong when the CA already has an approved profile with unverified updates — the correct status should be `"Updates Under Review"`. The `loadCAProfile()` function already handles this correctly via `deriveCAProfileStatus`.
 
 ### Fix
 
-**`src/pages/CASettings.tsx`** — Extract the CA profile loading logic (lines 136–170) into a reusable `loadCAProfile` function, then call it after every successful save:
+**`src/pages/CASettings.tsx`** (line 437):
 
-1. Move the `loadCAProfile` async function out of the `useEffect` so it can be called independently (define it at component scope with `useCallback` or just as a standalone async function).
-2. Call `loadCAProfile()` after each successful save:
-   - After `updateCAProfileAPI(payload)` in `handleSaveProfessional` (~line 380)
-   - After `updateCAProfileAPI(payload)` in the address save handler (~line 711)
-   - After `uploadCADocument` and `deleteCADocument` calls
-3. This re-fetches `currentProfile` and `pendingProfile`, re-derives the status via `deriveCAProfileStatus`, and updates all form state — keeping the UI in sync without a page refresh.
+Replace `setCaStatus("Under Review")` with `await loadCAProfile()`. This re-fetches both profiles and derives the correct status automatically.
 
 ### Files modified
 - `src/pages/CASettings.tsx`
