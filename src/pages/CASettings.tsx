@@ -361,6 +361,10 @@ const CASettings = () => {
   };
 
   const handleSaveProfessional = async () => {
+    if (!professionalData.membershipNumber?.trim() || !professionalData.experience?.trim() || !professionalData.bio?.trim() || !professionalData.hourlyFee?.toString().trim()) {
+      toast({ title: "Validation Error", description: "Please fill in all required fields before saving.", variant: "destructive" });
+      return;
+    }
     if (professionalData.specialization.length === 0) {
       toast({ title: "Validation Error", description: "Please select at least one specialization.", variant: "destructive" });
       return;
