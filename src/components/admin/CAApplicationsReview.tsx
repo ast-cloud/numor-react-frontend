@@ -113,8 +113,11 @@ function getStatusBadge(status: TabStatusLabel) {
 
 // ─── Diff Field Display ──────────────────────────────────────────────
 function hasChange(currentVal: unknown, pendingVal: unknown): boolean {
-  if (pendingVal == null) return false;
+  if (pendingVal === undefined) return false;
+  if (pendingVal === null && (currentVal === null || currentVal === undefined || currentVal === "")) return false;
+  if (pendingVal === null) return true;
   if (Array.isArray(currentVal) && Array.isArray(pendingVal)) {
+    if (pendingVal.length === 0 && currentVal.length === 0) return false;
     return JSON.stringify([...currentVal].sort()) !== JSON.stringify([...pendingVal].sort());
   }
   return String(currentVal ?? "") !== String(pendingVal);
@@ -124,7 +127,11 @@ const DiffField = ({ label, icon: Icon, currentVal, pendingVal }: {
   label: string; icon: React.ElementType; currentVal: unknown; pendingVal: unknown;
 }) => {
   const changed = hasChange(currentVal, pendingVal);
-  const formatVal = (v: unknown) => Array.isArray(v) ? v.join(", ") : String(v ?? "—");
+  const formatVal = (v: unknown) => {
+    if (v === null || v === undefined) return "—";
+    if (Array.isArray(v)) return v.length > 0 ? v.join(", ") : "—";
+    return String(v);
+  };
 
   return (
     <div className="space-y-1">
