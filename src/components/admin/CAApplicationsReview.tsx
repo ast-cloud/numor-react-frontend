@@ -746,6 +746,11 @@ const CAApplicationsReview = () => {
                 <Ban className="w-4 h-4 mr-2" /> Suspend
               </Button>
             )}
+            {selectedProfile?.status === "SUSPENDED" && (
+              <Button variant="default" onClick={() => { setViewDialogOpen(false); openApprove(selectedProfile); }} className="bg-green-600 hover:bg-green-700">
+                <CheckCircle className="w-4 h-4 mr-2" /> Re-approve
+              </Button>
+            )}
             {(selectedProfile?.status === "REJECTED" || selectedProfile?.status === "SUSPENDED" || selectedProfile?.status === "PENDING") && (
               <Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
             )}
