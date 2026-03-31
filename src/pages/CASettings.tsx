@@ -187,6 +187,7 @@ const CASettings = () => {
             description: doc.description || "",
             url: doc.url,
             mimeType: doc.mimeType,
+            fileKey: doc.fileKey,
           };
           if (doc.type === "ID_PROOF") idProofs.push(mapped);
           else if (doc.type === "CERTIFICATION") certs.push(mapped);
