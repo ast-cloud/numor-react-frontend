@@ -418,8 +418,8 @@ const CAApplicationsReview = () => {
     try {
       await rejectCAProfileApi(selectedProfile.id);
       toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
-      refreshCounts();
-      loadProfiles(activeTab, activeSubTab);
+      fetchCAProfileCounts().then(setCounts).catch(() => {});
+      setRefreshKey(k => k + 1);
     } catch {
       toast({ title: "Error", description: "Failed to reject CA profile.", variant: "destructive" });
     } finally {
