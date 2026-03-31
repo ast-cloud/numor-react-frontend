@@ -330,6 +330,10 @@ const CASettings = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   const handleSaveProfile = async () => {
+    if (!profileData.name?.trim() || !profileData.phone?.trim()) {
+      toast({ title: "Validation Error", description: "Please fill in all required fields before saving.", variant: "destructive" });
+      return;
+    }
     setIsSavingProfile(true);
     try {
       await updateUserProfile({ name: profileData.name, phone: profileData.phone });
@@ -357,6 +361,10 @@ const CASettings = () => {
   };
 
   const handleSaveProfessional = async () => {
+    if (!professionalData.membershipNumber?.trim() || !professionalData.experience?.trim() || !professionalData.bio?.trim() || !professionalData.hourlyFee?.toString().trim()) {
+      toast({ title: "Validation Error", description: "Please fill in all required fields before saving.", variant: "destructive" });
+      return;
+    }
     if (professionalData.specialization.length === 0) {
       toast({ title: "Validation Error", description: "Please select at least one specialization.", variant: "destructive" });
       return;
@@ -705,6 +713,10 @@ const CASettings = () => {
                 Cancel
               </Button>
               <Button size="sm" className="h-7 text-xs px-2.5" disabled={isSavingAddress} onClick={async () => {
+                if (!addressData.streetAddress?.trim() || !addressData.city?.trim() || !addressData.state?.trim() || !addressData.zipCode?.trim() || !addressData.country?.trim()) {
+                  toast({ title: "Validation Error", description: "Please fill in all required fields before saving.", variant: "destructive" });
+                  return;
+                }
                 setIsSavingAddress(true);
                 try {
                   const payload: Record<string, unknown> = {};
