@@ -106,6 +106,7 @@ export async function rejectCAProfileUpdateApi(caProfileId: string) {
 
 export async function suspendCAProfileApi(caId: string) {
   const res = await fetch(`${config.backendHost}/api/admin/ca/caprofile/${caId}/suspend`, {
+    method: "POST",
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to suspend CA profile");
