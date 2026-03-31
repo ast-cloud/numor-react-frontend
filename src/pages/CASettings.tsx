@@ -287,6 +287,9 @@ const CASettings = () => {
         size: pendingFile.size,
         uploadedAt: new Date(result.createdAt || Date.now()),
         description: result.description || pendingDescription.trim(),
+        url: result.url,
+        mimeType: result.mimeType || pendingFile.type,
+        fileKey: result.fileKey,
       };
       pendingSetDocuments((prev) => [...prev, newDocument]);
       toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
