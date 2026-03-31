@@ -395,7 +395,7 @@ const CAApplicationsReview = () => {
     if (!selectedProfile) return;
     setActionLoading(true);
     try {
-      const isUpdate = pendingSubTab === "updatesUnderReview";
+      const isUpdate = pendingSubTab === "updatesUnderReview" && selectedProfile.status !== "SUSPENDED";
       if (isUpdate) {
         await approveCAProfileUpdateApi(selectedProfile.id);
       } else {
