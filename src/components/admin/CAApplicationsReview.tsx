@@ -416,8 +416,14 @@ const CAApplicationsReview = () => {
   const handleReject = async () => {
     if (!selectedProfile?.id) return;
     try {
-      await rejectCAProfileApi(selectedProfile.id);
-      toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
+      const isUpdate = selectedProfile.status === "APPROVED" && selectedProfile.pendingProfile && (selectedProfile.pendingProfile as any).status === "UNDER_REVIEW";
+      if (isUpdate) {
+        await rejectCAProfileUpdateApi(selectedProfile.id);
+        toast({ title: "Update Rejected", description: `${selectedProfile?.user?.name}'s CA profile update has been rejected.` });
+      } else {
+        await rejectCAProfileApi(selectedProfile.id);
+        toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
+      }
       fetchCAProfileCounts().then(setCounts).catch(() => {});
       setRefreshKey(k => k + 1);
     } catch {
