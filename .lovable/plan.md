@@ -1,28 +1,21 @@
 
 
-## Plan: Use Display Labels as Stored Values for Specializations
+## Plan: Add Empty Field Validation to CA Settings Save Actions
 
 ### Problem
-The `SPECIALIZATIONS` array in `CASettings.tsx` uses short internal keys (e.g., `"tax"`, `"audit"`) as `value` while showing different labels (e.g., `"Tax Advisory"`, `"Audit & Assurance"`). The API receives the short keys, not the display strings.
+Users can save fields with empty values in the profile, address, and professional sections without any error.
 
 ### Fix
 
-**`src/pages/CASettings.tsx`** (line 214–221):
+**`src/pages/CASettings.tsx`** — Add validation checks at the start of each save handler:
 
-Change `value` to match `label` for every specialization:
+1. **`handleSaveProfile` (~line 332)**: Check `profileData.name` and `profileData.phone` are non-empty before saving.
 
-```ts
-const SPECIALIZATIONS = [
-  { value: "Tax Advisory", label: "Tax Advisory" },
-  { value: "Audit & Assurance", label: "Audit & Assurance" },
-  { value: "Corporate Finance", label: "Corporate Finance" },
-  { value: "Financial Consulting", label: "Financial Consulting" },
-  { value: "Bookkeeping & Accounting", label: "Bookkeeping & Accounting" },
-  { value: "Regulatory Compliance", label: "Regulatory Compliance" },
-];
-```
+2. **`handleSaveProfessional` (~line 359)**: Check `membershipNumber`, `experience`, `bio`, and `hourlyFee` are non-empty (specialization/languages already validated).
 
-No other changes needed — the rest of the code already references `spec.value` for storage and comparison, and `spec.label` only for display in badges (which will now match anyway).
+3. **Address save handler (~line 707)**: Check `streetAddress`, `city`, `state`, `zipCode`, and `country` are non-empty.
+
+Each check shows a destructive toast like: `"Please fill in all required fields before saving."` and returns early.
 
 ### Files modified
 - `src/pages/CASettings.tsx`
