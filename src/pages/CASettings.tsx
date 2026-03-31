@@ -526,7 +526,7 @@ const CASettings = () => {
                         size="sm"
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         disabled={deletingDocId === doc.id}
-                        onClick={(e) => { e.stopPropagation(); handleRemoveDocument(doc.id, setDocuments); }}
+                        onClick={(e) => { e.stopPropagation(); handleRemoveDocument(doc.id, doc.fileKey || doc.id, setDocuments); }}
                       >
                         {deletingDocId === doc.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
