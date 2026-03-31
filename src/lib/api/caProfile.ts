@@ -99,11 +99,11 @@ export async function fetchCADocuments() {
   return json.data?.documents ?? json.documents ?? [];
 }
 
-export async function deleteCADocument(documentId: string) {
+export async function deleteCADocument(fileKey: string) {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
-  const res = await fetch(`${config.backendHost}/api/ca-profile/documents/${documentId}`, {
+  const res = await fetch(`${config.backendHost}/api/ca-profile/documents?fileKey=${encodeURIComponent(fileKey)}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,

@@ -29,6 +29,7 @@ interface UploadedDocument {
   description: string;
   url?: string;
   mimeType?: string;
+  fileKey?: string;
 }
 
 const ImageWithSpinner = ({ src, alt }: { src: string; alt: string }) => {
@@ -186,6 +187,7 @@ const CASettings = () => {
             description: doc.description || "",
             url: doc.url,
             mimeType: doc.mimeType,
+            fileKey: doc.fileKey,
           };
           if (doc.type === "ID_PROOF") idProofs.push(mapped);
           else if (doc.type === "CERTIFICATION") certs.push(mapped);
@@ -304,11 +306,12 @@ const CASettings = () => {
 
   const handleRemoveDocument = async (
     documentId: string,
+    fileKey: string,
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>
   ) => {
     setDeletingDocId(documentId);
     try {
-      await deleteCADocument(documentId);
+      await deleteCADocument(fileKey);
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
       toast({ title: "Document deleted", description: "The document has been deleted successfully." });
       await loadCAProfile();
@@ -523,7 +526,7 @@ const CASettings = () => {
                         size="sm"
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         disabled={deletingDocId === doc.id}
-                        onClick={(e) => { e.stopPropagation(); handleRemoveDocument(doc.id, setDocuments); }}
+                        onClick={(e) => { e.stopPropagation(); handleRemoveDocument(doc.id, doc.fileKey || doc.id, setDocuments); }}
                       >
                         {deletingDocId === doc.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
