@@ -437,15 +437,15 @@ const CAApplicationsReview = () => {
 
   const handleSuspend = async () => {
     if (!selectedProfile) return;
+    setActionLoading(true);
     try {
       await suspendCAProfileApi(selectedProfile.id);
       toast({ title: "Profile Suspended", description: `${selectedProfile?.user?.name}'s CA profile has been suspended.` });
-      const newCounts = await fetchCAProfileCounts();
-      setCounts(newCounts);
-      await loadProfiles(activeTab, activeSubTab);
+      refreshData();
     } catch (error) {
       toast({ title: "Error", description: "Failed to suspend CA profile.", variant: "destructive" });
     } finally {
+      setActionLoading(false);
       setSuspendDialogOpen(false);
       setSelectedProfile(null);
       setReviewNotes("");
