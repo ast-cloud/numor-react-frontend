@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, approveCAProfileUpdateApi, type CAProfileTab } from "@/lib/api/admin";
+import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, approveCAProfileUpdateApi, rejectCAProfileApi, type CAProfileTab } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -413,11 +413,20 @@ const CAApplicationsReview = () => {
     }
   };
 
-  const handleReject = () => {
-    toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
-    setRejectDialogOpen(false);
-    setSelectedProfile(null);
-    setReviewNotes("");
+  const handleReject = async () => {
+    if (!selectedProfile?.id) return;
+    try {
+      await rejectCAProfileApi(selectedProfile.id);
+      toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
+      fetchCAProfileCounts().then(setCounts).catch(() => {});
+      setRefreshKey(k => k + 1);
+    } catch {
+      toast({ title: "Error", description: "Failed to reject CA profile.", variant: "destructive" });
+    } finally {
+      setRejectDialogOpen(false);
+      setSelectedProfile(null);
+      setReviewNotes("");
+    }
   };
 
   const handleSuspend = () => {
