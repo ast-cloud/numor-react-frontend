@@ -751,7 +751,7 @@ const CAApplicationsReview = () => {
                 </Button>
               </>
             )}
-            {selectedProfile?.status === "APPROVED" && !selectedProfile?.pendingProfile && (
+            {selectedProfile?.status === "APPROVED" && (!selectedProfile?.pendingProfile || (selectedProfile.pendingProfile as any).status !== "UNDER_REVIEW") && (
               <Button variant="outline" onClick={() => { setViewDialogOpen(false); openSuspend(selectedProfile); }} className="text-orange-600 border-orange-200 hover:bg-orange-50">
                 <Ban className="w-4 h-4 mr-2" /> Suspend
               </Button>
