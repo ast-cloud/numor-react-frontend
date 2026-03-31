@@ -713,6 +713,10 @@ const CASettings = () => {
                 Cancel
               </Button>
               <Button size="sm" className="h-7 text-xs px-2.5" disabled={isSavingAddress} onClick={async () => {
+                if (!addressData.streetAddress?.trim() || !addressData.city?.trim() || !addressData.state?.trim() || !addressData.zipCode?.trim() || !addressData.country?.trim()) {
+                  toast({ title: "Validation Error", description: "Please fill in all required fields before saving.", variant: "destructive" });
+                  return;
+                }
                 setIsSavingAddress(true);
                 try {
                   const payload: Record<string, unknown> = {};
