@@ -330,6 +330,10 @@ const CASettings = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   const handleSaveProfile = async () => {
+    if (!profileData.name?.trim() || !profileData.phone?.trim()) {
+      toast({ title: "Validation Error", description: "Please fill in all required fields before saving.", variant: "destructive" });
+      return;
+    }
     setIsSavingProfile(true);
     try {
       await updateUserProfile({ name: profileData.name, phone: profileData.phone });
