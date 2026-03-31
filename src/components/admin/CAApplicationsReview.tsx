@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, approveCAProfileUpdateApi, rejectCAProfileApi, rejectCAProfileUpdateApi, type CAProfileTab } from "@/lib/api/admin";
+import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, approveCAProfileUpdateApi, rejectCAProfileApi, rejectCAProfileUpdateApi, suspendCAProfileApi, type CAProfileTab } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -435,11 +435,21 @@ const CAApplicationsReview = () => {
     }
   };
 
-  const handleSuspend = () => {
-    toast({ title: "Application Suspended", description: `${selectedProfile?.user?.name}'s CA application has been suspended.` });
-    setSuspendDialogOpen(false);
-    setSelectedProfile(null);
-    setReviewNotes("");
+  const handleSuspend = async () => {
+    if (!selectedProfile) return;
+    setActionLoading(true);
+    try {
+      await suspendCAProfileApi(selectedProfile.id);
+      toast({ title: "Profile Suspended", description: `${selectedProfile?.user?.name}'s CA profile has been suspended.` });
+      refreshData();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to suspend CA profile.", variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+      setSuspendDialogOpen(false);
+      setSelectedProfile(null);
+      setReviewNotes("");
+    }
   };
 
   return (
@@ -741,7 +751,7 @@ const CAApplicationsReview = () => {
                 </Button>
               </>
             )}
-            {selectedProfile?.status === "APPROVED" && !selectedProfile?.pendingProfile && (
+            {selectedProfile?.status === "APPROVED" && (!selectedProfile?.pendingProfile || (selectedProfile.pendingProfile as any).status !== "UNDER_REVIEW") && (
               <Button variant="outline" onClick={() => { setViewDialogOpen(false); openSuspend(selectedProfile); }} className="text-orange-600 border-orange-200 hover:bg-orange-50">
                 <Ban className="w-4 h-4 mr-2" /> Suspend
               </Button>

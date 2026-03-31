@@ -104,6 +104,14 @@ export async function rejectCAProfileUpdateApi(caProfileId: string) {
   return res.json();
 }
 
+export async function suspendCAProfileApi(caId: string) {
+  const res = await fetch(`${config.backendHost}/api/admin/ca/caprofile/${caId}/suspend`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to suspend CA profile");
+  return res.json();
+}
+
 export async function deleteUserApi(email: string) {
   const res = await fetch(`${config.backendHost}/api/admin/users`, {
     method: "DELETE",
