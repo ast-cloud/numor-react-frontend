@@ -306,11 +306,12 @@ const CASettings = () => {
 
   const handleRemoveDocument = async (
     documentId: string,
+    fileKey: string,
     setDocuments: React.Dispatch<React.SetStateAction<UploadedDocument[]>>
   ) => {
     setDeletingDocId(documentId);
     try {
-      await deleteCADocument(documentId);
+      await deleteCADocument(fileKey);
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
       toast({ title: "Document deleted", description: "The document has been deleted successfully." });
       await loadCAProfile();
