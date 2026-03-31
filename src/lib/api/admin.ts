@@ -88,6 +88,14 @@ export async function rejectCAProfileApi(caId: string) {
   return res.json();
 }
 
+export async function rejectCAProfileUpdateApi(caProfileId: string) {
+  const res = await fetch(`${config.backendHost}/api/admin/ca/caprofile/${caProfileId}/rejectUpdate`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to reject CA profile update');
+  return res.json();
+}
+
 export async function deleteUserApi(email: string) {
   const res = await fetch(`${config.backendHost}/api/admin/users`, {
     method: 'DELETE',

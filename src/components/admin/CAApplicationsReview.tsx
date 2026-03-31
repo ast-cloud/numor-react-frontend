@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, approveCAProfileUpdateApi, rejectCAProfileApi, type CAProfileTab } from "@/lib/api/admin";
+import { fetchCAProfileCounts, fetchCAProfiles, approveCAProfileApi, approveCAProfileUpdateApi, rejectCAProfileApi, rejectCAProfileUpdateApi, type CAProfileTab } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -416,8 +416,14 @@ const CAApplicationsReview = () => {
   const handleReject = async () => {
     if (!selectedProfile?.id) return;
     try {
-      await rejectCAProfileApi(selectedProfile.id);
-      toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
+      const isUpdate = selectedProfile.status === "APPROVED" && selectedProfile.pendingProfile && (selectedProfile.pendingProfile as any).status === "UNDER_REVIEW";
+      if (isUpdate) {
+        await rejectCAProfileUpdateApi(selectedProfile.id);
+        toast({ title: "Update Rejected", description: `${selectedProfile?.user?.name}'s CA profile update has been rejected.` });
+      } else {
+        await rejectCAProfileApi(selectedProfile.id);
+        toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
+      }
       fetchCAProfileCounts().then(setCounts).catch(() => {});
       setRefreshKey(k => k + 1);
     } catch {
