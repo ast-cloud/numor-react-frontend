@@ -29,6 +29,7 @@ interface UploadedDocument {
   description: string;
   url?: string;
   mimeType?: string;
+  fileKey?: string;
 }
 
 const ImageWithSpinner = ({ src, alt }: { src: string; alt: string }) => {
