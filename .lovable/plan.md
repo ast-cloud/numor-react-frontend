@@ -1,28 +1,23 @@
 
 
-## Plan: Use Display Labels as Stored Values for Specializations
+## Plan: Allow Clearing Fields but Gate "Submit for Review" on Completeness
 
 ### Problem
-The `SPECIALIZATIONS` array in `CASettings.tsx` uses short internal keys (e.g., `"tax"`, `"audit"`) as `value` while showing different labels (e.g., `"Tax Advisory"`, `"Audit & Assurance"`). The API receives the short keys, not the display strings.
+The save handlers for professional details block saving when specialization or languages are empty (validation errors). Users should be able to save partial/empty fields freely. The "Submit for Review" button should be the only gate that requires all fields to be filled (which `isFormComplete()` already handles at line 419).
 
 ### Fix
 
-**`src/pages/CASettings.tsx`** (line 214–221):
+**`src/pages/CASettings.tsx`**:
 
-Change `value` to match `label` for every specialization:
+1. **Remove early-return validation from `handleSaveProfessional`** (lines 360-367): Delete the two `if` blocks that check for empty specialization and languages arrays and show toast errors. This allows saving empty arrays.
 
-```ts
-const SPECIALIZATIONS = [
-  { value: "Tax Advisory", label: "Tax Advisory" },
-  { value: "Audit & Assurance", label: "Audit & Assurance" },
-  { value: "Corporate Finance", label: "Corporate Finance" },
-  { value: "Financial Consulting", label: "Financial Consulting" },
-  { value: "Bookkeeping & Accounting", label: "Bookkeeping & Accounting" },
-  { value: "Regulatory Compliance", label: "Regulatory Compliance" },
-];
-```
+2. **No changes needed for address save** — the address handler (line 707) has no such validation, so clearing address fields already works.
 
-No other changes needed — the rest of the code already references `spec.value` for storage and comparison, and `spec.label` only for display in badges (which will now match anyway).
+3. **No changes needed for `isFormComplete()`** — it already requires all fields (specializations, languages, address, etc.) and gates the "Submit for Review" button.
+
+### Result
+- Users can clear any field and save freely
+- "Submit for Review" remains disabled until all required fields are filled (existing `isFormComplete()` logic)
 
 ### Files modified
 - `src/pages/CASettings.tsx`
