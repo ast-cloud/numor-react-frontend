@@ -725,7 +725,7 @@ const CAApplicationsReview = () => {
                 </Button>
               </>
             )}
-            {selectedProfile?.status === "APPROVED" && selectedProfile?.pendingProfile && (
+            {selectedProfile?.status === "APPROVED" && selectedProfile?.pendingProfile && (selectedProfile.pendingProfile as any).status === "UNDER_REVIEW" && (
               <>
                 <Button variant="outline" onClick={() => { setViewDialogOpen(false); openReject(selectedProfile); }} className="text-red-600 border-red-200 hover:bg-red-50">
                   <XCircle className="w-4 h-4 mr-2" /> Reject Update
