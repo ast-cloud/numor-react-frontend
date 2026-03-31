@@ -671,9 +671,45 @@ const CAApplicationsReview = () => {
                 const docs = selectedProfile.documents || [];
                 const certs = docs.filter((d: any) => d.type === "CERTIFICATION");
                 const idProofs = docs.filter((d: any) => d.type === "ID_PROOF");
+                const pendingDocs: any[] = selectedProfile.pendingProfile?.documents || [];
+                const deletedFileKeys = new Set(pendingDocs.filter((d: any) => d.operation === "DELETE").map((d: any) => d.fileKey));
+                const addedDocs = pendingDocs.filter((d: any) => d.operation === "ADD");
+                const addedCerts = addedDocs.filter((d: any) => d.type === "CERTIFICATION");
+                const addedIdProofs = addedDocs.filter((d: any) => d.type === "ID_PROOF");
 
-                const renderDocList = (title: string, Icon: React.ElementType, list: any[]) => {
-                  if (list.length === 0) return null;
+                const renderDocItem = (doc: any, isDeleted: boolean, isAdded: boolean) => (
+                  <div
+                    key={doc.id || doc.fileKey}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                      isDeleted
+                        ? "bg-red-500/10 border border-red-500/20 hover:bg-red-500/15"
+                        : isAdded
+                          ? "bg-green-500/10 border border-green-500/20 hover:bg-green-500/15"
+                          : "bg-muted/50 hover:bg-muted/80"
+                    }`}
+                    onClick={() => (doc.signedUrl || doc.url) && setPreviewDoc({ url: doc.signedUrl || doc.url, description: doc.description || doc.type, mimeType: doc.mimeType })}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded shrink-0 ${isDeleted ? "bg-red-500/10" : isAdded ? "bg-green-500/10" : "bg-background"}`}>
+                        <FileText className={`w-4 h-4 ${isDeleted ? "text-red-600" : isAdded ? "text-green-600" : "text-muted-foreground"}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-sm font-medium truncate ${isDeleted ? "line-through text-red-600" : ""}`}>
+                          {doc.description || doc.type || "Document"}
+                        </p>
+                        {doc.createdAt && (
+                          <p className="text-xs text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString("en-GB")}</p>
+                        )}
+                      </div>
+                      {isDeleted && <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/20 text-xs shrink-0">Pending Delete</Badge>}
+                      {isAdded && <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20 text-xs shrink-0">New Upload</Badge>}
+                      {!isDeleted && !isAdded && <Eye className="w-4 h-4 text-muted-foreground shrink-0" />}
+                    </div>
+                  </div>
+                );
+
+                const renderDocList = (title: string, Icon: React.ElementType, list: any[], added: any[]) => {
+                  if (list.length === 0 && added.length === 0) return null;
                   return (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -683,26 +719,8 @@ const CAApplicationsReview = () => {
                         <Label className="text-sm font-medium">{title}</Label>
                       </div>
                       <div className="space-y-2">
-                        {list.map((doc: any) => (
-                          <div
-                            key={doc.id}
-                            className="p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
-                            onClick={() => (doc.signedUrl || doc.url) && setPreviewDoc({ url: doc.signedUrl || doc.url, description: doc.description || doc.type, mimeType: doc.mimeType })}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-background rounded shrink-0">
-                                <FileText className="w-4 h-4 text-muted-foreground" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium truncate">{doc.description || doc.type || "Document"}</p>
-                                {doc.createdAt && (
-                                  <p className="text-xs text-muted-foreground">{new Date(doc.createdAt).toLocaleDateString("en-GB")}</p>
-                                )}
-                              </div>
-                              <Eye className="w-4 h-4 text-muted-foreground shrink-0" />
-                            </div>
-                          </div>
-                        ))}
+                        {list.map((doc: any) => renderDocItem(doc, deletedFileKeys.has(doc.fileKey), false))}
+                        {added.map((doc: any) => renderDocItem(doc, false, true))}
                       </div>
                     </div>
                   );
@@ -710,9 +728,9 @@ const CAApplicationsReview = () => {
 
                 return (
                   <div className="space-y-4">
-                    {renderDocList("Certifications", GraduationCap, certs)}
-                    {renderDocList("ID Proofs", ShieldCheck, idProofs)}
-                    {certs.length === 0 && idProofs.length === 0 && (
+                    {renderDocList("Certifications", GraduationCap, certs, addedCerts)}
+                    {renderDocList("ID Proofs", ShieldCheck, idProofs, addedIdProofs)}
+                    {certs.length === 0 && idProofs.length === 0 && addedDocs.length === 0 && (
                       <p className="text-sm text-muted-foreground">No documents submitted.</p>
                     )}
                   </div>
