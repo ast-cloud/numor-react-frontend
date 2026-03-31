@@ -413,11 +413,20 @@ const CAApplicationsReview = () => {
     }
   };
 
-  const handleReject = () => {
-    toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
-    setRejectDialogOpen(false);
-    setSelectedProfile(null);
-    setReviewNotes("");
+  const handleReject = async () => {
+    if (!selectedProfile?.id) return;
+    try {
+      await rejectCAProfileApi(selectedProfile.id);
+      toast({ title: "Application Rejected", description: `${selectedProfile?.user?.name}'s CA application has been rejected.` });
+      refreshCounts();
+      loadProfiles(activeTab, activeSubTab);
+    } catch {
+      toast({ title: "Error", description: "Failed to reject CA profile.", variant: "destructive" });
+    } finally {
+      setRejectDialogOpen(false);
+      setSelectedProfile(null);
+      setReviewNotes("");
+    }
   };
 
   const handleSuspend = () => {
