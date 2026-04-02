@@ -169,37 +169,37 @@ const CASettings = () => {
     }
   }, []);
 
+  const loadDocuments = useCallback(async () => {
+    try {
+      const docs = await fetchCADocuments();
+      const idProofs: UploadedDocument[] = [];
+      const certs: UploadedDocument[] = [];
+      for (const doc of docs) {
+        const mapped: UploadedDocument = {
+          id: doc.id,
+          name: doc.description || "Document",
+          type: doc.type,
+          size: 0,
+          uploadedAt: new Date(doc.createdAt || Date.now()),
+          description: doc.description || "",
+          url: doc.url,
+          mimeType: doc.mimeType,
+          fileKey: doc.fileKey,
+        };
+        if (doc.type === "ID_PROOF") idProofs.push(mapped);
+        else if (doc.type === "CERTIFICATION") certs.push(mapped);
+      }
+      setIdProofDocuments(idProofs);
+      setCertificationDocuments(certs);
+    } catch {
+      // silently fail
+    }
+  }, []);
+
   useEffect(() => {
     loadCAProfile();
-
-    const loadDocuments = async () => {
-      try {
-        const docs = await fetchCADocuments();
-        const idProofs: UploadedDocument[] = [];
-        const certs: UploadedDocument[] = [];
-        for (const doc of docs) {
-          const mapped: UploadedDocument = {
-            id: doc.id,
-            name: doc.description || "Document",
-            type: doc.type,
-            size: 0,
-            uploadedAt: new Date(doc.createdAt || Date.now()),
-            description: doc.description || "",
-            url: doc.url,
-            mimeType: doc.mimeType,
-            fileKey: doc.fileKey,
-          };
-          if (doc.type === "ID_PROOF") idProofs.push(mapped);
-          else if (doc.type === "CERTIFICATION") certs.push(mapped);
-        }
-        setIdProofDocuments(idProofs);
-        setCertificationDocuments(certs);
-      } catch {
-        // silently fail
-      }
-    };
     loadDocuments();
-  }, [loadCAProfile]);
+  }, [loadCAProfile, loadDocuments]);
 
   const [professionalData, setProfessionalData] = useState({
     membershipNumber: caProfileData.membershipNumber || "",
@@ -279,21 +279,10 @@ const CASettings = () => {
     setIsUploading(true);
     try {
       const apiType = pendingDocumentType === "id_proof" ? "ID_PROOF" : "CERTIFICATION";
-      const result = await uploadCADocument(pendingFile, apiType, pendingDescription.trim());
-      const newDocument: UploadedDocument = {
-        id: result.id || `${Date.now()}`,
-        name: pendingFile.name,
-        type: pendingFile.type,
-        size: pendingFile.size,
-        uploadedAt: new Date(result.createdAt || Date.now()),
-        description: result.description || pendingDescription.trim(),
-        url: result.url,
-        mimeType: result.mimeType || pendingFile.type,
-        fileKey: result.fileKey,
-      };
-      pendingSetDocuments((prev) => [...prev, newDocument]);
+      await uploadCADocument(pendingFile, apiType, pendingDescription.trim());
       toast({ title: "Document uploaded", description: `${pendingFile.name} has been uploaded successfully.` });
       await loadCAProfile();
+      await loadDocuments();
       setUploadDialogOpen(false);
       setPendingFile(null);
       setPendingDescription("");
@@ -315,9 +304,9 @@ const CASettings = () => {
     setDeletingDocId(documentId);
     try {
       await deleteCADocument(fileKey);
-      setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
       toast({ title: "Document deleted", description: "The document has been deleted successfully." });
       await loadCAProfile();
+      await loadDocuments();
     } catch (error) {
       toast({ title: "Error", description: "Failed to delete document. Please try again.", variant: "destructive" });
     } finally {
