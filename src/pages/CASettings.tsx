@@ -169,37 +169,37 @@ const CASettings = () => {
     }
   }, []);
 
+  const loadDocuments = useCallback(async () => {
+    try {
+      const docs = await fetchCADocuments();
+      const idProofs: UploadedDocument[] = [];
+      const certs: UploadedDocument[] = [];
+      for (const doc of docs) {
+        const mapped: UploadedDocument = {
+          id: doc.id,
+          name: doc.description || "Document",
+          type: doc.type,
+          size: 0,
+          uploadedAt: new Date(doc.createdAt || Date.now()),
+          description: doc.description || "",
+          url: doc.url,
+          mimeType: doc.mimeType,
+          fileKey: doc.fileKey,
+        };
+        if (doc.type === "ID_PROOF") idProofs.push(mapped);
+        else if (doc.type === "CERTIFICATION") certs.push(mapped);
+      }
+      setIdProofDocuments(idProofs);
+      setCertificationDocuments(certs);
+    } catch {
+      // silently fail
+    }
+  }, []);
+
   useEffect(() => {
     loadCAProfile();
-
-    const loadDocuments = async () => {
-      try {
-        const docs = await fetchCADocuments();
-        const idProofs: UploadedDocument[] = [];
-        const certs: UploadedDocument[] = [];
-        for (const doc of docs) {
-          const mapped: UploadedDocument = {
-            id: doc.id,
-            name: doc.description || "Document",
-            type: doc.type,
-            size: 0,
-            uploadedAt: new Date(doc.createdAt || Date.now()),
-            description: doc.description || "",
-            url: doc.url,
-            mimeType: doc.mimeType,
-            fileKey: doc.fileKey,
-          };
-          if (doc.type === "ID_PROOF") idProofs.push(mapped);
-          else if (doc.type === "CERTIFICATION") certs.push(mapped);
-        }
-        setIdProofDocuments(idProofs);
-        setCertificationDocuments(certs);
-      } catch {
-        // silently fail
-      }
-    };
     loadDocuments();
-  }, [loadCAProfile]);
+  }, [loadCAProfile, loadDocuments]);
 
   const [professionalData, setProfessionalData] = useState({
     membershipNumber: caProfileData.membershipNumber || "",
