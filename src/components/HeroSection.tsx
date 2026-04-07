@@ -86,18 +86,6 @@ const HeroSection = () => {
               <div className="relative bg-gradient-card rounded-xl border border-border/50 p-4 shadow-card">
                 <DashboardIcon className="w-full h-auto" />
                 
-                {/* Floating cards */}
-                <div className="absolute -top-3 -right-3 bg-card rounded-lg border border-border/50 p-3 shadow-card animate-float">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-primary text-sm">💡</span>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground">AI Insight</p>
-                      <p className="text-xs font-medium text-foreground">Expenses ↓ 15%</p>
-                    </div>
-                  </div>
-                </div>
 
                 <div className="absolute -bottom-3 -left-3 bg-card rounded-lg border border-border/50 p-3 shadow-card animate-float-delayed">
                   <div className="flex items-center gap-2">

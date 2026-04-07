@@ -54,10 +54,6 @@ const DashboardIcon = ({ className }: { className?: string }) => (
     <path d="M88 84L90 87L93 83" className="stroke-primary" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     
     {/* Floating notification */}
-    <g className="animate-float">
-      <rect x="85" y="8" width="24" height="18" rx="4" className="fill-primary shadow-glow" />
-      <text x="97" y="20" textAnchor="middle" className="fill-primary-foreground text-[9px] font-bold">+24%</text>
-    </g>
   </svg>
 );
 
