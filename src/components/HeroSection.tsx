@@ -87,17 +87,6 @@ const HeroSection = () => {
                 <DashboardIcon className="w-full h-auto" />
                 
 
-                <div className="absolute -bottom-3 -left-3 bg-card rounded-lg border border-border/50 p-3 shadow-card animate-float-delayed">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                      <span className="text-primary-foreground text-xs font-bold">CA</span>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground">Expert Available</p>
-                      <p className="text-xs font-medium text-foreground">Book in 2 clicks</p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
