@@ -23,11 +23,6 @@ const HeroSection = () => {
           {/* Left content */}
           <div className="text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs text-muted-foreground">AI-Powered Finance for SMBs</span>
-            </div>
-
             {/* Headline */}
             <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-4 animate-slide-up">
               Your finances,{" "}
