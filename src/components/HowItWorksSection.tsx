@@ -36,10 +36,6 @@ const HowItWorksSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section header */}
         <div className="text-center max-w-2xl mx-auto mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <ArrowRight className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs text-muted-foreground">Simple Process</span>
-          </div>
           <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             How <span className="text-gradient">Numor</span> works
           </h2>

@@ -45,10 +45,6 @@ const FeaturesSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section header */}
         <div className="text-center max-w-2xl mx-auto mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <BarChart3 className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs text-muted-foreground">Powerful Features</span>
-          </div>
           <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             Everything you need to{" "}
             <span className="text-gradient">manage finances</span>
