@@ -9,14 +9,20 @@ const HeroSection = () => {
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-glow opacity-50" />
       <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 w-60 h-60 bg-primary/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-      
+      <div
+        className="absolute bottom-1/4 right-1/4 w-60 h-60 bg-primary/10 rounded-full blur-3xl animate-pulse-glow"
+        style={{ animationDelay: "1.5s" }}
+      />
+
       {/* Grid pattern */}
-      <div className="absolute inset-0 opacity-[0.02]" style={{
-        backgroundImage: `linear-gradient(hsl(var(--foreground)) 1px, transparent 1px),
+      <div
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `linear-gradient(hsl(var(--foreground)) 1px, transparent 1px),
                           linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)`,
-        backgroundSize: '60px 60px'
-      }} />
+          backgroundSize: "60px 60px",
+        }}
+      />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -25,18 +31,22 @@ const HeroSection = () => {
             {/* Badge */}
             {/* Headline */}
             <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-4 animate-slide-up">
-              Your finances,{" "}
-              <span className="text-gradient">simplified</span>{" "}
-              with AI
+              Your finances, <span className="text-gradient">simplified</span> with AI
             </h1>
 
             {/* Subheadline */}
-            <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-8 animate-slide-up delay-100" style={{ opacity: 0, animationFillMode: 'forwards' }}>
-              Manage invoices, track expenses, get AI insights, and connect with expert accountants — all in one powerful platform.
+            <p
+              className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-8 animate-slide-up delay-100"
+              style={{ opacity: 0, animationFillMode: "forwards" }}
+            >
+              Invoices. Expenses. Experts. Done in seconds.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start animate-slide-up delay-200" style={{ opacity: 0, animationFillMode: 'forwards' }}>
+            <div
+              className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start animate-slide-up delay-200"
+              style={{ opacity: 0, animationFillMode: "forwards" }}
+            >
               <Button variant="hero" size="lg" className="group" asChild>
                 <Link to="/signup">
                   Start Free Trial
@@ -50,7 +60,10 @@ const HeroSection = () => {
             </div>
 
             {/* Trust badges */}
-            <div className="mt-10 pt-6 border-t border-border/30 animate-slide-up delay-300" style={{ opacity: 0, animationFillMode: 'forwards' }}>
+            <div
+              className="mt-10 pt-6 border-t border-border/30 animate-slide-up delay-300"
+              style={{ opacity: 0, animationFillMode: "forwards" }}
+            >
               <p className="text-xs text-muted-foreground mb-3">Trusted by growing businesses</p>
               <div className="flex items-center gap-6 justify-center lg:justify-start">
                 <div className="text-center">
@@ -72,16 +85,14 @@ const HeroSection = () => {
           </div>
 
           {/* Right content - Dashboard Preview */}
-          <div className="relative animate-scale-in delay-200" style={{ opacity: 0, animationFillMode: 'forwards' }}>
+          <div className="relative animate-scale-in delay-200" style={{ opacity: 0, animationFillMode: "forwards" }}>
             <div className="relative">
               {/* Glow effect */}
               <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-3xl transform scale-90" />
-              
+
               {/* Dashboard illustration */}
               <div className="relative bg-gradient-card rounded-xl border border-border/50 p-4 shadow-card">
                 <DashboardIcon className="w-full h-auto" />
-                
-
               </div>
             </div>
           </div>
