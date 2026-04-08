@@ -22,8 +22,8 @@ const ExpenseTrackingIcon = ({ className }: { className?: string }) => (
     </g>
 
     <g className="animate-float-delayed">
-      <rect x="6" y="86" width="28" height="14" rx="7" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
-      <text x="20" y="95.5" textAnchor="middle" className="fill-primary/70 text-[7px]" style={{ fontFamily: 'var(--font-body)' }}>SaaS</text>
+      <rect x="6" y="86" width="36" height="14" rx="7" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
+      <text x="24" y="95.5" textAnchor="middle" className="fill-primary/70 text-[6px]" style={{ fontFamily: 'var(--font-body)' }}>Electricity</text>
     </g>
 
     {/* Flow arrows converging to center */}
