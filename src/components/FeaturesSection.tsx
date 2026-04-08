@@ -1,12 +1,12 @@
 import AccountingIcon from "./vectors/AccountingIcon";
-import AIInsightsIcon from "./vectors/AIInsightsIcon";
+import ExpenseTrackingIcon from "./vectors/ExpenseTrackingIcon";
 import CAConnectIcon from "./vectors/CAConnectIcon";
 
 const features = [
   {
     title: "Expense Tracking",
     description: "Track and categorize your expenses effortlessly with OCR auto-extraction and smart categorization.",
-    icon: AIInsightsIcon,
+    icon: ExpenseTrackingIcon,
     gradient: "from-primary/20 to-primary/5",
   },
   {
