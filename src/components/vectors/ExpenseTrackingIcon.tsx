@@ -1,72 +1,73 @@
 const ExpenseTrackingIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 160 100"
+    viewBox="0 0 120 120"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
     {/* Scattered expense items - left side */}
     <g className="animate-float">
-      <rect x="2" y="8" width="36" height="16" rx="8" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
-      <text x="20" y="19" textAnchor="middle" className="fill-primary/70 text-[9px]" style={{ fontFamily: 'var(--font-body)' }}>Food</text>
+      <rect x="5" y="20" width="28" height="14" rx="7" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
+      <text x="19" y="29.5" textAnchor="middle" className="fill-primary/70 text-[7px]" style={{ fontFamily: 'var(--font-body)' }}>Food</text>
     </g>
 
     <g className="animate-float-delayed">
-      <rect x="5" y="30" width="34" height="16" rx="8" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
-      <text x="22" y="41" textAnchor="middle" className="fill-primary/70 text-[9px]" style={{ fontFamily: 'var(--font-body)' }}>Rent</text>
+      <rect x="8" y="42" width="26" height="14" rx="7" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
+      <text x="21" y="51.5" textAnchor="middle" className="fill-primary/70 text-[7px]" style={{ fontFamily: 'var(--font-body)' }}>Rent</text>
     </g>
 
     <g className="animate-float">
-      <rect x="0" y="52" width="38" height="16" rx="8" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
-      <text x="19" y="63" textAnchor="middle" className="fill-primary/70 text-[9px]" style={{ fontFamily: 'var(--font-body)' }}>Travel</text>
+      <rect x="3" y="64" width="30" height="14" rx="7" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
+      <text x="18" y="73.5" textAnchor="middle" className="fill-primary/70 text-[7px]" style={{ fontFamily: 'var(--font-body)' }}>Travel</text>
     </g>
 
     <g className="animate-float-delayed">
-      <rect x="1" y="74" width="46" height="16" rx="8" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
-      <text x="24" y="85" textAnchor="middle" className="fill-primary/70 text-[8px]" style={{ fontFamily: 'var(--font-body)' }}>Electricity</text>
+      <rect x="6" y="86" width="36" height="14" rx="7" className="fill-primary/15 stroke-primary/30" strokeWidth="1" />
+      <text x="24" y="95.5" textAnchor="middle" className="fill-primary/70 text-[6px]" style={{ fontFamily: 'var(--font-body)' }}>Electricity</text>
     </g>
 
     {/* Flow arrows converging to center */}
-    <path d="M39 16 Q 55 16, 62 35" className="stroke-primary/25" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-    <path d="M40 38 Q 52 38, 62 42" className="stroke-primary/25" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-    <path d="M39 60 Q 52 60, 62 52" className="stroke-primary/25" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-    <path d="M48 82 Q 56 82, 62 60" className="stroke-primary/25" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <path d="M34 27 Q 48 27, 52 45" className="stroke-primary/25" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <path d="M35 49 Q 45 49, 52 50" className="stroke-primary/25" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <path d="M34 71 Q 45 71, 52 60" className="stroke-primary/25" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <path d="M35 93 Q 48 93, 52 68" className="stroke-primary/25" strokeWidth="1.5" fill="none" strokeLinecap="round" />
 
-    {/* Central funnel */}
+    {/* Central funnel / organizer */}
     <g className="animate-pulse-glow">
-      <path d="M62 24 L82 24 L77 72 L67 72 Z" className="fill-primary/10 stroke-primary/40" strokeWidth="1.5" strokeLinejoin="round" />
-      <line x1="64" y1="36" x2="80" y2="36" className="stroke-primary/20" strokeWidth="1" />
-      <line x1="65" y1="48" x2="79" y2="48" className="stroke-primary/20" strokeWidth="1" />
-      <line x1="66" y1="60" x2="78" y2="60" className="stroke-primary/20" strokeWidth="1" />
+      <path d="M52 35 L68 35 L64 75 L56 75 Z" className="fill-primary/10 stroke-primary/40" strokeWidth="1.5" strokeLinejoin="round" />
+      {/* Funnel lines */}
+      <line x1="54" y1="45" x2="66" y2="45" className="stroke-primary/20" strokeWidth="1" />
+      <line x1="55" y1="55" x2="65" y2="55" className="stroke-primary/20" strokeWidth="1" />
+      <line x1="56" y1="65" x2="64" y2="65" className="stroke-primary/20" strokeWidth="1" />
     </g>
 
-    {/* Output arrows to grouped categories */}
-    <path d="M78 35 Q 88 28, 96 20" className="stroke-primary/30" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-    <path d="M79 48 Q 88 48, 96 48" className="stroke-primary/30" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-    <path d="M78 62 Q 88 68, 96 74" className="stroke-primary/30" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    {/* Output arrows to grouped categories - right side */}
+    <path d="M64 45 Q 72 40, 78 32" className="stroke-primary/30" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <path d="M65 55 Q 72 55, 78 55" className="stroke-primary/30" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <path d="M64 65 Q 72 70, 78 78" className="stroke-primary/30" strokeWidth="1.5" fill="none" strokeLinecap="round" />
 
     {/* Grouped category cards - right side */}
     <g>
-      <rect x="96" y="6" width="58" height="28" rx="7" className="fill-secondary stroke-primary/30" strokeWidth="1.5" />
-      <circle cx="108" cy="16" r="5" className="fill-primary/30" />
-      <text x="108" y="18.5" textAnchor="middle" className="fill-primary text-[7px] font-bold" style={{ fontFamily: 'var(--font-body)' }}>🍔</text>
-      <rect x="117" y="13" width="28" height="5" rx="2.5" className="fill-muted-foreground/30" />
-      <rect x="117" y="22" width="18" height="4" rx="2" className="fill-primary/40" />
+      <rect x="78" y="20" width="38" height="24" rx="6" className="fill-secondary stroke-primary/30" strokeWidth="1.5" />
+      <circle cx="88" cy="28" r="4" className="fill-primary/30" />
+      <text x="88" y="30" textAnchor="middle" className="fill-primary text-[5px] font-bold" style={{ fontFamily: 'var(--font-body)' }}>🍔</text>
+      <rect x="95" y="26" width="16" height="4" rx="2" className="fill-muted-foreground/30" />
+      <rect x="95" y="33" width="12" height="3" rx="1.5" className="fill-primary/40" />
     </g>
 
     <g>
-      <rect x="96" y="38" width="58" height="18" rx="7" className="fill-secondary stroke-primary/30" strokeWidth="1.5" />
-      <circle cx="108" cy="47" r="5" className="fill-primary/30" />
-      <text x="108" y="49.5" textAnchor="middle" className="fill-primary text-[7px] font-bold" style={{ fontFamily: 'var(--font-body)' }}>🏠</text>
-      <rect x="117" y="45" width="28" height="5" rx="2.5" className="fill-muted-foreground/30" />
+      <rect x="78" y="48" width="38" height="14" rx="6" className="fill-secondary stroke-primary/30" strokeWidth="1.5" />
+      <circle cx="88" cy="55" r="4" className="fill-primary/30" />
+      <text x="88" y="57" textAnchor="middle" className="fill-primary text-[5px] font-bold" style={{ fontFamily: 'var(--font-body)' }}>🏠</text>
+      <rect x="95" y="53" width="16" height="4" rx="2" className="fill-muted-foreground/30" />
     </g>
 
     <g>
-      <rect x="96" y="60" width="58" height="28" rx="7" className="fill-secondary stroke-primary/30" strokeWidth="1.5" />
-      <circle cx="108" cy="70" r="5" className="fill-primary/30" />
-      <text x="108" y="72.5" textAnchor="middle" className="fill-primary text-[7px] font-bold" style={{ fontFamily: 'var(--font-body)' }}>✈️</text>
-      <rect x="117" y="68" width="28" height="5" rx="2.5" className="fill-muted-foreground/30" />
-      <rect x="117" y="77" width="16" height="4" rx="2" className="fill-primary/40" />
+      <rect x="78" y="66" width="38" height="24" rx="6" className="fill-secondary stroke-primary/30" strokeWidth="1.5" />
+      <circle cx="88" cy="74" r="4" className="fill-primary/30" />
+      <text x="88" y="76" textAnchor="middle" className="fill-primary text-[5px] font-bold" style={{ fontFamily: 'var(--font-body)' }}>✈️</text>
+      <rect x="95" y="72" width="16" height="4" rx="2" className="fill-muted-foreground/30" />
+      <rect x="95" y="79" width="10" height="3" rx="1.5" className="fill-primary/40" />
     </g>
   </svg>
 );
