@@ -1,14 +1,76 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
-import { useCAProfile } from "@/hooks/use-ca-profile";
+import { fetchCAProfile, deriveCAProfileStatus } from "@/lib/api/caProfile";
+import { fetchCADocuments } from "@/lib/api/caProfile";
+import { fetchCurrentUser } from "@/lib/api/user";
 import { AlertCircle, ArrowRight, Calendar, Users, IndianRupee, Clock, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const CADashboardHome = () => {
   const navigate = useNavigate();
-  const { isProfileComplete, profileData } = useCAProfile();
-  const showBanner = !profileData.isSubmitted;
+  const [showBanner, setShowBanner] = useState(false);
+  const [bannerMessage, setBannerMessage] = useState("");
+  const [bannerAction, setBannerAction] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const checkProfileCompleteness = useCallback(async () => {
+    try {
+      const [{ currentProfile, pendingProfile }, docs, userData] = await Promise.all([
+        fetchCAProfile(),
+        fetchCADocuments(),
+        fetchCurrentUser(),
+      ]);
+
+      const status = deriveCAProfileStatus(currentProfile, pendingProfile);
+
+      // If already submitted (not Unverified/Unverified Updates), hide banner
+      if (!["Unverified", "Unverified Updates"].includes(status)) {
+        setShowBanner(false);
+        return;
+      }
+
+      const data = pendingProfile
+        ? { ...currentProfile, ...Object.fromEntries(Object.entries(pendingProfile).filter(([, v]) => v != null)) }
+        : currentProfile;
+
+      const personalComplete = !!(userData?.name && userData?.email && (data?.phone || userData?.phone));
+      const addressComplete = !!(data?.streetAddress && data?.city && data?.state && data?.zipCode && data?.country);
+      const professionalComplete = !!(
+        data?.registrationNo &&
+        data?.experienceYears &&
+        (Array.isArray(data?.specializations) && data.specializations.length > 0) &&
+        data?.bio &&
+        data?.hourlyFee &&
+        (Array.isArray(data?.languages) && data.languages.length > 0)
+      );
+      const hasCerts = docs.some((d: { type: string }) => d.type === "CERTIFICATION");
+      const hasIdProof = docs.some((d: { type: string }) => d.type === "ID_PROOF");
+      const documentsComplete = hasCerts && hasIdProof;
+
+      const allComplete = personalComplete && addressComplete && professionalComplete && documentsComplete;
+
+      if (allComplete) {
+        setShowBanner(true);
+        setBannerMessage("Your profile is complete! Submit it for review to get verified and start accepting clients.");
+        setBannerAction("Submit for Review");
+      } else {
+        setShowBanner(true);
+        setBannerMessage("Please fill in all your professional details, upload certifications, and ID proof to submit your profile for review.");
+        setBannerAction("Complete Profile");
+      }
+    } catch {
+      // On error, hide banner
+      setShowBanner(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkProfileCompleteness();
+  }, [checkProfileCompleteness]);
 
   // Mock analytics data
   const analytics = {
