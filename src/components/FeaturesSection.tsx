@@ -1,37 +1,24 @@
 import AccountingIcon from "./vectors/AccountingIcon";
 import AIInsightsIcon from "./vectors/AIInsightsIcon";
 import CAConnectIcon from "./vectors/CAConnectIcon";
-import { FileText, Receipt, BarChart3, MessageSquare, Sparkles, Users, Calendar, Star } from "lucide-react";
 
 const features = [
+  {
+    title: "Expense Tracking",
+    description: "Track and categorize your expenses effortlessly with OCR auto-extraction and smart categorization.",
+    icon: AIInsightsIcon,
+    gradient: "from-primary/20 to-primary/5",
+  },
   {
     title: "Smart Invoicing",
     description: "Create branded invoices, upload PDFs with OCR auto-extraction, and send via email or WhatsApp.",
     icon: AccountingIcon,
-    subFeatures: [
-      { icon: FileText, text: "Branded Templates" },
-      { icon: Receipt, text: "OCR Auto-Extract" },
-    ],
-    gradient: "from-primary/20 to-primary/5",
-  },
-  {
-    title: "AI-Powered Insights",
-    description: "Get intelligent answers about your finances through our AI chatbot and visual dashboards.",
-    icon: AIInsightsIcon,
-    subFeatures: [
-      { icon: MessageSquare, text: "Financial Q&A" },
-      { icon: Sparkles, text: "Smart Predictions" },
-    ],
     gradient: "from-primary/30 to-primary/10",
   },
   {
-    title: "CA Connect",
+    title: "Finance Expert",
     description: "Instantly connect with certified accountants. Book sessions, pay securely, and get expert help.",
     icon: CAConnectIcon,
-    subFeatures: [
-      { icon: Users, text: "Expert Network" },
-      { icon: Calendar, text: "Easy Booking" },
-    ],
     gradient: "from-primary/20 to-primary/5",
   },
 ];
@@ -77,45 +64,9 @@ const FeaturesSection = () => {
                 <h3 className="font-display text-lg font-semibold mb-2 text-foreground">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
-
-                {/* Sub-features */}
-                <div className="flex flex-wrap gap-2">
-                  {feature.subFeatures.map((sub) => (
-                    <div
-                      key={sub.text}
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-secondary/50 border border-border/50"
-                    >
-                      <sub.icon className="w-3 h-3 text-primary" />
-                      <span className="text-xs text-muted-foreground">{sub.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Additional features list */}
-        <div className="mt-12 lg:mt-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { icon: Receipt, title: "Expense Tracking", desc: "Auto-categorize with OCR" },
-            { icon: BarChart3, title: "Cash Flow Charts", desc: "Visual monthly reports" },
-            { icon: Star, title: "CA Reviews", desc: "Rate your consultations" },
-            { icon: Sparkles, title: "Smart Alerts", desc: "AI-powered notifications" },
-          ].map((item) => (
-            <div
-              key={item.title}
-              className="flex items-start gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30 hover:border-primary/30 transition-all duration-300"
-            >
-              <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <item.icon className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <h4 className="font-medium text-sm text-foreground mb-0.5">{item.title}</h4>
-                <p className="text-xs text-muted-foreground">{item.desc}</p>
               </div>
             </div>
           ))}
