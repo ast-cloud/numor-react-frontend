@@ -1,14 +1,76 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
-import { useCAProfile } from "@/hooks/use-ca-profile";
+import { fetchCAProfile, deriveCAProfileStatus } from "@/lib/api/caProfile";
+import { fetchCADocuments } from "@/lib/api/caProfile";
+import { fetchCurrentUser } from "@/lib/api/user";
 import { AlertCircle, ArrowRight, Calendar, Users, IndianRupee, Clock, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const CADashboardHome = () => {
   const navigate = useNavigate();
-  const { isProfileComplete, profileData } = useCAProfile();
-  const showBanner = !profileData.isSubmitted;
+  const [showBanner, setShowBanner] = useState(false);
+  const [bannerMessage, setBannerMessage] = useState("");
+  const [bannerAction, setBannerAction] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const checkProfileCompleteness = useCallback(async () => {
+    try {
+      const [{ currentProfile, pendingProfile }, docs, userData] = await Promise.all([
+        fetchCAProfile(),
+        fetchCADocuments(),
+        fetchCurrentUser(),
+      ]);
+
+      const status = deriveCAProfileStatus(currentProfile, pendingProfile);
+
+      // If already submitted (not Unverified/Unverified Updates), hide banner
+      if (!["Unverified", "Unverified Updates"].includes(status)) {
+        setShowBanner(false);
+        return;
+      }
+
+      const data = pendingProfile
+        ? { ...currentProfile, ...Object.fromEntries(Object.entries(pendingProfile).filter(([, v]) => v != null)) }
+        : currentProfile;
+
+      const personalComplete = !!(userData?.name && userData?.email && (data?.phone || userData?.phone));
+      const addressComplete = !!(data?.streetAddress && data?.city && data?.state && data?.zipCode && data?.country);
+      const professionalComplete = !!(
+        data?.registrationNo &&
+        data?.experienceYears &&
+        (Array.isArray(data?.specializations) && data.specializations.length > 0) &&
+        data?.bio &&
+        data?.hourlyFee &&
+        (Array.isArray(data?.languages) && data.languages.length > 0)
+      );
+      const hasCerts = docs.some((d: { type: string }) => d.type === "CERTIFICATION");
+      const hasIdProof = docs.some((d: { type: string }) => d.type === "ID_PROOF");
+      const documentsComplete = hasCerts && hasIdProof;
+
+      const allComplete = personalComplete && addressComplete && professionalComplete && documentsComplete;
+
+      if (allComplete) {
+        setShowBanner(true);
+        setBannerMessage("Your profile is complete! Submit it for review to get verified and start accepting clients.");
+        setBannerAction("Submit for Review");
+      } else {
+        setShowBanner(true);
+        setBannerMessage("Please fill in all your professional details, upload certifications, and ID proof to submit your profile for review.");
+        setBannerAction("Complete Profile");
+      }
+    } catch {
+      // On error, hide banner
+      setShowBanner(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkProfileCompleteness();
+  }, [checkProfileCompleteness]);
 
   // Mock analytics data
   const analytics = {
@@ -26,16 +88,13 @@ const CADashboardHome = () => {
     <div className="space-y-6">
       <Helmet><title>Numor - CA Dashboard</title></Helmet>
       {/* Profile Completion Banner */}
-      {showBanner && (
+      {!loading && showBanner && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <h3 className="font-medium text-foreground">Complete your profile to start connecting with clients</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              {isProfileComplete() 
-                ? "Your profile is complete! Submit it for review to get verified and start accepting clients."
-                : "Please fill in all your professional details, upload certifications, and ID proof to submit your profile for review."
-              }
+              {bannerMessage}
             </p>
             <Button 
               variant="outline" 
@@ -43,7 +102,7 @@ const CADashboardHome = () => {
               className="mt-3 text-amber-600 border-amber-500/30 hover:bg-amber-500/10"
               onClick={() => navigate("/ca/settings")}
             >
-              {isProfileComplete() ? "Submit for Review" : "Complete Profile"}
+              {bannerAction}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
