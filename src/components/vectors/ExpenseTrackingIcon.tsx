@@ -6,132 +6,177 @@ const ExpenseTrackingIcon = ({ className }: { className?: string }) => (
     className={className}
   >
     <style>{`
-      @keyframes flyIn1 { 0%,100% { transform: translate(0,0) rotate(-8deg); } 50% { transform: translate(6px,-4px) rotate(-5deg); } }
-      @keyframes flyIn2 { 0%,100% { transform: translate(0,0) rotate(5deg); } 50% { transform: translate(4px,5px) rotate(8deg); } }
-      @keyframes flyIn3 { 0%,100% { transform: translate(0,0) rotate(-3deg); } 50% { transform: translate(-3px,-6px) rotate(0deg); } }
-      @keyframes flyIn4 { 0%,100% { transform: translate(0,0) rotate(6deg); } 50% { transform: translate(5px,3px) rotate(3deg); } }
+      @keyframes billFly1 {
+        0% { transform: translate(-20px, -10px) rotate(-15deg); opacity: 0; }
+        15% { opacity: 0.8; }
+        85% { opacity: 0.6; }
+        100% { transform: translate(60px, 25px) rotate(0deg); opacity: 0; }
+      }
+      @keyframes billFly2 {
+        0% { transform: translate(-15px, 5px) rotate(10deg); opacity: 0; }
+        15% { opacity: 0.8; }
+        85% { opacity: 0.6; }
+        100% { transform: translate(50px, -5px) rotate(-2deg); opacity: 0; }
+      }
+      @keyframes billFly3 {
+        0% { transform: translate(-10px, -15px) rotate(-8deg); opacity: 0; }
+        15% { opacity: 0.8; }
+        85% { opacity: 0.6; }
+        100% { transform: translate(35px, 30px) rotate(2deg); opacity: 0; }
+      }
+      @keyframes billFly4 {
+        0% { transform: translate(-18px, 10px) rotate(12deg); opacity: 0; }
+        15% { opacity: 0.8; }
+        85% { opacity: 0.6; }
+        100% { transform: translate(55px, -20px) rotate(-3deg); opacity: 0; }
+      }
+      @keyframes billFly5 {
+        0% { transform: translate(-12px, -5px) rotate(-6deg); opacity: 0; }
+        15% { opacity: 0.7; }
+        85% { opacity: 0.5; }
+        100% { transform: translate(45px, 15px) rotate(1deg); opacity: 0; }
+      }
+      @keyframes billFly6 {
+        0% { transform: translate(-22px, 8px) rotate(9deg); opacity: 0; }
+        15% { opacity: 0.7; }
+        85% { opacity: 0.5; }
+        100% { transform: translate(52px, -12px) rotate(-1deg); opacity: 0; }
+      }
       @keyframes folderBounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-      .bill1 { animation: flyIn1 3s ease-in-out infinite; }
-      .bill2 { animation: flyIn2 3.5s ease-in-out infinite; }
-      .bill3 { animation: flyIn3 2.8s ease-in-out infinite; }
-      .bill4 { animation: flyIn4 3.2s ease-in-out infinite; }
+      .bill-fly-1 { animation: billFly1 3s ease-in-out infinite; }
+      .bill-fly-2 { animation: billFly2 3.2s ease-in-out 0.5s infinite; }
+      .bill-fly-3 { animation: billFly3 2.8s ease-in-out 1s infinite; }
+      .bill-fly-4 { animation: billFly4 3.5s ease-in-out 1.5s infinite; }
+      .bill-fly-5 { animation: billFly5 3.1s ease-in-out 0.8s infinite; }
+      .bill-fly-6 { animation: billFly6 2.9s ease-in-out 2s infinite; }
       .folder-bounce { animation: folderBounce 2s ease-in-out infinite; }
     `}</style>
 
-    {/* Scattered bills - left side */}
-    {/* Bill 1 - top left */}
-    <g className="bill1">
-      <rect x="8" y="10" width="28" height="36" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" transform="rotate(-12 22 28)" />
-      <line x1="14" y1="18" x2="30" y2="18" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.4" transform="rotate(-12 22 28)" />
-      <line x1="14" y1="22" x2="28" y2="22" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.3" transform="rotate(-12 22 28)" />
-      <line x1="14" y1="26" x2="26" y2="26" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.3" transform="rotate(-12 22 28)" />
-      <rect x="14" y="30" width="10" height="4" rx="1" fill="hsl(var(--primary))" opacity="0.2" transform="rotate(-12 22 28)" />
+    {/* Flying bills - continuously flowing toward phone */}
+    <g className="bill-fly-1">
+      <rect x="10" y="15" width="24" height="32" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" />
+      <line x1="14" y1="21" x2="30" y2="21" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.4" />
+      <line x1="14" y1="25" x2="28" y2="25" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.3" />
+      <line x1="14" y1="29" x2="25" y2="29" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.3" />
+      <rect x="14" y="34" width="10" height="3" rx="1" fill="hsl(var(--primary))" opacity="0.2" />
     </g>
 
-    {/* Bill 2 - middle left */}
-    <g className="bill2">
-      <rect x="18" y="52" width="26" height="34" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" transform="rotate(6 31 69)" />
-      <line x1="23" y1="59" x2="39" y2="59" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.4" transform="rotate(6 31 69)" />
-      <line x1="23" y1="63" x2="37" y2="63" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.3" transform="rotate(6 31 69)" />
-      <line x1="23" y1="67" x2="35" y2="67" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.3" transform="rotate(6 31 69)" />
-      <rect x="23" y="72" width="8" height="4" rx="1" fill="hsl(var(--primary))" opacity="0.25" transform="rotate(6 31 69)" />
+    <g className="bill-fly-2">
+      <rect x="20" y="60" width="22" height="28" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" />
+      <line x1="24" y1="66" x2="38" y2="66" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.4" />
+      <line x1="24" y1="70" x2="36" y2="70" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.3" />
+      <rect x="24" y="76" width="8" height="3" rx="1" fill="hsl(var(--primary))" opacity="0.25" />
     </g>
 
-    {/* Bill 3 - top center-left */}
-    <g className="bill3">
-      <rect x="48" y="5" width="24" height="30" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" transform="rotate(-5 60 20)" />
-      <line x1="52" y1="12" x2="68" y2="12" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.4" transform="rotate(-5 60 20)" />
-      <line x1="52" y1="16" x2="65" y2="16" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.3" transform="rotate(-5 60 20)" />
-      <rect x="52" y="22" width="10" height="4" rx="1" fill="hsl(var(--primary))" opacity="0.2" transform="rotate(-5 60 20)" />
+    <g className="bill-fly-3">
+      <rect x="45" y="8" width="20" height="26" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" />
+      <line x1="49" y1="14" x2="61" y2="14" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.4" />
+      <line x1="49" y1="18" x2="59" y2="18" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.3" />
+      <rect x="49" y="24" width="8" height="3" rx="1" fill="hsl(var(--primary))" opacity="0.2" />
     </g>
 
-    {/* Bill 4 - bottom left */}
-    <g className="bill4">
-      <rect x="5" y="95" width="30" height="34" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" transform="rotate(8 20 112)" />
-      <line x1="11" y1="103" x2="29" y2="103" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.4" transform="rotate(8 20 112)" />
-      <line x1="11" y1="107" x2="27" y2="107" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.3" transform="rotate(8 20 112)" />
-      <line x1="11" y1="111" x2="24" y2="111" stroke="hsl(var(--muted-foreground))" strokeWidth="0.8" opacity="0.3" transform="rotate(8 20 112)" />
-      <rect x="11" y="116" width="12" height="4" rx="1" fill="hsl(var(--primary))" opacity="0.2" transform="rotate(8 20 112)" />
+    <g className="bill-fly-4">
+      <rect x="8" y="95" width="26" height="30" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" />
+      <line x1="13" y1="101" x2="29" y2="101" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.4" />
+      <line x1="13" y1="105" x2="27" y2="105" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.3" />
+      <line x1="13" y1="109" x2="24" y2="109" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.3" />
+      <rect x="13" y="114" width="10" height="3" rx="1" fill="hsl(var(--primary))" opacity="0.2" />
     </g>
 
-    {/* Flow arrows - bills flying toward phone */}
-    <path d="M 40 30 Q 65 35, 90 50" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" fill="none" strokeDasharray="3 3">
-      <animate attributeName="stroke-dashoffset" from="24" to="0" dur="2s" repeatCount="indefinite" />
-    </path>
-    <path d="M 45 68 Q 70 65, 90 60" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" fill="none" strokeDasharray="3 3">
-      <animate attributeName="stroke-dashoffset" from="24" to="0" dur="2.5s" repeatCount="indefinite" />
-    </path>
-    <path d="M 72 22 Q 85 35, 95 48" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" fill="none" strokeDasharray="3 3">
-      <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.8s" repeatCount="indefinite" />
-    </path>
-    <path d="M 38 108 Q 70 100, 92 85" stroke="hsl(var(--primary))" strokeWidth="1" opacity="0.2" fill="none" strokeDasharray="3 3">
-      <animate attributeName="stroke-dashoffset" from="24" to="0" dur="2.2s" repeatCount="indefinite" />
-    </path>
+    <g className="bill-fly-5">
+      <rect x="35" y="40" width="20" height="26" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" />
+      <line x1="39" y1="46" x2="51" y2="46" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.4" />
+      <line x1="39" y1="50" x2="49" y2="50" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.3" />
+      <rect x="39" y="56" width="8" height="3" rx="1" fill="hsl(var(--primary))" opacity="0.2" />
+    </g>
+
+    <g className="bill-fly-6">
+      <rect x="25" y="105" width="22" height="28" rx="2" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.8" />
+      <line x1="29" y1="111" x2="43" y2="111" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.4" />
+      <line x1="29" y1="115" x2="41" y2="115" stroke="hsl(var(--muted-foreground))" strokeWidth="0.7" opacity="0.3" />
+      <rect x="29" y="121" width="8" height="3" rx="1" fill="hsl(var(--primary))" opacity="0.2" />
+    </g>
+
+    {/* Flow trail particles */}
+    <circle cx="55" cy="35" r="1.5" fill="hsl(var(--primary))" opacity="0.15">
+      <animate attributeName="cx" values="55;85" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.3;0" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="50" cy="65" r="1.5" fill="hsl(var(--primary))" opacity="0.15">
+      <animate attributeName="cx" values="50;88" dur="2.3s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.3;0" dur="2.3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="60" cy="50" r="1" fill="hsl(var(--primary))" opacity="0.15">
+      <animate attributeName="cx" values="60;90" dur="1.8s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.25;0" dur="1.8s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="45" cy="100" r="1.5" fill="hsl(var(--primary))" opacity="0.15">
+      <animate attributeName="cx" values="45;88" dur="2.5s" repeatCount="indefinite" />
+      <animate attributeName="cy" values="100;85" dur="2.5s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.3;0" dur="2.5s" repeatCount="indefinite" />
+    </circle>
 
     {/* Phone frame */}
     <rect x="90" y="12" width="68" height="116" rx="10" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="1.5" />
-    {/* Phone notch */}
     <rect x="112" y="15" width="24" height="5" rx="2.5" fill="hsl(var(--muted))" />
-    {/* Phone screen area */}
     <rect x="95" y="24" width="58" height="96" rx="4" fill="hsl(var(--background))" />
 
-    {/* Progress bar on screen */}
+    {/* Progress bar */}
     <rect x="100" y="29" width="48" height="5" rx="2.5" fill="hsl(var(--muted))" />
     <rect x="100" y="29" width="48" height="5" rx="2.5" fill="hsl(var(--primary))" opacity="0.3">
       <animate attributeName="width" from="10" to="48" dur="3s" repeatCount="indefinite" />
     </rect>
-    {/* Checkmark */}
     <circle cx="152" cy="31.5" r="4" fill="hsl(var(--primary))" opacity="0.2" />
     <path d="M150 31.5 L151.5 33 L154 29.5" stroke="hsl(var(--primary))" strokeWidth="1" fill="none" strokeLinecap="round" strokeLinejoin="round" />
 
-    {/* Label: "Categorized" */}
     <text x="124" y="44" textAnchor="middle" fontSize="5" fill="hsl(var(--muted-foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Categorized</text>
 
-    {/* Folder 1 - Food */}
+    {/* Folders */}
     <g className="folder-bounce">
       <rect x="100" y="50" width="22" height="16" rx="2" fill="hsl(var(--primary))" opacity="0.12" />
       <rect x="100" y="48" width="12" height="4" rx="1.5" fill="hsl(var(--primary))" opacity="0.2" />
-      <text x="111" y="61" textAnchor="middle" fontSize="7" style={{ fontFamily: 'var(--font-body)' }}>🍔</text>
+      <text x="111" y="61" textAnchor="middle" fontSize="7">🍔</text>
       <text x="111" y="73" textAnchor="middle" fontSize="4" fill="hsl(var(--foreground))" opacity="0.7" style={{ fontFamily: 'var(--font-body)' }}>Food</text>
     </g>
 
-    {/* Folder 2 - Travel */}
     <g className="folder-bounce" style={{ animationDelay: '0.3s' }}>
       <rect x="126" y="50" width="22" height="16" rx="2" fill="hsl(var(--primary))" opacity="0.12" />
       <rect x="126" y="48" width="12" height="4" rx="1.5" fill="hsl(var(--primary))" opacity="0.2" />
-      <text x="137" y="61" textAnchor="middle" fontSize="7" style={{ fontFamily: 'var(--font-body)' }}>✈️</text>
+      <text x="137" y="61" textAnchor="middle" fontSize="7">✈️</text>
       <text x="137" y="73" textAnchor="middle" fontSize="4" fill="hsl(var(--foreground))" opacity="0.7" style={{ fontFamily: 'var(--font-body)' }}>Travel</text>
     </g>
 
-    {/* Folder 3 - Rent */}
     <g className="folder-bounce" style={{ animationDelay: '0.6s' }}>
       <rect x="100" y="80" width="22" height="16" rx="2" fill="hsl(var(--primary))" opacity="0.12" />
       <rect x="100" y="78" width="12" height="4" rx="1.5" fill="hsl(var(--primary))" opacity="0.2" />
-      <text x="111" y="91" textAnchor="middle" fontSize="7" style={{ fontFamily: 'var(--font-body)' }}>🏠</text>
+      <text x="111" y="91" textAnchor="middle" fontSize="7">🏠</text>
       <text x="111" y="103" textAnchor="middle" fontSize="4" fill="hsl(var(--foreground))" opacity="0.7" style={{ fontFamily: 'var(--font-body)' }}>Rent</text>
     </g>
 
-    {/* Folder 4 - Bills */}
     <g className="folder-bounce" style={{ animationDelay: '0.9s' }}>
       <rect x="126" y="80" width="22" height="16" rx="2" fill="hsl(var(--primary))" opacity="0.12" />
       <rect x="126" y="78" width="12" height="4" rx="1.5" fill="hsl(var(--primary))" opacity="0.2" />
-      <text x="137" y="91" textAnchor="middle" fontSize="7" style={{ fontFamily: 'var(--font-body)' }}>⚡</text>
+      <text x="137" y="91" textAnchor="middle" fontSize="7">⚡</text>
       <text x="137" y="103" textAnchor="middle" fontSize="4" fill="hsl(var(--foreground))" opacity="0.7" style={{ fontFamily: 'var(--font-body)' }}>Bills</text>
     </g>
 
-    {/* Small receipt going into folder - animated */}
-    <g opacity="0.6">
-      <rect x="108" y="52" width="6" height="8" rx="1" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.5">
-        <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite" />
-        <animate attributeName="y" values="44;52" dur="2s" repeatCount="indefinite" />
-      </rect>
-    </g>
-    <g opacity="0.6">
-      <rect x="134" y="82" width="6" height="8" rx="1" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.5">
-        <animate attributeName="opacity" values="0;0.8;0" dur="2.5s" repeatCount="indefinite" />
-        <animate attributeName="y" values="74;82" dur="2.5s" repeatCount="indefinite" />
-      </rect>
-    </g>
+    {/* Receipts landing into folders */}
+    <rect x="108" y="52" width="6" height="8" rx="1" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.4">
+      <animate attributeName="opacity" values="0;0.7;0" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="y" values="44;52" dur="2s" repeatCount="indefinite" />
+    </rect>
+    <rect x="134" y="82" width="6" height="8" rx="1" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.4">
+      <animate attributeName="opacity" values="0;0.7;0" dur="2.5s" repeatCount="indefinite" begin="0.5s" />
+      <animate attributeName="y" values="74;82" dur="2.5s" repeatCount="indefinite" begin="0.5s" />
+    </rect>
+    <rect x="108" y="82" width="6" height="8" rx="1" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.4">
+      <animate attributeName="opacity" values="0;0.7;0" dur="2.2s" repeatCount="indefinite" begin="1s" />
+      <animate attributeName="y" values="74;82" dur="2.2s" repeatCount="indefinite" begin="1s" />
+    </rect>
+    <rect x="134" y="52" width="6" height="8" rx="1" fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="0.4">
+      <animate attributeName="opacity" values="0;0.7;0" dur="2.8s" repeatCount="indefinite" begin="1.5s" />
+      <animate attributeName="y" values="44;52" dur="2.8s" repeatCount="indefinite" begin="1.5s" />
+    </rect>
   </svg>
 );
 
