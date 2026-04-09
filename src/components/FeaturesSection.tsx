@@ -57,7 +57,7 @@ const FeaturesSection = () => {
               <div className="relative z-10">
                 {/* Icon */}
                 <div className="mb-4">
-                  <feature.icon className="w-24 h-24 mx-auto group-hover:scale-105 transition-transform duration-500" />
+                  <feature.icon className="w-44 h-44 mx-auto group-hover:scale-105 transition-transform duration-500" />
                 </div>
 
                 {/* Content */}
