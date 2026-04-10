@@ -122,13 +122,23 @@ const AccountingIcon = ({ className }: { className?: string }) => (
 
     {/* Send buttons on phone */}
     <rect x="30" y="94" width="14" height="10" rx="2" fill="hsl(var(--primary))" opacity="0.15" />
-    <text x="37" y="101" textAnchor="middle" fontSize="6">📧</text>
+    <g transform="translate(33, 96) scale(0.28)">
+      <rect x="2" y="6" width="20" height="14" rx="2" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="2,6 12,13 22,6" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
     
     <rect x="47" y="94" width="14" height="10" rx="2" fill="hsl(var(--primary))" opacity="0.15" />
-    <text x="54" y="101" textAnchor="middle" fontSize="6">💬</text>
+    <g transform="translate(50.5, 95.5) scale(0.35)">
+      <path d="M12 2C6.48 2 2 6.04 2 11c0 1.6.44 3.08 1.2 4.4L2 22l4.8-1.2C8.4 21.56 10.12 22 12 22c5.52 0 10-4.04 10-9S17.52 2 12 2z" fill="#25D366" />
+      <path d="M16.5 14.2c-.3-.15-1.7-.84-1.96-.94-.26-.1-.45-.15-.64.15-.19.3-.74.94-.9 1.13-.17.19-.34.22-.63.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.18-.3-.02-.46.13-.61.13-.13.3-.34.44-.52.15-.17.2-.3.3-.49.1-.19.05-.37-.02-.52-.08-.15-.64-1.54-.88-2.1-.23-.56-.47-.48-.64-.49h-.55c-.19 0-.49.07-.75.37-.26.3-.98.96-.98 2.33s1 2.7 1.14 2.89c.15.19 1.98 3.02 4.8 4.23.67.29 1.2.46 1.6.59.68.21 1.29.18 1.78.11.54-.08 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.08-.12-.26-.19-.55-.34z" fill="white" />
+    </g>
     
     <rect x="64" y="94" width="14" height="10" rx="2" fill="hsl(var(--primary))" opacity="0.15" />
-    <text x="71" y="101" textAnchor="middle" fontSize="6">🖨️</text>
+    <g transform="translate(67, 96) scale(0.28)">
+      <polyline points="6,9 6,2 18,2 18,9" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="6" y="14" width="12" height="8" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
 
     {/* Flying invoices going outward */}
     <g className="send-doc-1">
@@ -190,7 +200,10 @@ const AccountingIcon = ({ className }: { className?: string }) => (
       <circle cx="185" cy="28" r="12" fill="hsl(var(--primary))" opacity="0.06">
         <animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite" />
       </circle>
-      <text x="185" y="32" textAnchor="middle" fontSize="12">📧</text>
+      <g transform="translate(178, 21) scale(0.6)">
+        <rect x="2" y="6" width="20" height="14" rx="2" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="2,6 12,13 22,6" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
       <text x="185" y="48" textAnchor="middle" fontSize="5" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Email</text>
     </g>
 
@@ -200,7 +213,10 @@ const AccountingIcon = ({ className }: { className?: string }) => (
       <circle cx="192" cy="72" r="12" fill="hsl(var(--primary))" opacity="0.06">
         <animate attributeName="r" values="12;14;12" dur="2.2s" repeatCount="indefinite" begin="0.3s" />
       </circle>
-      <text x="192" y="76" textAnchor="middle" fontSize="12">💬</text>
+      <g transform="translate(182, 62) scale(0.85)">
+        <path d="M12 2C6.48 2 2 6.04 2 11c0 1.6.44 3.08 1.2 4.4L2 22l4.8-1.2C8.4 21.56 10.12 22 12 22c5.52 0 10-4.04 10-9S17.52 2 12 2z" fill="#25D366" />
+        <path d="M16.5 14.2c-.3-.15-1.7-.84-1.96-.94-.26-.1-.45-.15-.64.15-.19.3-.74.94-.9 1.13-.17.19-.34.22-.63.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.18-.3-.02-.46.13-.61.13-.13.3-.34.44-.52.15-.17.2-.3.3-.49.1-.19.05-.37-.02-.52-.08-.15-.64-1.54-.88-2.1-.23-.56-.47-.48-.64-.49h-.55c-.19 0-.49.07-.75.37-.26.3-.98.96-.98 2.33s1 2.7 1.14 2.89c.15.19 1.98 3.02 4.8 4.23.67.29 1.2.46 1.6.59.68.21 1.29.18 1.78.11.54-.08 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.08-.12-.26-.19-.55-.34z" fill="white" />
+      </g>
       <text x="192" y="92" textAnchor="middle" fontSize="5" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>WhatsApp</text>
     </g>
 
@@ -210,7 +226,11 @@ const AccountingIcon = ({ className }: { className?: string }) => (
       <circle cx="182" cy="115" r="12" fill="hsl(var(--primary))" opacity="0.06">
         <animate attributeName="r" values="12;14;12" dur="2.4s" repeatCount="indefinite" begin="0.6s" />
       </circle>
-      <text x="182" y="119" textAnchor="middle" fontSize="12">🖨️</text>
+      <g transform="translate(175, 108) scale(0.6)">
+        <polyline points="6,9 6,2 18,2 18,9" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="6" y="14" width="12" height="8" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
       <text x="182" y="135" textAnchor="middle" fontSize="5" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Print</text>
     </g>
   </svg>
