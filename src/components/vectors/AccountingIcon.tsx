@@ -1,6 +1,6 @@
 const AccountingIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 280 140"
+    viewBox="0 0 360 160"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
@@ -16,31 +16,31 @@ const AccountingIcon = ({ className }: { className?: string }) => (
         0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
         10% { opacity: 0.8; }
         90% { opacity: 0.5; }
-        100% { transform: translate(130px, -20px) rotate(8deg); opacity: 0; }
+        100% { transform: translate(200px, -25px) rotate(8deg); opacity: 0; }
       }
       @keyframes sendDoc2 {
         0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
         10% { opacity: 0.8; }
         90% { opacity: 0.5; }
-        100% { transform: translate(125px, 5px) rotate(-5deg); opacity: 0; }
+        100% { transform: translate(195px, 5px) rotate(-5deg); opacity: 0; }
       }
       @keyframes sendDoc3 {
         0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
         10% { opacity: 0.8; }
         90% { opacity: 0.5; }
-        100% { transform: translate(120px, 30px) rotate(6deg); opacity: 0; }
+        100% { transform: translate(190px, 35px) rotate(6deg); opacity: 0; }
       }
       @keyframes sendDoc4 {
         0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
         10% { opacity: 0.7; }
         90% { opacity: 0.4; }
-        100% { transform: translate(128px, -10px) rotate(-8deg); opacity: 0; }
+        100% { transform: translate(198px, -12px) rotate(-8deg); opacity: 0; }
       }
       @keyframes sendDoc5 {
         0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
         10% { opacity: 0.7; }
         90% { opacity: 0.4; }
-        100% { transform: translate(118px, 20px) rotate(4deg); opacity: 0; }
+        100% { transform: translate(188px, 22px) rotate(4deg); opacity: 0; }
       }
       @keyframes typingDot {
         0%, 100% { opacity: 0.3; }
@@ -160,57 +160,57 @@ const AccountingIcon = ({ className }: { className?: string }) => (
 
     {/* Flow trail particles */}
     <circle cx="85" cy="40" r="1.5" fill="hsl(var(--primary))" opacity="0.15">
-      <animate attributeName="cx" values="85;230" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="cx" values="85;310" dur="2s" repeatCount="indefinite" />
       <animate attributeName="opacity" values="0.3;0" dur="2s" repeatCount="indefinite" />
     </circle>
     <circle cx="82" cy="65" r="1.5" fill="hsl(var(--primary))" opacity="0.15">
-      <animate attributeName="cx" values="82;228" dur="2.3s" repeatCount="indefinite" />
+      <animate attributeName="cx" values="82;308" dur="2.3s" repeatCount="indefinite" />
       <animate attributeName="opacity" values="0.3;0" dur="2.3s" repeatCount="indefinite" />
     </circle>
     <circle cx="88" cy="90" r="1" fill="hsl(var(--primary))" opacity="0.15">
-      <animate attributeName="cx" values="88;232" dur="1.8s" repeatCount="indefinite" />
+      <animate attributeName="cx" values="88;312" dur="1.8s" repeatCount="indefinite" />
       <animate attributeName="opacity" values="0.25;0" dur="1.8s" repeatCount="indefinite" />
     </circle>
 
     {/* Destination icons on the right */}
     {/* Email */}
     <g>
-      <circle cx="245" cy="28" r="20" fill="hsl(var(--primary))" opacity="0.08" />
-      <circle cx="245" cy="28" r="15" fill="hsl(var(--primary))" opacity="0.06">
-        <animate attributeName="r" values="15;18;15" dur="2s" repeatCount="indefinite" />
+      <circle cx="320" cy="20" r="25" fill="hsl(var(--primary))" opacity="0.08" />
+      <circle cx="320" cy="20" r="18" fill="hsl(var(--primary))" opacity="0.06">
+        <animate attributeName="r" values="18;22;18" dur="2s" repeatCount="indefinite" />
       </circle>
-      <g transform="translate(235, 18) scale(0.85)">
-        <rect x="2" y="6" width="20" height="14" rx="2" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <polyline points="2,6 12,13 22,6" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <g transform="translate(306, 7) scale(1.2)">
+        <rect x="2" y="6" width="20" height="14" rx="2" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="2,6 12,13 22,6" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </g>
-      <text x="245" y="52" textAnchor="middle" fontSize="5.5" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Email</text>
+      <text x="320" y="50" textAnchor="middle" fontSize="6" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Email</text>
     </g>
 
     {/* WhatsApp */}
     <g>
-      <circle cx="252" cy="72" r="20" fill="hsl(var(--primary))" opacity="0.08" />
-      <circle cx="252" cy="72" r="15" fill="hsl(var(--primary))" opacity="0.06">
-        <animate attributeName="r" values="15;18;15" dur="2.2s" repeatCount="indefinite" begin="0.3s" />
+      <circle cx="325" cy="80" r="25" fill="hsl(var(--primary))" opacity="0.08" />
+      <circle cx="325" cy="80" r="18" fill="hsl(var(--primary))" opacity="0.06">
+        <animate attributeName="r" values="18;22;18" dur="2.2s" repeatCount="indefinite" begin="0.3s" />
       </circle>
-      <g transform="translate(240, 60) scale(1.05)">
+      <g transform="translate(311, 66) scale(1.25)">
         <path d="M12 2C6.48 2 2 6.04 2 11c0 1.6.44 3.08 1.2 4.4L2 22l4.8-1.2C8.4 21.56 10.12 22 12 22c5.52 0 10-4.04 10-9S17.52 2 12 2z" fill="#25D366" />
         <path d="M16.5 14.2c-.3-.15-1.7-.84-1.96-.94-.26-.1-.45-.15-.64.15-.19.3-.74.94-.9 1.13-.17.19-.34.22-.63.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.18-.3-.02-.46.13-.61.13-.13.3-.34.44-.52.15-.17.2-.3.3-.49.1-.19.05-.37-.02-.52-.08-.15-.64-1.54-.88-2.1-.23-.56-.47-.48-.64-.49h-.55c-.19 0-.49.07-.75.37-.26.3-.98.96-.98 2.33s1 2.7 1.14 2.89c.15.19 1.98 3.02 4.8 4.23.67.29 1.2.46 1.6.59.68.21 1.29.18 1.78.11.54-.08 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.08-.12-.26-.19-.55-.34z" fill="white" />
       </g>
-      <text x="252" y="96" textAnchor="middle" fontSize="5.5" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>WhatsApp</text>
+      <text x="325" y="108" textAnchor="middle" fontSize="6" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>WhatsApp</text>
     </g>
 
     {/* Print */}
     <g>
-      <circle cx="242" cy="115" r="20" fill="hsl(var(--primary))" opacity="0.08" />
-      <circle cx="242" cy="115" r="15" fill="hsl(var(--primary))" opacity="0.06">
-        <animate attributeName="r" values="15;18;15" dur="2.4s" repeatCount="indefinite" begin="0.6s" />
+      <circle cx="318" cy="140" r="25" fill="hsl(var(--primary))" opacity="0.08" />
+      <circle cx="318" cy="140" r="18" fill="hsl(var(--primary))" opacity="0.06">
+        <animate attributeName="r" values="18;22;18" dur="2.4s" repeatCount="indefinite" begin="0.6s" />
       </circle>
-      <g transform="translate(232, 106) scale(0.85)">
-        <polyline points="6,9 6,2 18,2 18,9" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="6" y="14" width="12" height="8" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <g transform="translate(305, 129) scale(1.1)">
+        <polyline points="6,9 6,2 18,2 18,9" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="6" y="14" width="12" height="8" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </g>
-      <text x="242" y="135" textAnchor="middle" fontSize="5.5" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Print</text>
+      <text x="318" y="160" textAnchor="middle" fontSize="6" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Print</text>
     </g>
   </svg>
 );
