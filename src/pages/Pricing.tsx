@@ -83,7 +83,7 @@ const Pricing = () => {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-glow pointer-events-none" />
 
           {/* Radial gradient highlight behind heading */}
-          <div className="absolute top-24 md:top-28 left-1/2 -translate-x-1/2 w-[500px] h-[200px] rounded-full bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_70%)] pointer-events-none blur-2xl" />
+          <div className="absolute top-24 md:top-28 left-1/2 -translate-x-1/2 w-[700px] h-[300px] rounded-full bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.25),hsl(var(--primary)/0.08)_50%,transparent_80%)] pointer-events-none blur-3xl" />
 
           <div className="text-center max-w-2xl mx-auto relative z-10">
             <h1 className="font-display text-2xl md:text-4xl font-bold text-muted-foreground mb-6">
