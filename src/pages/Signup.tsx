@@ -85,7 +85,7 @@ const Signup = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-14 min-h-screen flex justify-center px-4 py-16 md:py-24">
+      <div className="pt-14 min-h-screen flex items-center justify-center px-4 py-8">
         <div className="max-w-4xl w-full flex flex-col items-center">
           {/* Heading */}
           <div className="w-full mb-8">
