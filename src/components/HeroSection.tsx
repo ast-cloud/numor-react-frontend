@@ -44,16 +44,16 @@ const HeroSection = () => {
 
             {/* CTA Buttons */}
             <div
-              className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start animate-slide-up delay-200"
+              className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start px-6 sm:px-0 animate-slide-up delay-200"
               style={{ opacity: 0, animationFillMode: "forwards" }}
             >
-              <Button variant="hero" size="lg" className="group" asChild>
+              <Button variant="hero" size="default" className="group sm:size-lg" asChild>
                 <Link to="/signup">
                   Start Free Trial
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button variant="heroOutline" size="lg" className="group">
+              <Button variant="heroOutline" size="default" className="group sm:size-lg">
                 <Play className="w-4 h-4" />
                 Watch Demo
               </Button>
