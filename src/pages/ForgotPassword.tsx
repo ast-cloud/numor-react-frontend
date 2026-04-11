@@ -82,12 +82,6 @@ const ForgotPassword = () => {
       <Navbar />
       <div className="pt-14 min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full">
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">N</span>
-            </div>
-            <span className="font-display text-2xl font-bold text-foreground">Numor</span>
-          </div>
 
           {step === "email" && (
             <>
