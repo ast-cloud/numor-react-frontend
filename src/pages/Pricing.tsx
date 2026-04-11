@@ -61,17 +61,6 @@ const Pricing = () => {
               <line x1="10" y1="140" x2="190" y2="140" stroke="hsl(var(--foreground))" strokeWidth="1" />
             </svg>
 
-            {/* Bottom left - pie chart */}
-            <svg
-              className="absolute left-[10%] bottom-[10%] w-36 h-36 md:w-48 md:h-48"
-              viewBox="0 0 100 100"
-              fill="none"
-            >
-              <circle cx="50" cy="50" r="40" stroke="hsl(var(--primary))" strokeWidth="8" strokeDasharray="80 172" strokeDashoffset="0" />
-              <circle cx="50" cy="50" r="40" stroke="hsl(var(--foreground))" strokeWidth="8" strokeDasharray="50 202" strokeDashoffset="-80" />
-              <circle cx="50" cy="50" r="40" stroke="hsl(var(--primary))" strokeWidth="8" strokeDasharray="40 212" strokeDashoffset="-130" opacity="0.5" />
-            </svg>
-
             {/* Bottom right - candlestick / growth arrow */}
             <svg
               className="absolute right-[8%] bottom-[8%] w-40 h-40 md:w-56 md:h-56"
