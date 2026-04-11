@@ -1,6 +1,6 @@
 const AccountingIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="30 -5 280 140"
+    viewBox="5 -10 360 180"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
