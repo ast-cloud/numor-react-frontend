@@ -1,27 +1,21 @@
 
 
-## Reorder Auth Pages: Form First on Mobile
+## Move Heading Above Form on Mobile
 
-On small screens (vertical layout), the social login buttons currently appear first and the form appears below. The user wants this reversed: form on top, social buttons below.
-
-### Approach
-
-Use Tailwind's `order` utilities to swap the visual order on mobile while keeping desktop layout unchanged (social left, form right).
+Currently the heading ("Welcome back", "Create your account", etc.) lives inside the social login section, which has `order-2` on mobile. This means it appears below the form. The fix is to extract the heading into its own element that appears first on all screen sizes.
 
 ### Files to Change
 
-1. **`src/pages/Login.tsx`** — Add `order-2 md:order-none` to the left (social) section, `order-1 md:order-none` to the right (form) section.
+1. **`src/pages/Login.tsx`** — Extract the heading `div` (h1 + subtitle) out of the social login section into its own `div` with no order class (renders first naturally). On desktop, hide this extracted heading and keep a duplicate inside the social section visible only on `md:` screens.
 
-2. **`src/pages/Signup.tsx`** — Same reordering.
+2. **`src/pages/Signup.tsx`** — Same pattern.
 
-3. **`src/pages/CASignup.tsx`** — Same reordering.
+3. **`src/pages/CASignup.tsx`** — Same pattern.
 
-4. **`src/pages/ForgotPassword.tsx`** — Same reordering (if it has social buttons; otherwise just ensure form is first).
+### Implementation Detail
 
-### How It Works
-
-- `order-1` makes the form appear first on mobile
-- `order-2` pushes social buttons below on mobile  
-- `md:order-none` restores natural DOM order on desktop (social left, form right)
-- The mobile divider ("Or") gets `order-2` to sit between form and social buttons
+For each page:
+- Add a new heading block **before** both sections, visible only on mobile: `<div className="md:hidden w-full mb-6">...</div>`
+- In the existing social login section, add `hidden md:block` to the heading div so it only shows on desktop
+- This way: mobile sees Heading -> Form (order-1) -> Divider (order-2) -> Social (order-2), desktop is unchanged
 
