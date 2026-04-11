@@ -5,7 +5,7 @@ import TypingAnimation from "./TypingAnimation";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center pt-16 overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center justify-center pt-24 sm:pt-16 overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-glow opacity-50" />
       <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse-glow" />
