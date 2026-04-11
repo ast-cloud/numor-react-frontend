@@ -19,7 +19,7 @@ const Pricing = () => {
         <Navbar />
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center max-w-2xl mx-auto">
-            <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6">
+            <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground mb-6">
               Pricing? Not today.
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto">
