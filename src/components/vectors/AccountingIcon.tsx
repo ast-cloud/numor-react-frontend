@@ -1,6 +1,6 @@
 const AccountingIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="5 -10 360 180"
+    viewBox="0 -5 340 155"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
@@ -183,7 +183,7 @@ const AccountingIcon = ({ className }: { className?: string }) => (
         <rect x="2" y="6" width="20" height="14" rx="2" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         <polyline points="2,6 12,13 22,6" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </g>
-      <text x="320" y="50" textAnchor="middle" fontSize="6" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Email</text>
+      
     </g>
 
     {/* WhatsApp */}
@@ -196,7 +196,7 @@ const AccountingIcon = ({ className }: { className?: string }) => (
         <path d="M12 2C6.48 2 2 6.04 2 11c0 1.6.44 3.08 1.2 4.4L2 22l4.8-1.2C8.4 21.56 10.12 22 12 22c5.52 0 10-4.04 10-9S17.52 2 12 2z" fill="#25D366" />
         <path d="M16.5 14.2c-.3-.15-1.7-.84-1.96-.94-.26-.1-.45-.15-.64.15-.19.3-.74.94-.9 1.13-.17.19-.34.22-.63.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.18-.3-.02-.46.13-.61.13-.13.3-.34.44-.52.15-.17.2-.3.3-.49.1-.19.05-.37-.02-.52-.08-.15-.64-1.54-.88-2.1-.23-.56-.47-.48-.64-.49h-.55c-.19 0-.49.07-.75.37-.26.3-.98.96-.98 2.33s1 2.7 1.14 2.89c.15.19 1.98 3.02 4.8 4.23.67.29 1.2.46 1.6.59.68.21 1.29.18 1.78.11.54-.08 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.08-.12-.26-.19-.55-.34z" fill="white" />
       </g>
-      <text x="325" y="108" textAnchor="middle" fontSize="6" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>WhatsApp</text>
+      
     </g>
 
     {/* Print */}
@@ -210,7 +210,7 @@ const AccountingIcon = ({ className }: { className?: string }) => (
         <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         <rect x="6" y="14" width="12" height="8" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </g>
-      <text x="318" y="160" textAnchor="middle" fontSize="6" fill="hsl(var(--foreground))" opacity="0.6" style={{ fontFamily: 'var(--font-body)' }}>Print</text>
+      
     </g>
   </svg>
 );
