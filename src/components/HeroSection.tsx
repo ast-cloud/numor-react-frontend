@@ -90,8 +90,14 @@ const HeroSection = () => {
               <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-3xl transform scale-90" />
 
               {/* Dashboard illustration */}
-              <div className="relative bg-gradient-card rounded-xl border border-border/50 p-4 shadow-card">
-                <DashboardIcon className="w-full h-auto" />
+              <div className="relative bg-gradient-card rounded-xl border border-border/50 p-2 shadow-card overflow-hidden">
+                <img
+                  src="/images/hero-finance.jpg"
+                  alt="AI-powered finance dashboard showing invoices, charts, and financial insights"
+                  width={1024}
+                  height={1024}
+                  className="w-full h-auto rounded-lg"
+                />
               </div>
             </div>
           </div>
