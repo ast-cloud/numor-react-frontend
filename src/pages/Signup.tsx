@@ -98,7 +98,7 @@ const Signup = () => {
           </div>
 
           {/* Form + Social row */}
-          <div className="w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-start">
+          <div className="w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-center">
           {/* Left side - Social login */}
           <div className="w-full md:w-1/2 order-3 md:order-none">
 
