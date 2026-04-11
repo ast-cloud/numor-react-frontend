@@ -91,7 +91,7 @@ const HeroSection = () => {
               <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-3xl transform scale-90" />
 
               {/* Dashboard illustration */}
-              <div className="relative bg-gradient-card rounded-xl border border-border/50 shadow-card overflow-hidden min-h-[320px]">
+              <div className="relative bg-gradient-card rounded-xl border border-border/50 shadow-card overflow-hidden">
                 <TypingAnimation />
               </div>
             </div>
