@@ -255,6 +255,7 @@ const CASignup = () => {
               </Button>
             </form>
           </div>
+          </div>
         </div>
       </div>
 
