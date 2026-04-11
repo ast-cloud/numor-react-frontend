@@ -1,13 +1,27 @@
 
 
-## Problem
-The Smart Invoicing animation is clipped on the right side. The SVG `viewBox` is `30 -5 280 140`, which means it shows x=30 to x=310. But the destination logos (Email, WhatsApp, Print) are positioned around x=318-325, so they get cut off.
+## Reorder Auth Pages: Form First on Mobile
 
-## Fix
-Widen the `viewBox` in `AccountingIcon.tsx` to include the full extent of all elements. Change from `30 -5 280 140` to approximately `5 -10 360 180` — this will show everything from the phone on the left to the Print label on the right (which goes up to ~y=160), while keeping all elements visible and proportionally sized.
+On small screens (vertical layout), the social login buttons currently appear first and the form appears below. The user wants this reversed: form on top, social buttons below.
 
-The exact viewBox values will be tuned based on the rightmost/bottommost elements to ensure nothing is clipped while keeping the animation looking large and filling the card well.
+### Approach
 
-### File changed
-- `src/components/vectors/AccountingIcon.tsx` — adjust the `viewBox` attribute
+Use Tailwind's `order` utilities to swap the visual order on mobile while keeping desktop layout unchanged (social left, form right).
+
+### Files to Change
+
+1. **`src/pages/Login.tsx`** — Add `order-2 md:order-none` to the left (social) section, `order-1 md:order-none` to the right (form) section.
+
+2. **`src/pages/Signup.tsx`** — Same reordering.
+
+3. **`src/pages/CASignup.tsx`** — Same reordering.
+
+4. **`src/pages/ForgotPassword.tsx`** — Same reordering (if it has social buttons; otherwise just ensure form is first).
+
+### How It Works
+
+- `order-1` makes the form appear first on mobile
+- `order-2` pushes social buttons below on mobile  
+- `md:order-none` restores natural DOM order on desktop (social left, form right)
+- The mobile divider ("Or") gets `order-2` to sit between form and social buttons
 
