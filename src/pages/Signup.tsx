@@ -87,10 +87,20 @@ const Signup = () => {
       <Navbar />
       <div className="pt-14 min-h-screen flex items-center justify-center px-4 py-8">
         <div className="max-w-4xl w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-start">
+          {/* Mobile heading */}
+          <div className="md:hidden w-full mb-6">
+            <h1 className="text-2xl font-display font-bold text-foreground mb-2">
+              Create your account
+            </h1>
+            <p className="text-muted-foreground">
+              Get started with Numor in minutes
+            </p>
+          </div>
+
           {/* Left side - Social login */}
           <div className="w-full md:w-1/2 md:sticky md:top-24 order-2 md:order-none">
 
-            <div className="mb-6">
+            <div className="hidden md:block mb-6">
               <h1 className="text-2xl font-display font-bold text-foreground mb-2">
                 Create your account
               </h1>
