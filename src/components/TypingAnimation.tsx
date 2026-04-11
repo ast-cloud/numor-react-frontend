@@ -97,9 +97,9 @@ const TypingAnimation = () => {
   }, [displayText, isDeleting, questionIndex, currentQuestion]);
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full flex flex-col">
       {/* Chat area */}
-      <div className="flex-1 flex flex-col justify-end p-4 gap-3">
+      <div className="flex flex-col p-4 gap-3">
         {/* Sample AI response bubbles */}
         <div className="flex gap-2 items-start">
           <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
