@@ -89,13 +89,6 @@ const Signup = () => {
         <div className="max-w-4xl w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-start">
           {/* Left side - Social login */}
           <div className="w-full md:w-1/2 md:sticky md:top-24 order-2 md:order-none">
-            {/* Logo */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">N</span>
-              </div>
-              <span className="font-display text-2xl font-bold text-foreground">Numor</span>
-            </div>
 
             <div className="mb-6">
               <h1 className="text-2xl font-display font-bold text-foreground mb-2">
