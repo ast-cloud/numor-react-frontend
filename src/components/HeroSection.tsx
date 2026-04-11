@@ -24,7 +24,7 @@ const HeroSection = () => {
         }}
       />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-12 md:px-16 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left content */}
           <div className="text-center lg:text-left">
