@@ -98,14 +98,6 @@ const TypingAnimation = () => {
 
   return (
     <div className="w-full h-full flex flex-col">
-      {/* Mock window chrome */}
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border/50 bg-card/80">
-        <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-        <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-        <span className="ml-3 text-[11px] text-muted-foreground font-medium">Numor AI Assistant</span>
-      </div>
-
       {/* Chat area */}
       <div className="flex-1 flex flex-col justify-end p-4 gap-3">
         {/* Sample AI response bubbles */}
