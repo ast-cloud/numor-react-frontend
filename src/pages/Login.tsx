@@ -65,7 +65,7 @@ const Login = () => {
       <div className="pt-14 min-h-screen flex items-center justify-center px-4">
         <div className="max-w-4xl w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-start">
           {/* Left side - Social login */}
-          <div className="w-full md:w-1/2 md:sticky md:top-24">
+          <div className="w-full md:w-1/2 md:sticky md:top-24 order-2 md:order-none">
             {/* Logo */}
             <div className="flex items-center gap-2 mb-6">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
@@ -124,7 +124,7 @@ const Login = () => {
           </div>
 
           {/* Mobile divider */}
-          <div className="md:hidden relative my-6 w-full">
+          <div className="md:hidden relative my-6 w-full order-2">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border"></div>
             </div>
@@ -134,7 +134,7 @@ const Login = () => {
           </div>
 
           {/* Right side - Form */}
-          <div className="w-full md:w-1/2">
+          <div className="w-full md:w-1/2 order-1 md:order-none">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
