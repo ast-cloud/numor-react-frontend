@@ -19,13 +19,13 @@ const Pricing = () => {
         <Navbar />
         <main className="flex-1 flex items-start justify-center px-4 pt-28 pb-16 md:pt-32">
           <div className="text-center max-w-2xl mx-auto">
-            <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground mb-6">
+            <h1 className="font-display text-2xl md:text-4xl font-bold text-foreground mb-4">
               Pricing? Not today.
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto">
+            <p className="text-sm md:text-base text-muted-foreground mb-8 max-w-md mx-auto">
               Enjoy the full power of our AI financial engine for free — our way of saying thanks for being here early.
             </p>
-            <Button variant="hero" size="xl" asChild>
+            <Button variant="hero" size="lg" asChild>
               <Link to="/signup">Start Growing for $0</Link>
             </Button>
           </div>
