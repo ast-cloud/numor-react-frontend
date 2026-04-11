@@ -91,7 +91,7 @@ const CASignup = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-14 min-h-screen flex items-center justify-center px-4 py-8">
-        <div className="max-w-4xl w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-start">
+        <div className="max-w-4xl w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-stretch">
           {/* Mobile heading */}
           <div className="md:hidden w-full mb-6">
             <h1 className="text-2xl font-display font-bold text-foreground mb-2">
