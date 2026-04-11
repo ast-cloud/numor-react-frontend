@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
-import DashboardIcon from "./vectors/DashboardIcon";
+import TypingAnimation from "./TypingAnimation";
 
 const HeroSection = () => {
   return (
@@ -91,8 +91,8 @@ const HeroSection = () => {
               <div className="absolute inset-0 bg-primary/15 rounded-2xl blur-3xl transform scale-90" />
 
               {/* Dashboard illustration */}
-              <div className="relative bg-gradient-card rounded-xl border border-border/50 p-4 shadow-card">
-                <DashboardIcon className="w-full h-auto" />
+              <div className="relative bg-gradient-card rounded-xl border border-border/50 shadow-card overflow-hidden min-h-[320px]">
+                <TypingAnimation />
               </div>
             </div>
           </div>
