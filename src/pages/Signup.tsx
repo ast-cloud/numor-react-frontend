@@ -86,7 +86,7 @@ const Signup = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-14 min-h-screen flex items-center justify-center px-4 py-8">
-        <div className="max-w-4xl w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-start">
+        <div className="max-w-4xl w-full flex flex-col md:flex-row md:gap-12 lg:gap-16 items-center md:items-stretch">
           {/* Mobile heading */}
           <div className="md:hidden w-full mb-6">
             <h1 className="text-2xl font-display font-bold text-foreground mb-2">
@@ -98,15 +98,17 @@ const Signup = () => {
           </div>
 
           {/* Left side - Social login */}
-          <div className="w-full md:w-1/2 md:sticky md:top-24 order-3 md:order-none">
+          <div className="w-full md:w-1/2 md:sticky md:top-24 order-3 md:order-none md:flex md:flex-col md:self-stretch">
 
-            <div className="hidden md:block mb-6">
-              <h1 className="text-2xl font-display font-bold text-foreground mb-2">
-                Create your account
-              </h1>
-              <p className="text-muted-foreground">
-                Get started with Numor in minutes
-              </p>
+            <div className="hidden md:flex md:flex-1 md:items-center mb-6">
+              <div>
+                <h1 className="text-2xl font-display font-bold text-foreground mb-2">
+                  Create your account
+                </h1>
+                <p className="text-muted-foreground">
+                  Get started with Numor in minutes
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3">
