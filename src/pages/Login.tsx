@@ -75,7 +75,7 @@ const Login = () => {
           </div>
 
           {/* Left side - Social login */}
-          <div className="w-full md:w-1/2 md:sticky md:top-24 order-2 md:order-none">
+          <div className="w-full md:w-1/2 md:sticky md:top-24 order-3 md:order-none">
 
             <div className="hidden md:block mb-6">
               <h1 className="text-2xl font-display font-bold text-foreground mb-2">
