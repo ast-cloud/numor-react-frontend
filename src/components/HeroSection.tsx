@@ -36,7 +36,7 @@ const HeroSection = () => {
 
             {/* Subheadline */}
             <p
-              className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-8 animate-slide-up delay-100"
+              className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-6 animate-slide-up delay-100"
               style={{ opacity: 0, animationFillMode: "forwards" }}
             >
               Invoices. Expenses. Experts. Done in seconds.
