@@ -4,6 +4,9 @@ interface SidebarContextType {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
   toggle: () => void;
+  hovered: boolean;
+  setHovered: (hovered: boolean) => void;
+  effectiveCollapsed: boolean;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
