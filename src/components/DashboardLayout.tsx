@@ -15,7 +15,7 @@ const DashboardContent = () => {
   const navigate = useNavigate();
   const { hasRole, activeRole, setActiveRole } = useAuth();
   const isCA = hasRole("CA_USER");
-  const { collapsed } = useSidebarState();
+  const { effectiveCollapsed: collapsed } = useSidebarState();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const handleSwitchToRegular = () => {

@@ -37,11 +37,11 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, activeRole, logout } = useAuth();
-  const { collapsed, toggle } = useSidebarState();
+  const { collapsed, toggle, setHovered, effectiveCollapsed: sidebarEffectiveCollapsed } = useSidebarState();
 
   // When rendered inside the mobile sheet, we treat it as "mobile".
   const inMobileSheet = typeof onMobileClose === "function";
-  const effectiveCollapsed = inMobileSheet ? false : collapsed;
+  const effectiveCollapsed = inMobileSheet ? false : sidebarEffectiveCollapsed;
 
   const navItems = activeRole === "CA_USER" ? caNavItems : regularNavItems;
 
@@ -57,6 +57,8 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
   return (
     <aside
+      onMouseEnter={() => { if (!inMobileSheet && collapsed) setHovered(true); }}
+      onMouseLeave={() => { if (!inMobileSheet) setHovered(false); }}
       className={`${inMobileSheet ? "w-full" : effectiveCollapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}
     >
       {/* Header with Logo and Controls */}
