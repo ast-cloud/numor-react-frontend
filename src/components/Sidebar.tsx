@@ -163,6 +163,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
           {!effectiveCollapsed && "Logout"}
         </Button>
       </div>
+      </div>
     </aside>
   );
 };
