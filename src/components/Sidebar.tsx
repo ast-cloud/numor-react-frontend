@@ -57,7 +57,6 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
   return (
     <aside
-      onMouseEnter={() => { if (!inMobileSheet && collapsed) setHovered(true); }}
       onMouseLeave={() => { if (!inMobileSheet) setHovered(false); }}
       className={`${inMobileSheet ? "w-full" : effectiveCollapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}
     >
