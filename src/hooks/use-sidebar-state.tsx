@@ -19,6 +19,7 @@ const getIsTablet = () => {
 
 export const SidebarStateProvider = ({ children }: { children: ReactNode }) => {
   const [collapsed, setCollapsed] = useState(() => getIsTablet());
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 768px) and (max-width: 1023px)");
@@ -28,9 +29,10 @@ export const SidebarStateProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const toggle = () => setCollapsed((prev) => !prev);
+  const effectiveCollapsed = collapsed && !hovered;
 
   return (
-    <SidebarContext.Provider value={{ collapsed, setCollapsed, toggle }}>
+    <SidebarContext.Provider value={{ collapsed, setCollapsed, toggle, hovered, setHovered, effectiveCollapsed }}>
       {children}
     </SidebarContext.Provider>
   );
