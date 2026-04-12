@@ -61,7 +61,7 @@ const HeroSection = () => {
 
             {/* Trust badges */}
             <div
-              className="mt-10 pt-6 border-t border-border/30 animate-slide-up delay-300"
+              className="mt-6 pt-6 border-t border-border/30 animate-slide-up delay-300"
               style={{ opacity: 0, animationFillMode: "forwards" }}
             >
               <p className="text-xs text-muted-foreground mb-3">Trusted by growing businesses</p>
