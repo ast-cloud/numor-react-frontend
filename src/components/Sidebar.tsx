@@ -57,7 +57,6 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
   return (
     <aside
-      onMouseEnter={() => { if (!inMobileSheet && collapsed) setHovered(true); }}
       onMouseLeave={() => { if (!inMobileSheet) setHovered(false); }}
       className={`${inMobileSheet ? "w-full" : effectiveCollapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}
     >
@@ -88,6 +87,11 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
         )}
       </div>
 
+      {/* Hoverable area (excludes header) */}
+      <div
+        className="flex flex-col flex-1 min-h-0"
+        onMouseEnter={() => { if (!inMobileSheet && collapsed) setHovered(true); }}
+      >
       {/* User Profile Section */}
       <div className="p-4 border-b border-border">
         <div className={`flex items-center ${effectiveCollapsed ? "justify-center" : "gap-3"}`}>
@@ -158,6 +162,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!effectiveCollapsed && "Logout"}
         </Button>
+      </div>
       </div>
     </aside>
   );
