@@ -36,7 +36,7 @@ const HeroSection = () => {
 
             {/* Subheadline */}
             <p
-              className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-8 animate-slide-up delay-100"
+              className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-6 animate-slide-up delay-100"
               style={{ opacity: 0, animationFillMode: "forwards" }}
             >
               Invoices. Expenses. Experts. Done in seconds.
@@ -61,7 +61,7 @@ const HeroSection = () => {
 
             {/* Trust badges */}
             <div
-              className="mt-10 pt-6 border-t border-border/30 animate-slide-up delay-300"
+              className="mt-6 pt-6 border-t border-border/30 animate-slide-up delay-300"
               style={{ opacity: 0, animationFillMode: "forwards" }}
             >
               <p className="text-xs text-muted-foreground mb-3">Trusted by growing businesses</p>
