@@ -1,21 +1,43 @@
 
+Goal: exclude draft invoices from the Income page summary card analytics, while keeping drafts visible and editable in the invoice list and Draft tab.
 
-## Move Heading Above Form on Mobile
+What I found
+- The SME dashboard was fixed in `src/components/dashboard/widgets/widgetDataProcessors.ts`, but the Income page has separate summary logic in `src/pages/Income.tsx`.
+- In `Income.tsx`, `summaryStats` is currently computed from `filterInvoices(activeTab)`.
+- `filterInvoices("all")` includes drafts, so the summary card on the Invoices page still counts draft amounts and draft invoice count.
+- The summary card is shared across the tabs, so it needs an analytics-only dataset, not the raw tab dataset.
 
-Currently the heading ("Welcome back", "Create your account", etc.) lives inside the social login section, which has `order-2` on mobile. This means it appears below the form. The fix is to extract the heading into its own element that appears first on all screen sizes.
+Planned change
+1. Add an analytics-specific filtered invoice list in `src/pages/Income.tsx`
+   - Reuse the existing filtered list logic for date range/sorting.
+   - Exclude `status === "draft"` from analytics calculations.
+   - Keep the tab list data unchanged so drafts still appear in the Draft tab and All tab list.
 
-### Files to Change
+2. Update `summaryStats`
+   - Base `totalIncome`, `totalPaid`, `totalUnpaid`, `invoiceCount`, and `topClient` on the non-draft analytics list.
+   - Preserve current behavior for paid/unpaid/overdue status handling.
 
-1. **`src/pages/Login.tsx`** — Extract the heading `div` (h1 + subtitle) out of the social login section into its own `div` with no order class (renders first naturally). On desktop, hide this extracted heading and keep a duplicate inside the social section visible only on `md:` screens.
+3. Keep UI wording consistent
+   - The summary card will still show the same labels, but values will now reflect only non-draft invoices.
+   - No visual layout changes needed.
 
-2. **`src/pages/Signup.tsx`** — Same pattern.
+4. Verify edge cases during implementation
+   - If all invoices in range are drafts, summary should show zero values and no top client.
+   - Draft tab should still list drafts normally.
+   - Changing an invoice from draft to unpaid/paid/overdue should make it start contributing to summary stats after refresh/state update.
 
-3. **`src/pages/CASignup.tsx`** — Same pattern.
+Technical details
+- File to update: `src/pages/Income.tsx`
+- Likely approach:
+  - Keep `filterInvoices(tab)` for table rendering.
+  - Add something like `analyticsInvoices = filterInvoices("all").filter((inv) => inv.status !== "draft")`
+  - Optionally, if you want the summary to reflect the selected non-draft tab, handle:
+    - `activeTab === "draft"` → analytics values remain zero
+    - `activeTab === "all"` → all non-draft invoices
+    - other tabs → filtered selected tab (already non-draft except defensive filtering)
+- Based on your latest message (“still showing in the summary card on invoices tab”), the safest interpretation is:
+  - On the main Invoices/All tab summary, exclude drafts from all analytics.
 
-### Implementation Detail
-
-For each page:
-- Add a new heading block **before** both sections, visible only on mobile: `<div className="md:hidden w-full mb-6">...</div>`
-- In the existing social login section, add `hidden md:block` to the heading div so it only shows on desktop
-- This way: mobile sees Heading -> Form (order-1) -> Divider (order-2) -> Social (order-2), desktop is unchanged
-
+Expected result
+- Draft invoices remain visible in the invoice table.
+- Draft invoices no longer affect Total Income, Paid, Outstanding, Invoice Count, or Top Client in the Income page summary card.
