@@ -177,7 +177,8 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
   };
 };
 
-const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo): InvoiceFormData => {
+const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?: ClientData[]): InvoiceFormData => {
+  // Build seller from nested object OR flat fields
   const seller: SellerInfo = inv.seller
     ? {
         logo: "",
@@ -191,7 +192,40 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo): Invoice
         email: inv.seller.email || "",
         phone: inv.seller.phone || "",
       }
-    : orgSeller || { ...emptySellerInfo, name: inv.sellerName || "", email: inv.sellerEmail || "" };
+    : {
+        logo: "",
+        name: inv.sellerName || orgSeller?.name || "",
+        streetAddress: inv.sellerStreetAddress || orgSeller?.streetAddress || "",
+        city: inv.sellerCity || orgSeller?.city || "",
+        state: inv.sellerState || orgSeller?.state || "",
+        zip: inv.sellerZipCode || orgSeller?.zip || "",
+        country: inv.sellerCountry || orgSeller?.country || "",
+        taxId: inv.sellerTaxId || orgSeller?.taxId || "",
+        email: inv.sellerEmail || orgSeller?.email || "",
+        phone: inv.sellerPhone || orgSeller?.phone || "",
+      };
+
+  // Resolve client from nested object, or look up from clients list
+  let clientName = inv.client?.name || "";
+  let clientEmail = inv.client?.email || "";
+  let clientStreetAddress = inv.client?.streetAddress || "";
+  let clientCity = inv.client?.city || "";
+  let clientState = inv.client?.state || "";
+  let clientZip = inv.client?.zipCode || "";
+  let clientCountry = inv.client?.country || "";
+
+  if (!clientName && clients && inv.clientId) {
+    const matched = clients.find((c) => c.id === inv.clientId);
+    if (matched) {
+      clientName = matched.name || "";
+      clientEmail = matched.email || "";
+      clientStreetAddress = matched.streetAddress || "";
+      clientCity = matched.city || "";
+      clientState = matched.state || "";
+      clientZip = matched.zipCode || "";
+      clientCountry = matched.country || "";
+    }
+  }
 
   return {
     invoiceNumber: inv.invoiceNumber || "",
@@ -200,19 +234,19 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo): Invoice
     currency: inv.currency || "USD",
     taxType: inv.taxType || (seller.country && countryDefaults[seller.country]?.taxType) || "None",
     seller,
-    clientName: inv.client?.name || "",
-    clientEmail: inv.client?.email || "",
-    clientStreetAddress: inv.client?.streetAddress || "",
-    clientCity: inv.client?.city || "",
-    clientState: inv.client?.state || "",
-    clientZip: inv.client?.zipCode || "",
-    clientCountry: inv.client?.country || "",
+    clientName,
+    clientEmail,
+    clientStreetAddress,
+    clientCity,
+    clientState,
+    clientZip,
+    clientCountry,
     lineItems: inv.items?.length
       ? inv.items.map((item, i) => ({
           id: String(i + 1),
           description: item.itemName || item.description || "",
           quantity: parseFloat(item.quantity) || 1,
-          unit: "Units",
+          unit: item.unitType || "Units",
           rate: parseFloat(item.unitPrice) || 0,
           taxPercent: parseFloat(item.taxRate) || 0,
         }))
