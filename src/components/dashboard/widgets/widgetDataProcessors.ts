@@ -81,7 +81,7 @@ export const filterExpenses = (expenses: ExpenseAPI[], config: TimeRangeConfig):
 
 export const filterInvoices = (invoices: InvoiceData[], config: TimeRangeConfig): InvoiceData[] => {
   const range = getTimeRange(config);
-  return invoices.filter((i) => isInRange(i.issueDate, range));
+  return invoices.filter((i) => i.status?.toUpperCase() !== "DRAFT" && isInRange(i.issueDate, range));
 };
 
 // --- Period label generation ---
