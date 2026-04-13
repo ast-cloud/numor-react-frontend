@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -226,6 +227,8 @@ const Income = () => {
       .catch(() => {});
   }, []);
 
+  const queryClient = useQueryClient();
+
   const loadInvoices = () => {
     setIsLoading(true);
     Promise.all([fetchInvoices(), fetchClients()])
@@ -234,6 +237,9 @@ const Income = () => {
         setClientsData(clientData);
         setRawInvoices(invoiceData);
         setInvoices(invoiceData.map((inv) => mapApiInvoice(inv, clientsMap)));
+        // Invalidate React Query cache so dashboard stays in sync
+        queryClient.invalidateQueries({ queryKey: ["invoices"] });
+        queryClient.invalidateQueries({ queryKey: ["clients"] });
       })
       .catch((err) => {
         console.error("Failed to fetch invoices:", err);
@@ -370,6 +376,7 @@ const Income = () => {
           setSelectedInvoice(null);
         }
         toast({ title: "Invoice deleted", description: `${deleteTarget.invoiceNumber} has been deleted.` });
+        queryClient.invalidateQueries({ queryKey: ["invoices"] });
       } else {
         toast({ title: "Error", description: "Failed to delete invoice", variant: "destructive" });
       }
