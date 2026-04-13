@@ -464,7 +464,7 @@ const Income = () => {
   const currency = COUNTRY_CURRENCY[orgCountry] || "USD";
 
   const summaryStats = useMemo(() => {
-    const filtered = filterInvoices(activeTab);
+    const filtered = filterInvoices(activeTab).filter((inv) => inv.status !== "draft");
     const totalIncome = filtered.reduce((sum, inv) => sum + inv.amount, 0);
     const paidInvoices = filtered.filter((inv) => inv.status === "paid");
     const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
