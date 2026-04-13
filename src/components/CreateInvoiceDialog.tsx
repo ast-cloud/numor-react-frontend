@@ -292,7 +292,7 @@ const CreateInvoiceDialog = ({ onInvoiceCreated, editInvoiceId, editOpen, onEdit
           if (cancelled) return;
           console.log("Invoice data received:", JSON.stringify(invoiceData));
           setSavedClients(clientData);
-          const mapped = mapInvoiceDataToForm(invoiceData);
+          const mapped = mapInvoiceDataToForm(invoiceData, undefined, clientData);
           console.log("Mapped form data:", JSON.stringify(mapped));
           setFormData(mapped);
           if (invoiceData.clientId) {
