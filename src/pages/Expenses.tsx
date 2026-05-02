@@ -1361,20 +1361,28 @@ const Expenses = () => {
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => {
-                          setDialogMode("default");
-                          setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
-                          setBillItems([createEmptyBillItem()]);
-                        }}
-                      >
-                        ← Back
-                      </Button>
+                      {!editingExpenseId && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => {
+                            setDialogMode("default");
+                            setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
+                            setBillItems([createEmptyBillItem()]);
+                          }}
+                        >
+                          ← Back
+                        </Button>
+                      )}
                       <Button type="submit" className="flex-1">
-                        <Plus className="w-4 h-4 mr-2" /> Add {billItems.length > 1 ? `${billItems.length} Expenses` : "Expense"}
+                        {editingExpenseId ? (
+                          <>Update Expense</>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 mr-2" /> Add {billItems.length > 1 ? `${billItems.length} Expenses` : "Expense"}
+                          </>
+                        )}
                       </Button>
                     </div>
                   </form>
