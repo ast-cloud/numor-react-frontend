@@ -274,6 +274,9 @@ const Expenses = () => {
   });
   const [billItems, setBillItems] = useState<BillItem[]>([createEmptyBillItem()]);
   const [ocrMeta, setOcrMeta] = useState<{ ocrExtracted: boolean; ocrConfidence: number | null; receiptUrl: string | null }>({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [expenseToDelete, setExpenseToDelete] = useState<ExpenseAPI | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch org country for tax defaults
   useEffect(() => {
