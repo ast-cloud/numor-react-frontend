@@ -925,7 +925,7 @@ const Expenses = () => {
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[calc(100vw-2rem)] sm:w-full">
               <DialogHeader>
-                <DialogTitle>Add Expense</DialogTitle>
+                <DialogTitle>{editingExpenseId ? "Edit Expense" : "Add Expense"}</DialogTitle>
               </DialogHeader>
 
               {dialogMode === "default" && (
