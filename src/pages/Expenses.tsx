@@ -892,6 +892,61 @@ const Expenses = () => {
     }
   };
 
+  // Edit a receipt: prefill the bill-mode dialog with existing expense data
+  const handleEditReceipt = (receipt: ExpenseAPI) => {
+    const prefillBillItems: BillItem[] = (receipt.items || []).map((item) => ({
+      name: item.itemName || "",
+      quantity: String(item.quantity ?? "1"),
+      unitType: normalizeUnitType(item.unitType),
+      unitPrice: String(item.unitPrice ?? ""),
+      taxRate: String(item.taxRate ?? ""),
+      itemPrice: String(item.totalPrice ?? ""),
+    }));
+
+    const billDate = receipt.expenseDate
+      ? new Date(receipt.expenseDate).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0];
+
+    // Normalize stored payment method (e.g. "CARD") back to UI label
+    const pmRaw = (receipt.paymentMethod || "").toString();
+    const pmMatch = billPaymentMethods.find((p) => p.toUpperCase() === pmRaw.toUpperCase());
+
+    setBillCommon({
+      merchant: receipt.merchant || "",
+      billDate,
+      totalAmount: String(receipt.totalAmount || ""),
+      category: receipt.category && categories.includes(receipt.category) ? receipt.category : "",
+      paymentMethod: pmMatch || "",
+    });
+    setBillItems(prefillBillItems.length > 0 ? prefillBillItems : [createEmptyBillItem()]);
+    setOcrMeta({
+      ocrExtracted: !!receipt.ocrExtracted,
+      ocrConfidence: receipt.ocrConfidence,
+      receiptUrl: receipt.receiptUrl,
+    });
+    setEditingExpenseId(receipt.id);
+    setDialogMode("bill");
+    setIsManualDialogOpen(true);
+  };
+
+  const handleConfirmDeleteReceipt = async () => {
+    if (!expenseToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteExpense(expenseToDelete.id);
+      await loadExpenses();
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      toast({ title: "Deleted", description: "Expense deleted successfully" });
+      setSelectedReceipt(null);
+      setExpenseToDelete(null);
+    } catch (error: any) {
+      console.error("Delete expense error:", error);
+      toast({ title: "Error", description: error?.message || "Failed to delete expense", variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Helmet><title>Numor - Expenses</title></Helmet>
