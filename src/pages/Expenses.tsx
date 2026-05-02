@@ -1737,10 +1737,28 @@ const Expenses = () => {
               {selectedReceipt ? (
               /* Item Detail View */
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                   <Button variant="ghost" size="sm" onClick={() => setSelectedReceipt(null)} className="gap-1">
                     ← Back to Receipts
                   </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditReceipt(selectedReceipt)}
+                      className="gap-1"
+                    >
+                      <Pencil className="w-4 h-4" /> Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setExpenseToDelete(selectedReceipt)}
+                      className="gap-1 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </Button>
+                  </div>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-1">
                   <h3 className="text-lg font-semibold text-foreground">{selectedReceipt.merchant}</h3>
