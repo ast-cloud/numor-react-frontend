@@ -730,36 +730,43 @@ const Expenses = () => {
     };
 
     try {
-      const token = getToken();
-      const res = await fetch(`${config.backendHost}/api/expenses/confirmAndSaveExpense`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
+      if (editingExpenseId) {
+        await updateExpense(editingExpenseId, payload);
+      } else {
+        const token = getToken();
+        const res = await fetch(`${config.backendHost}/api/expenses/confirmAndSaveExpense`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        });
 
-      const result = await res.json();
+        const result = await res.json();
 
-      if (!res.ok || !result.success) {
-        toast({ title: "Error", description: result.message || "Failed to save expense", variant: "destructive" });
-        return;
+        if (!res.ok || !result.success) {
+          toast({ title: "Error", description: result.message || "Failed to save expense", variant: "destructive" });
+          return;
+        }
       }
 
       // Refetch expenses from API
       await loadExpenses();
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
 
+      const wasEditing = !!editingExpenseId;
       setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
       setBillItems([createEmptyBillItem()]);
       setOcrMeta({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
       setDialogMode("default");
       setIsManualDialogOpen(false);
-      toast({ title: "Success", description: "Expense saved successfully" });
-    } catch (error) {
+      setEditingExpenseId(null);
+      setSelectedReceipt(null);
+      toast({ title: "Success", description: wasEditing ? "Expense updated successfully" : "Expense saved successfully" });
+    } catch (error: any) {
       console.error("Save expense error:", error);
-      toast({ title: "Error", description: "Network error. Please try again.", variant: "destructive" });
+      toast({ title: "Error", description: error?.message || "Network error. Please try again.", variant: "destructive" });
     }
   };
 
