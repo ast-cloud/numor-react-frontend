@@ -914,6 +914,7 @@ const Expenses = () => {
                 setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
                 setBillItems([createEmptyBillItem()]);
                 setOcrMeta({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
+                setEditingExpenseId(null);
               }
             }}>
             <DialogTrigger asChild>
