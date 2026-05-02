@@ -33,7 +33,17 @@ import { DateRange } from "react-day-picker";
 
 import { config } from "@/lib/config";
 import { getToken } from "@/lib/api/authToken";
-import { fetchExpenses, type ExpenseAPI } from "@/lib/api/expenses";
+import { fetchExpenses, deleteExpense, updateExpense, type ExpenseAPI } from "@/lib/api/expenses";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 
 type SortField = "date" | "totalPrice" | "category";
