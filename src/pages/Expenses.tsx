@@ -33,7 +33,17 @@ import { DateRange } from "react-day-picker";
 
 import { config } from "@/lib/config";
 import { getToken } from "@/lib/api/authToken";
-import { fetchExpenses, type ExpenseAPI } from "@/lib/api/expenses";
+import { fetchExpenses, deleteExpense, updateExpense, type ExpenseAPI } from "@/lib/api/expenses";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 
 type SortField = "date" | "totalPrice" | "category";
@@ -264,6 +274,9 @@ const Expenses = () => {
   });
   const [billItems, setBillItems] = useState<BillItem[]>([createEmptyBillItem()]);
   const [ocrMeta, setOcrMeta] = useState<{ ocrExtracted: boolean; ocrConfidence: number | null; receiptUrl: string | null }>({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [expenseToDelete, setExpenseToDelete] = useState<ExpenseAPI | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch org country for tax defaults
   useEffect(() => {
@@ -717,36 +730,43 @@ const Expenses = () => {
     };
 
     try {
-      const token = getToken();
-      const res = await fetch(`${config.backendHost}/api/expenses/confirmAndSaveExpense`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
+      if (editingExpenseId) {
+        await updateExpense(editingExpenseId, payload);
+      } else {
+        const token = getToken();
+        const res = await fetch(`${config.backendHost}/api/expenses/confirmAndSaveExpense`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        });
 
-      const result = await res.json();
+        const result = await res.json();
 
-      if (!res.ok || !result.success) {
-        toast({ title: "Error", description: result.message || "Failed to save expense", variant: "destructive" });
-        return;
+        if (!res.ok || !result.success) {
+          toast({ title: "Error", description: result.message || "Failed to save expense", variant: "destructive" });
+          return;
+        }
       }
 
       // Refetch expenses from API
       await loadExpenses();
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
 
+      const wasEditing = !!editingExpenseId;
       setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
       setBillItems([createEmptyBillItem()]);
       setOcrMeta({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
       setDialogMode("default");
       setIsManualDialogOpen(false);
-      toast({ title: "Success", description: "Expense saved successfully" });
-    } catch (error) {
+      setEditingExpenseId(null);
+      setSelectedReceipt(null);
+      toast({ title: "Success", description: wasEditing ? "Expense updated successfully" : "Expense saved successfully" });
+    } catch (error: any) {
       console.error("Save expense error:", error);
-      toast({ title: "Error", description: "Network error. Please try again.", variant: "destructive" });
+      toast({ title: "Error", description: error?.message || "Network error. Please try again.", variant: "destructive" });
     }
   };
 
@@ -872,6 +892,61 @@ const Expenses = () => {
     }
   };
 
+  // Edit a receipt: prefill the bill-mode dialog with existing expense data
+  const handleEditReceipt = (receipt: ExpenseAPI) => {
+    const prefillBillItems: BillItem[] = (receipt.items || []).map((item) => ({
+      name: item.itemName || "",
+      quantity: String(item.quantity ?? "1"),
+      unitType: normalizeUnitType(item.unitType),
+      unitPrice: String(item.unitPrice ?? ""),
+      taxRate: String(item.taxRate ?? ""),
+      itemPrice: String(item.totalPrice ?? ""),
+    }));
+
+    const billDate = receipt.expenseDate
+      ? new Date(receipt.expenseDate).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0];
+
+    // Normalize stored payment method (e.g. "CARD") back to UI label
+    const pmRaw = (receipt.paymentMethod || "").toString();
+    const pmMatch = billPaymentMethods.find((p) => p.toUpperCase() === pmRaw.toUpperCase());
+
+    setBillCommon({
+      merchant: receipt.merchant || "",
+      billDate,
+      totalAmount: String(receipt.totalAmount || ""),
+      category: receipt.category && categories.includes(receipt.category) ? receipt.category : "",
+      paymentMethod: pmMatch || "",
+    });
+    setBillItems(prefillBillItems.length > 0 ? prefillBillItems : [createEmptyBillItem()]);
+    setOcrMeta({
+      ocrExtracted: !!receipt.ocrExtracted,
+      ocrConfidence: receipt.ocrConfidence,
+      receiptUrl: receipt.receiptUrl,
+    });
+    setEditingExpenseId(receipt.id);
+    setDialogMode("bill");
+    setIsManualDialogOpen(true);
+  };
+
+  const handleConfirmDeleteReceipt = async () => {
+    if (!expenseToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteExpense(expenseToDelete.id);
+      await loadExpenses();
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      toast({ title: "Deleted", description: "Expense deleted successfully" });
+      setSelectedReceipt(null);
+      setExpenseToDelete(null);
+    } catch (error: any) {
+      console.error("Delete expense error:", error);
+      toast({ title: "Error", description: error?.message || "Failed to delete expense", variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Helmet><title>Numor - Expenses</title></Helmet>
@@ -894,6 +969,7 @@ const Expenses = () => {
                 setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
                 setBillItems([createEmptyBillItem()]);
                 setOcrMeta({ ocrExtracted: false, ocrConfidence: null, receiptUrl: null });
+                setEditingExpenseId(null);
               }
             }}>
             <DialogTrigger asChild>
@@ -904,7 +980,7 @@ const Expenses = () => {
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[calc(100vw-2rem)] sm:w-full">
               <DialogHeader>
-                <DialogTitle>Add Expense</DialogTitle>
+                <DialogTitle>{editingExpenseId ? "Edit Expense" : "Add Expense"}</DialogTitle>
               </DialogHeader>
 
               {dialogMode === "default" && (
@@ -1340,20 +1416,28 @@ const Expenses = () => {
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => {
-                          setDialogMode("default");
-                          setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
-                          setBillItems([createEmptyBillItem()]);
-                        }}
-                      >
-                        ← Back
-                      </Button>
+                      {!editingExpenseId && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => {
+                            setDialogMode("default");
+                            setBillCommon({ merchant: "", billDate: new Date().toISOString().split("T")[0], totalAmount: "", category: "", paymentMethod: "" });
+                            setBillItems([createEmptyBillItem()]);
+                          }}
+                        >
+                          ← Back
+                        </Button>
+                      )}
                       <Button type="submit" className="flex-1">
-                        <Plus className="w-4 h-4 mr-2" /> Add {billItems.length > 1 ? `${billItems.length} Expenses` : "Expense"}
+                        {editingExpenseId ? (
+                          <>Update Expense</>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 mr-2" /> Add {billItems.length > 1 ? `${billItems.length} Expenses` : "Expense"}
+                          </>
+                        )}
                       </Button>
                     </div>
                   </form>
@@ -1653,10 +1737,28 @@ const Expenses = () => {
               {selectedReceipt ? (
               /* Item Detail View */
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                   <Button variant="ghost" size="sm" onClick={() => setSelectedReceipt(null)} className="gap-1">
                     ← Back to Receipts
                   </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditReceipt(selectedReceipt)}
+                      className="gap-1"
+                    >
+                      <Pencil className="w-4 h-4" /> Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setExpenseToDelete(selectedReceipt)}
+                      className="gap-1 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </Button>
+                  </div>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-1">
                   <h3 className="text-lg font-semibold text-foreground">{selectedReceipt.merchant}</h3>
@@ -1743,6 +1845,28 @@ const Expenses = () => {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!expenseToDelete} onOpenChange={(open) => { if (!open) setExpenseToDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this expense?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the expense
+              {expenseToDelete?.merchant ? ` from ${expenseToDelete.merchant}` : ""} and all its items. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleConfirmDeleteReceipt(); }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
