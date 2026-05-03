@@ -1741,22 +1741,22 @@ const Expenses = () => {
                   <Button variant="ghost" size="sm" onClick={() => setSelectedReceipt(null)} className="gap-1">
                     ← Back to Receipts
                   </Button>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEditReceipt(selectedReceipt)}
-                      className="gap-1"
+                      className="gap-1 h-7 px-2 text-xs [&_svg]:size-3"
                     >
-                      <Pencil className="w-4 h-4" /> Edit
+                      <Pencil /> Edit
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setExpenseToDelete(selectedReceipt)}
-                      className="gap-1 text-destructive hover:text-destructive"
+                      className="gap-1 h-7 px-2 text-xs text-destructive hover:text-destructive [&_svg]:size-3"
                     >
-                      <Trash2 className="w-4 h-4" /> Delete
+                      <Trash2 /> Delete
                     </Button>
                   </div>
                 </div>
