@@ -17,13 +17,7 @@ import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
-import {
-  createInvoice,
-  updateInvoice,
-  fetchInvoicePdfStatus,
-  fetchInvoice,
-  type InvoiceData,
-} from "@/lib/api/invoices";
+import { createInvoice, updateInvoice, fetchInvoicePdfStatus, fetchInvoice, type InvoiceData } from "@/lib/api/invoices";
 import { toast } from "@/hooks/use-toast";
 
 interface CreateInvoiceDialogProps {
@@ -81,76 +75,54 @@ interface InvoiceFormData {
 
 // Country-to-currency/tax defaults mapping
 const countryDefaults: Record<string, { currency: string; taxType: string }> = {
-  India: { currency: "INR", taxType: "GST" },
-  UAE: { currency: "AED", taxType: "VAT" },
-  US: { currency: "USD", taxType: "Sales Tax" },
-  UK: { currency: "GBP", taxType: "VAT" },
+  "India": { currency: "INR", taxType: "GST" },
+  "UAE": { currency: "AED", taxType: "VAT" },
+  "US": { currency: "USD", taxType: "Sales Tax" },
+  "UK": { currency: "GBP", taxType: "VAT" },
   // EU Countries (27)
-  Austria: { currency: "EUR", taxType: "VAT" },
-  Belgium: { currency: "EUR", taxType: "VAT" },
-  Bulgaria: { currency: "EUR", taxType: "VAT" },
-  Croatia: { currency: "EUR", taxType: "VAT" },
-  Cyprus: { currency: "EUR", taxType: "VAT" },
+  "Austria": { currency: "EUR", taxType: "VAT" },
+  "Belgium": { currency: "EUR", taxType: "VAT" },
+  "Bulgaria": { currency: "EUR", taxType: "VAT" },
+  "Croatia": { currency: "EUR", taxType: "VAT" },
+  "Cyprus": { currency: "EUR", taxType: "VAT" },
   "Czech Republic": { currency: "EUR", taxType: "VAT" },
-  Denmark: { currency: "EUR", taxType: "VAT" },
-  Estonia: { currency: "EUR", taxType: "VAT" },
-  Finland: { currency: "EUR", taxType: "VAT" },
-  France: { currency: "EUR", taxType: "VAT" },
-  Germany: { currency: "EUR", taxType: "VAT" },
-  Greece: { currency: "EUR", taxType: "VAT" },
-  Hungary: { currency: "EUR", taxType: "VAT" },
-  Ireland: { currency: "EUR", taxType: "VAT" },
-  Italy: { currency: "EUR", taxType: "VAT" },
-  Latvia: { currency: "EUR", taxType: "VAT" },
-  Lithuania: { currency: "EUR", taxType: "VAT" },
-  Luxembourg: { currency: "EUR", taxType: "VAT" },
-  Malta: { currency: "EUR", taxType: "VAT" },
-  Netherlands: { currency: "EUR", taxType: "VAT" },
-  Poland: { currency: "EUR", taxType: "VAT" },
-  Portugal: { currency: "EUR", taxType: "VAT" },
-  Romania: { currency: "EUR", taxType: "VAT" },
-  Slovakia: { currency: "EUR", taxType: "VAT" },
-  Slovenia: { currency: "EUR", taxType: "VAT" },
-  Spain: { currency: "EUR", taxType: "VAT" },
-  Sweden: { currency: "EUR", taxType: "VAT" },
+  "Denmark": { currency: "EUR", taxType: "VAT" },
+  "Estonia": { currency: "EUR", taxType: "VAT" },
+  "Finland": { currency: "EUR", taxType: "VAT" },
+  "France": { currency: "EUR", taxType: "VAT" },
+  "Germany": { currency: "EUR", taxType: "VAT" },
+  "Greece": { currency: "EUR", taxType: "VAT" },
+  "Hungary": { currency: "EUR", taxType: "VAT" },
+  "Ireland": { currency: "EUR", taxType: "VAT" },
+  "Italy": { currency: "EUR", taxType: "VAT" },
+  "Latvia": { currency: "EUR", taxType: "VAT" },
+  "Lithuania": { currency: "EUR", taxType: "VAT" },
+  "Luxembourg": { currency: "EUR", taxType: "VAT" },
+  "Malta": { currency: "EUR", taxType: "VAT" },
+  "Netherlands": { currency: "EUR", taxType: "VAT" },
+  "Poland": { currency: "EUR", taxType: "VAT" },
+  "Portugal": { currency: "EUR", taxType: "VAT" },
+  "Romania": { currency: "EUR", taxType: "VAT" },
+  "Slovakia": { currency: "EUR", taxType: "VAT" },
+  "Slovenia": { currency: "EUR", taxType: "VAT" },
+  "Spain": { currency: "EUR", taxType: "VAT" },
+  "Sweden": { currency: "EUR", taxType: "VAT" },
 };
 
 // Tax percentage options by country
 const taxPercentOptions: Record<string, number[]> = {
-  UAE: [0, 5],
-  India: [0, 5, 18, 28],
-  UK: [0, 5, 20],
+  "UAE": [0, 5],
+  "India": [0, 5, 18, 28],
+  "UK": [0, 5, 20],
 };
 
 // EU countries that should have free input for tax %
 const euCountries = [
-  "Austria",
-  "Belgium",
-  "Bulgaria",
-  "Croatia",
-  "Cyprus",
-  "Czech Republic",
-  "Denmark",
-  "Estonia",
-  "Finland",
-  "France",
-  "Germany",
-  "Greece",
-  "Hungary",
-  "Ireland",
-  "Italy",
-  "Latvia",
-  "Lithuania",
-  "Luxembourg",
-  "Malta",
-  "Netherlands",
-  "Poland",
-  "Portugal",
-  "Romania",
-  "Slovakia",
-  "Slovenia",
-  "Spain",
-  "Sweden",
+  "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic",
+  "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary",
+  "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta",
+  "Netherlands", "Poland", "Portugal", "Romania", "Slovakia", "Slovenia",
+  "Spain", "Sweden"
 ];
 
 const hasTaxDropdown = (country: string): boolean => {
@@ -177,8 +149,9 @@ const emptySellerInfo: SellerInfo = {
 
 const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
   const s = seller || emptySellerInfo;
-  const defaults =
-    s.country && countryDefaults[s.country] ? countryDefaults[s.country] : { currency: "USD", taxType: "None" };
+  const defaults = s.country && countryDefaults[s.country]
+    ? countryDefaults[s.country]
+    : { currency: "USD", taxType: "None" };
   return {
     invoiceNumber: "",
     invoiceDate: new Date(),
@@ -288,16 +261,13 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
   };
 };
 
-const CreateInvoiceDialog = ({
-  onInvoiceCreated,
-  editInvoiceId,
-  editOpen,
-  onEditOpenChange,
-}: CreateInvoiceDialogProps) => {
+const CreateInvoiceDialog = ({ onInvoiceCreated, editInvoiceId, editOpen, onEditOpenChange }: CreateInvoiceDialogProps) => {
   const isEditMode = !!editInvoiceId;
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isEditMode ? (editOpen ?? false) : internalOpen;
-  const setOpen = isEditMode ? (v: boolean) => onEditOpenChange?.(v) : setInternalOpen;
+  const setOpen = isEditMode
+    ? (v: boolean) => onEditOpenChange?.(v)
+    : setInternalOpen;
 
   const [formData, setFormData] = useState<InvoiceFormData>(getInitialFormData());
   const [showPreview, setShowPreview] = useState(false);
@@ -362,9 +332,7 @@ const CreateInvoiceDialog = ({
         .catch(() => {});
     }
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [open, editInvoiceId, isEditMode]);
 
   const handleClientSelect = (clientId: string) => {
@@ -391,15 +359,15 @@ const CreateInvoiceDialog = ({
   const handleSellerChange = (field: keyof SellerInfo, value: string) => {
     setFormData((prev) => {
       const updatedSeller = { ...prev.seller, [field]: value };
-
+      
       // If country changed, update currency and tax type
       if (field === "country" && countryDefaults[value]) {
         // Check if client country differs - zero-rate taxes if cross-border
         const isCrossBorder = prev.clientCountry && prev.clientCountry !== value;
-        const updatedLineItems = isCrossBorder
-          ? prev.lineItems.map((item) => ({ ...item, taxPercent: 0 }))
+        const updatedLineItems = isCrossBorder 
+          ? prev.lineItems.map(item => ({ ...item, taxPercent: 0 }))
           : prev.lineItems;
-
+        
         return {
           ...prev,
           seller: updatedSeller,
@@ -408,16 +376,16 @@ const CreateInvoiceDialog = ({
           lineItems: updatedLineItems,
         };
       }
-
+      
       // Check if changing to/from cross-border scenario
       if (field === "country") {
         const isCrossBorder = prev.clientCountry && prev.clientCountry !== value;
-        const updatedLineItems = isCrossBorder
-          ? prev.lineItems.map((item) => ({ ...item, taxPercent: 0 }))
+        const updatedLineItems = isCrossBorder 
+          ? prev.lineItems.map(item => ({ ...item, taxPercent: 0 }))
           : prev.lineItems;
         return { ...prev, seller: updatedSeller, lineItems: updatedLineItems };
       }
-
+      
       return { ...prev, seller: updatedSeller };
     });
   };
@@ -425,10 +393,10 @@ const CreateInvoiceDialog = ({
   const handleClientCountryChange = (value: string) => {
     setFormData((prev) => {
       const isCrossBorder = prev.seller.country && prev.seller.country !== value;
-      const updatedLineItems = isCrossBorder
-        ? prev.lineItems.map((item) => ({ ...item, taxPercent: 0 }))
+      const updatedLineItems = isCrossBorder 
+        ? prev.lineItems.map(item => ({ ...item, taxPercent: 0 }))
         : prev.lineItems;
-
+      
       return {
         ...prev,
         clientCountry: value,
@@ -440,7 +408,9 @@ const CreateInvoiceDialog = ({
   const handleLineItemChange = (id: string, field: keyof LineItem, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
-      lineItems: prev.lineItems.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+      lineItems: prev.lineItems.map((item) =>
+        item.id === id ? { ...item, [field]: value } : item
+      ),
     }));
   };
 
@@ -448,10 +418,7 @@ const CreateInvoiceDialog = ({
     const newId = String(formData.lineItems.length + 1);
     setFormData((prev) => ({
       ...prev,
-      lineItems: [
-        ...prev.lineItems,
-        { id: newId, description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 },
-      ],
+      lineItems: [...prev.lineItems, { id: newId, description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 }],
     }));
   };
 
@@ -497,9 +464,7 @@ const CreateInvoiceDialog = ({
 
   // Union territories where UTGST applies instead of SGST
   const utgstTerritories = [
-    "Lakshadweep",
-    "Ladakh",
-    "Chandigarh",
+    "Lakshadweep", "Ladakh", "Chandigarh",
     "Andaman and Nicobar Islands",
     "Dadra and Nagar Haveli and Daman and Diu",
   ];
@@ -516,7 +481,7 @@ const CreateInvoiceDialog = ({
     // Calculate overall subtotal and total tax for effective rate
     const subtotal = lineItems.reduce((sum, item) => sum + item.quantity * item.rate, 0);
     const totalTax = lineItems.reduce((sum, item) => sum + item.quantity * item.rate * (item.taxPercent / 100), 0);
-    const effectiveRate = subtotal > 0 ? Math.round(((totalTax * 100) / subtotal) * 100) / 100 : 0;
+    const effectiveRate = subtotal > 0 ? Math.round((totalTax * 100 / subtotal) * 100) / 100 : 0;
 
     if (taxType === "GST" && seller.country === "India") {
       const isIntraState = seller.state && formData.clientState && seller.state === formData.clientState;
@@ -559,8 +524,7 @@ const CreateInvoiceDialog = ({
   };
 
   const buildPayload = (status: string): Record<string, unknown> => {
-    const isCrossBorder =
-      formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
+    const isCrossBorder = formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
     const taxSummary = buildTaxSummary();
     return {
       clientId: selectedClientId || undefined,
@@ -568,7 +532,7 @@ const CreateInvoiceDialog = ({
       issueDate: formData.invoiceDate ? formData.invoiceDate.toISOString() : undefined,
       dueDate: formData.dueDate ? formData.dueDate.toISOString() : undefined,
       currency: formData.currency,
-
+      status,
       taxType: formData.taxType,
       reverseCharge: !!isCrossBorder,
       ...(taxSummary ? { taxSummary } : {}),
@@ -629,10 +593,7 @@ const CreateInvoiceDialog = ({
         data = await createInvoice(payload);
       }
       await pollPdfStatus(data.id);
-      toast({
-        title: isEditMode ? "Invoice updated" : "Invoice created",
-        description: "Invoice has been created and PDF is ready.",
-      });
+      toast({ title: isEditMode ? "Invoice updated" : "Invoice created", description: "Invoice has been created and PDF is ready." });
       setOpen(false);
       setFormData(getInitialFormData());
       setShowPreview(false);
@@ -688,9 +649,7 @@ const CreateInvoiceDialog = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent
-        className={cn("max-h-[95vh] overflow-hidden p-0 w-[95vw]", showPreview ? "max-w-[900px]" : "max-w-4xl")}
-      >
+      <DialogContent className={cn("max-h-[95vh] overflow-hidden p-0 w-[95vw]", showPreview ? "max-w-[900px]" : "max-w-4xl")}>
         {editLoading ? (
           <div className="flex items-center justify-center h-64">
             <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -720,10 +679,8 @@ const CreateInvoiceDialog = ({
                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     Generating PDF...
                   </>
-                ) : isEditMode ? (
-                  "Confirm & Update Invoice"
                 ) : (
-                  "Confirm & Create Invoice"
+                  isEditMode ? "Confirm & Update Invoice" : "Confirm & Create Invoice"
                 )}
               </Button>
             </div>
@@ -731,426 +688,227 @@ const CreateInvoiceDialog = ({
         ) : (
           <div className="max-h-[95vh] overflow-y-auto px-6">
             <DialogHeader className="py-6">
-              <DialogTitle className="text-xl font-semibold">
-                {isEditMode ? "Edit Draft Invoice" : "Create New Invoice"}
-              </DialogTitle>
+              <DialogTitle className="text-xl font-semibold">{isEditMode ? "Edit Draft Invoice" : "Create New Invoice"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 pb-6">
-              {/* Invoice Details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Invoice Date</Label>
-                  <Popover open={invoiceDateOpen} onOpenChange={setInvoiceDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !formData.invoiceDate && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.invoiceDate ? format(formData.invoiceDate, "dd MMM yyyy") : "Select date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.invoiceDate}
-                        onSelect={(date) => {
-                          handleInputChange("invoiceDate", date);
-                          setInvoiceDateOpen(false);
-                        }}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="space-y-2">
-                  <Label>Due Date</Label>
-                  <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !formData.dueDate && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.dueDate ? format(formData.dueDate, "dd MMM yyyy") : "Select date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.dueDate}
-                        onSelect={(date) => {
-                          handleInputChange("dueDate", date);
-                          setDueDateOpen(false);
-                        }}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="space-y-2">
-                  <Label>Currency</Label>
-                  <Select value={formData.currency} onValueChange={(value) => handleInputChange("currency", value)}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="GBP">GBP</SelectItem>
-                      <SelectItem value="AED">AED</SelectItem>
-                      <SelectItem value="INR">INR</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Tax Type</Label>
-                  <Select value={formData.taxType} onValueChange={(value) => handleInputChange("taxType", value)}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Select tax type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="VAT">VAT</SelectItem>
-                      <SelectItem value="GST">GST</SelectItem>
-                      <SelectItem value="Sales Tax">Sales Tax</SelectItem>
-                      <SelectItem value="None">None</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Seller Info - Collapsible */}
+            {/* Invoice Details */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h3 className="font-medium text-foreground">Seller Information</h3>
-                <Collapsible open={sellerExpanded} onOpenChange={setSellerExpanded}>
-                  <div className="border border-border rounded-lg overflow-hidden">
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 border">
-                            <AvatarImage src={formData.seller.logo} alt="Seller logo" />
-                            <AvatarFallback className="bg-muted text-xs">
-                              {formData.seller.name ? formData.seller.name.charAt(0).toUpperCase() : "S"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="text-left">
-                            <p className="font-medium text-foreground text-sm">
-                              {formData.seller.name || "Seller Information"}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{formData.seller.email || "No email set"}</p>
-                          </div>
-                        </div>
-                        <ChevronDown
-                          className={cn(
-                            "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                            sellerExpanded && "rotate-180",
-                          )}
-                        />
-                      </button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                      <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
-                        <div className="flex items-start gap-4 pt-4">
-                          <div className="flex flex-col items-center gap-2">
-                            <Avatar className="h-16 w-16 border">
-                              <AvatarImage src={formData.seller.logo} alt="Seller logo" />
-                              <AvatarFallback className="bg-muted">
-                                <Upload className="h-6 w-6 text-muted-foreground" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <Label
-                              htmlFor="sellerLogo"
-                              className="text-xs text-muted-foreground cursor-pointer hover:text-foreground"
-                            >
-                              Upload Logo
-                            </Label>
-                            <Input
-                              id="sellerLogo"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    handleSellerChange("logo", reader.result as string);
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              }}
-                            />
-                          </div>
-                          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="sellerName">Name</Label>
-                              <Input
-                                id="sellerName"
-                                placeholder="e.g. Acme Corporation LLC"
-                                value={formData.seller.name}
-                                onChange={(e) => handleSellerChange("name", e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="sellerTaxId">Tax ID</Label>
-                              <Input
-                                id="sellerTaxId"
-                                placeholder="e.g. TRN-100234567890003"
-                                value={formData.seller.taxId}
-                                onChange={(e) => handleSellerChange("taxId", e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="sellerEmail">Email</Label>
-                              <Input
-                                id="sellerEmail"
-                                type="email"
-                                placeholder="e.g. billing@acmecorp.com"
-                                value={formData.seller.email}
-                                onChange={(e) => handleSellerChange("email", e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="sellerPhone">Phone Number</Label>
-                              <Input
-                                id="sellerPhone"
-                                placeholder="e.g. +971 4 123 4567"
-                                value={formData.seller.phone}
-                                onChange={(e) => handleSellerChange("phone", e.target.value)}
-                              />
-                            </div>
-                            {/* Business Address Subgroup */}
-                            <div className="md:col-span-2 space-y-4 p-4 border border-border rounded-lg bg-muted/20">
-                              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                                <MapPin className="w-4 h-4" />
-                                Business Address
-                              </div>
-                              <div className="grid gap-4 md:grid-cols-2">
-                                <div className="space-y-2 md:col-span-2">
-                                  <Label htmlFor="sellerStreetAddress">Street Address</Label>
-                                  <Input
-                                    id="sellerStreetAddress"
-                                    placeholder="e.g. 123 Business Street, Suite 100"
-                                    value={formData.seller.streetAddress}
-                                    onChange={(e) => handleSellerChange("streetAddress", e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="sellerCity">City</Label>
-                                  <Input
-                                    id="sellerCity"
-                                    placeholder="e.g. Dubai"
-                                    value={formData.seller.city}
-                                    onChange={(e) => handleSellerChange("city", e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="sellerState">State / Province</Label>
-                                  {formData.seller.country === "India" ? (
-                                    <Select
-                                      value={formData.seller.state}
-                                      onValueChange={(value) => handleSellerChange("state", value)}
-                                    >
-                                      <SelectTrigger id="sellerState">
-                                        <SelectValue placeholder="Select state" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {INDIAN_STATES.map((state) => (
-                                          <SelectItem key={state} value={state}>
-                                            {state}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  ) : (
-                                    <Input
-                                      id="sellerState"
-                                      placeholder="e.g. Dubai"
-                                      value={formData.seller.state}
-                                      onChange={(e) => handleSellerChange("state", e.target.value)}
-                                    />
-                                  )}
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="sellerZip">ZIP / Postal Code</Label>
-                                  <Input
-                                    id="sellerZip"
-                                    placeholder="e.g. 00000"
-                                    value={formData.seller.zip}
-                                    onChange={(e) => handleSellerChange("zip", e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="sellerCountry">Country</Label>
-                                  <Select
-                                    value={formData.seller.country}
-                                    onValueChange={(value) => handleSellerChange("country", value)}
-                                  >
-                                    <SelectTrigger id="sellerCountry">
-                                      <SelectValue placeholder="Select country" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="India">India</SelectItem>
-                                      <SelectItem value="UAE">UAE</SelectItem>
-                                      <SelectItem value="US">United States</SelectItem>
-                                      <SelectItem value="UK">United Kingdom</SelectItem>
-                                      <SelectItem value="Austria">Austria</SelectItem>
-                                      <SelectItem value="Belgium">Belgium</SelectItem>
-                                      <SelectItem value="Bulgaria">Bulgaria</SelectItem>
-                                      <SelectItem value="Croatia">Croatia</SelectItem>
-                                      <SelectItem value="Cyprus">Cyprus</SelectItem>
-                                      <SelectItem value="Czech Republic">Czech Republic</SelectItem>
-                                      <SelectItem value="Denmark">Denmark</SelectItem>
-                                      <SelectItem value="Estonia">Estonia</SelectItem>
-                                      <SelectItem value="Finland">Finland</SelectItem>
-                                      <SelectItem value="France">France</SelectItem>
-                                      <SelectItem value="Germany">Germany</SelectItem>
-                                      <SelectItem value="Greece">Greece</SelectItem>
-                                      <SelectItem value="Hungary">Hungary</SelectItem>
-                                      <SelectItem value="Ireland">Ireland</SelectItem>
-                                      <SelectItem value="Italy">Italy</SelectItem>
-                                      <SelectItem value="Latvia">Latvia</SelectItem>
-                                      <SelectItem value="Lithuania">Lithuania</SelectItem>
-                                      <SelectItem value="Luxembourg">Luxembourg</SelectItem>
-                                      <SelectItem value="Malta">Malta</SelectItem>
-                                      <SelectItem value="Netherlands">Netherlands</SelectItem>
-                                      <SelectItem value="Poland">Poland</SelectItem>
-                                      <SelectItem value="Portugal">Portugal</SelectItem>
-                                      <SelectItem value="Romania">Romania</SelectItem>
-                                      <SelectItem value="Slovakia">Slovakia</SelectItem>
-                                      <SelectItem value="Slovenia">Slovenia</SelectItem>
-                                      <SelectItem value="Spain">Spain</SelectItem>
-                                      <SelectItem value="Sweden">Sweden</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CollapsibleContent>
-                  </div>
-                </Collapsible>
+                <Label>Invoice Date</Label>
+                <Popover open={invoiceDateOpen} onOpenChange={setInvoiceDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn("w-full justify-start text-left font-normal", !formData.invoiceDate && "text-muted-foreground")}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.invoiceDate ? format(formData.invoiceDate, "dd MMM yyyy") : "Select date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.invoiceDate}
+                      onSelect={(date) => {
+                        handleInputChange("invoiceDate", date);
+                        setInvoiceDateOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
+              <div className="space-y-2">
+                <Label>Due Date</Label>
+                <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn("w-full justify-start text-left font-normal", !formData.dueDate && "text-muted-foreground")}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.dueDate ? format(formData.dueDate, "dd MMM yyyy") : "Select date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.dueDate}
+                      onSelect={(date) => {
+                        handleInputChange("dueDate", date);
+                        setDueDateOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
 
-              {/* Client Info */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Client Information</h3>
-                {savedClients.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Select Saved Client</Label>
-                    <Select onValueChange={handleClientSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose from saved clients..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {savedClients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.name}
-                            {client.email ? ` (${client.email})` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                <Collapsible open={clientExpanded} onOpenChange={setClientExpanded}>
-                  <div className="border border-border rounded-lg overflow-hidden">
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="text-left">
-                          <p className="font-medium text-foreground text-sm">
-                            {formData.clientName || "No client selected"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{formData.clientEmail || "No email set"}</p>
-                        </div>
-                        <ChevronDown
-                          className={cn(
-                            "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                            clientExpanded && "rotate-180",
-                          )}
+            <div className="flex gap-4">
+              <div className="space-y-2">
+                <Label>Currency</Label>
+                <Select value={formData.currency} onValueChange={(value) => handleInputChange("currency", value)}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                    <SelectItem value="AED">AED</SelectItem>
+                    <SelectItem value="INR">INR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Tax Type</Label>
+                <Select value={formData.taxType} onValueChange={(value) => handleInputChange("taxType", value)}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Select tax type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="VAT">VAT</SelectItem>
+                    <SelectItem value="GST">GST</SelectItem>
+                    <SelectItem value="Sales Tax">Sales Tax</SelectItem>
+                    <SelectItem value="None">None</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Seller Info - Collapsible */}
+            <div className="space-y-2">
+            <h3 className="font-medium text-foreground">Seller Information</h3>
+            <Collapsible open={sellerExpanded} onOpenChange={setSellerExpanded}>
+              <div className="border border-border rounded-lg overflow-hidden">
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 border">
+                        <AvatarImage src={formData.seller.logo} alt="Seller logo" />
+                        <AvatarFallback className="bg-muted text-xs">
+                          {formData.seller.name ? formData.seller.name.charAt(0).toUpperCase() : "S"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-left">
+                        <p className="font-medium text-foreground text-sm">
+                          {formData.seller.name || "Seller Information"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formData.seller.email || "No email set"}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", sellerExpanded && "rotate-180")} />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+                  <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
+                    <div className="flex items-start gap-4 pt-4">
+                      <div className="flex flex-col items-center gap-2">
+                        <Avatar className="h-16 w-16 border">
+                          <AvatarImage src={formData.seller.logo} alt="Seller logo" />
+                          <AvatarFallback className="bg-muted">
+                            <Upload className="h-6 w-6 text-muted-foreground" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <Label htmlFor="sellerLogo" className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                          Upload Logo
+                        </Label>
+                        <Input
+                          id="sellerLogo"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                handleSellerChange("logo", reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
                         />
-                      </button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                      <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
-                        <div className="grid gap-4 md:grid-cols-2 pt-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="clientName">Client Name</Label>
-                            <Input
-                              id="clientName"
-                              placeholder="e.g. Design Smith Interior Works LLC"
-                              value={formData.clientName}
-                              onChange={(e) => handleInputChange("clientName", e.target.value)}
-                              disabled={!!selectedClientId}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="clientEmail">Email</Label>
-                            <Input
-                              id="clientEmail"
-                              type="email"
-                              placeholder="e.g. client@example.com"
-                              value={formData.clientEmail}
-                              onChange={(e) => handleInputChange("clientEmail", e.target.value)}
-                              disabled={!!selectedClientId}
-                            />
-                          </div>
+                      </div>
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="sellerName">Name</Label>
+                          <Input
+                            id="sellerName"
+                            placeholder="e.g. Acme Corporation LLC"
+                            value={formData.seller.name}
+                            onChange={(e) => handleSellerChange("name", e.target.value)}
+                          />
                         </div>
-                        {/* Client Address Subgroup */}
-                        <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+                        <div className="space-y-2">
+                          <Label htmlFor="sellerTaxId">Tax ID</Label>
+                          <Input
+                            id="sellerTaxId"
+                            placeholder="e.g. TRN-100234567890003"
+                            value={formData.seller.taxId}
+                            onChange={(e) => handleSellerChange("taxId", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sellerEmail">Email</Label>
+                          <Input
+                            id="sellerEmail"
+                            type="email"
+                            placeholder="e.g. billing@acmecorp.com"
+                            value={formData.seller.email}
+                            onChange={(e) => handleSellerChange("email", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sellerPhone">Phone Number</Label>
+                          <Input
+                            id="sellerPhone"
+                            placeholder="e.g. +971 4 123 4567"
+                            value={formData.seller.phone}
+                            onChange={(e) => handleSellerChange("phone", e.target.value)}
+                          />
+                        </div>
+                        {/* Business Address Subgroup */}
+                        <div className="md:col-span-2 space-y-4 p-4 border border-border rounded-lg bg-muted/20">
                           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                             <MapPin className="w-4 h-4" />
-                            Client Address
+                            Business Address
                           </div>
                           <div className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-2 md:col-span-2">
-                              <Label htmlFor="clientStreetAddress">Street Address</Label>
+                              <Label htmlFor="sellerStreetAddress">Street Address</Label>
                               <Input
-                                id="clientStreetAddress"
+                                id="sellerStreetAddress"
                                 placeholder="e.g. 123 Business Street, Suite 100"
-                                value={formData.clientStreetAddress}
-                                onChange={(e) => handleInputChange("clientStreetAddress", e.target.value)}
-                                disabled={!!selectedClientId}
+                                value={formData.seller.streetAddress}
+                                onChange={(e) => handleSellerChange("streetAddress", e.target.value)}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="clientCity">City</Label>
+                              <Label htmlFor="sellerCity">City</Label>
                               <Input
-                                id="clientCity"
+                                id="sellerCity"
                                 placeholder="e.g. Dubai"
-                                value={formData.clientCity}
-                                onChange={(e) => handleInputChange("clientCity", e.target.value)}
-                                disabled={!!selectedClientId}
+                                value={formData.seller.city}
+                                onChange={(e) => handleSellerChange("city", e.target.value)}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="clientState">State / Province</Label>
-                              {formData.clientCountry === "India" ? (
+                              <Label htmlFor="sellerState">State / Province</Label>
+                              {formData.seller.country === "India" ? (
                                 <Select
-                                  value={formData.clientState}
-                                  onValueChange={(value) => handleInputChange("clientState", value)}
-                                  disabled={!!selectedClientId}
+                                  value={formData.seller.state}
+                                  onValueChange={(value) => handleSellerChange("state", value)}
                                 >
-                                  <SelectTrigger id="clientState">
+                                  <SelectTrigger id="sellerState">
                                     <SelectValue placeholder="Select state" />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -1163,32 +921,29 @@ const CreateInvoiceDialog = ({
                                 </Select>
                               ) : (
                                 <Input
-                                  id="clientState"
+                                  id="sellerState"
                                   placeholder="e.g. Dubai"
-                                  value={formData.clientState}
-                                  onChange={(e) => handleInputChange("clientState", e.target.value)}
-                                  disabled={!!selectedClientId}
+                                  value={formData.seller.state}
+                                  onChange={(e) => handleSellerChange("state", e.target.value)}
                                 />
                               )}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="clientZip">ZIP / Postal Code</Label>
+                              <Label htmlFor="sellerZip">ZIP / Postal Code</Label>
                               <Input
-                                id="clientZip"
+                                id="sellerZip"
                                 placeholder="e.g. 00000"
-                                value={formData.clientZip}
-                                onChange={(e) => handleInputChange("clientZip", e.target.value)}
-                                disabled={!!selectedClientId}
+                                value={formData.seller.zip}
+                                onChange={(e) => handleSellerChange("zip", e.target.value)}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="clientCountry">Country</Label>
-                              <Select
-                                value={formData.clientCountry}
-                                onValueChange={handleClientCountryChange}
-                                disabled={!!selectedClientId}
+                              <Label htmlFor="sellerCountry">Country</Label>
+                              <Select 
+                                value={formData.seller.country} 
+                                onValueChange={(value) => handleSellerChange("country", value)}
                               >
-                                <SelectTrigger id="clientCountry">
+                                <SelectTrigger id="sellerCountry">
                                   <SelectValue placeholder="Select country" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1229,279 +984,447 @@ const CreateInvoiceDialog = ({
                           </div>
                         </div>
                       </div>
-                    </CollapsibleContent>
+                    </div>
                   </div>
-                </Collapsible>
+                </CollapsibleContent>
               </div>
+            </Collapsible>
+            </div>
 
-              {/* Line Items */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-foreground">Line Items</h3>
-                  <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Item
-                  </Button>
+            {/* Client Info */}
+            <div className="space-y-4">
+              <h3 className="font-medium text-foreground">Client Information</h3>
+              {savedClients.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Select Saved Client</Label>
+                  <Select onValueChange={handleClientSelect}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose from saved clients..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      
+                      {savedClients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}{client.email ? ` (${client.email})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="grid grid-cols-12 gap-2 p-3 bg-muted text-sm font-medium">
-                    <div className="col-span-4">Description</div>
-                    <div className="col-span-1">Qty</div>
-                    <div className="col-span-2">Unit</div>
-                    <div className="col-span-2">Rate</div>
-                    <div className="col-span-1">Tax %</div>
-                    <div className="col-span-1 text-right">Total</div>
-                    <div className="col-span-1"></div>
-                  </div>
-
-                  {formData.lineItems.map((item) => (
-                    <div key={item.id} className="grid grid-cols-12 gap-2 p-3 border-t items-center">
-                      <div className="col-span-4">
-                        <Input
-                          placeholder="Description"
-                          value={item.description}
-                          onChange={(e) => handleLineItemChange(item.id, "description", e.target.value)}
-                        />
+              )}
+              <Collapsible open={clientExpanded} onOpenChange={setClientExpanded}>
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="text-left">
+                        <p className="font-medium text-foreground text-sm">
+                          {formData.clientName || "No client selected"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formData.clientEmail || "No email set"}
+                        </p>
                       </div>
-                      <div className="col-span-1">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={item.quantity}
-                          onChange={(e) => handleLineItemChange(item.id, "quantity", parseFloat(e.target.value) || 0)}
-                        />
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", clientExpanded && "rotate-180")} />
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+                    <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
+                      <div className="grid gap-4 md:grid-cols-2 pt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="clientName">Client Name</Label>
+                          <Input
+                            id="clientName"
+                            placeholder="e.g. Design Smith Interior Works LLC"
+                            value={formData.clientName}
+                            onChange={(e) => handleInputChange("clientName", e.target.value)}
+                            disabled={!!selectedClientId}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="clientEmail">Email</Label>
+                          <Input
+                            id="clientEmail"
+                            type="email"
+                            placeholder="e.g. client@example.com"
+                            value={formData.clientEmail}
+                            onChange={(e) => handleInputChange("clientEmail", e.target.value)}
+                            disabled={!!selectedClientId}
+                          />
+                        </div>
                       </div>
-                      <div className="col-span-2">
-                        <Select
-                          value={item.unit}
-                          onValueChange={(value) => handleLineItemChange(item.id, "unit", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Units">Units</SelectItem>
-                            <SelectItem value="Hours">Hours</SelectItem>
-                            <SelectItem value="Days">Days</SelectItem>
-                            <SelectItem value="Weeks">Weeks</SelectItem>
-                            <SelectItem value="Months">Months</SelectItem>
-                            <SelectItem value="Kg">Kg</SelectItem>
-                            <SelectItem value="Grams">Grams</SelectItem>
-                            <SelectItem value="Liters">Liters</SelectItem>
-                            <SelectItem value="Meters">Meters</SelectItem>
-                            <SelectItem value="Sq. Meters">Sq. Meters</SelectItem>
-                            <SelectItem value="Feet">Feet</SelectItem>
-                            <SelectItem value="Sq. Feet">Sq. Feet</SelectItem>
-                            <SelectItem value="Boxes">Boxes</SelectItem>
-                            <SelectItem value="Cartons">Cartons</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="col-span-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          placeholder="0.00"
-                          value={item.rate || ""}
-                          onChange={(e) => handleLineItemChange(item.id, "rate", parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                      <div className="col-span-1">
-                        {(() => {
-                          const isCrossBorder =
-                            formData.seller.country &&
-                            formData.clientCountry &&
-                            formData.seller.country !== formData.clientCountry;
-                          if (isCrossBorder) {
-                            return <Input type="text" value="0" disabled className="[appearance:textfield] bg-muted" />;
-                          }
-                          if (hasTaxDropdown(formData.seller.country)) {
-                            return (
+                      {/* Client Address Subgroup */}
+                      <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                          <MapPin className="w-4 h-4" />
+                          Client Address
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="clientStreetAddress">Street Address</Label>
+                            <Input
+                              id="clientStreetAddress"
+                              placeholder="e.g. 123 Business Street, Suite 100"
+                              value={formData.clientStreetAddress}
+                              onChange={(e) => handleInputChange("clientStreetAddress", e.target.value)}
+                              disabled={!!selectedClientId}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="clientCity">City</Label>
+                            <Input
+                              id="clientCity"
+                              placeholder="e.g. Dubai"
+                              value={formData.clientCity}
+                              onChange={(e) => handleInputChange("clientCity", e.target.value)}
+                              disabled={!!selectedClientId}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="clientState">State / Province</Label>
+                            {formData.clientCountry === "India" ? (
                               <Select
-                                value={String(item.taxPercent)}
-                                onValueChange={(value) =>
-                                  handleLineItemChange(item.id, "taxPercent", parseFloat(value))
-                                }
+                                value={formData.clientState}
+                                onValueChange={(value) => handleInputChange("clientState", value)}
+                                disabled={!!selectedClientId}
                               >
-                                <SelectTrigger className="w-full h-10 px-2 text-sm">
-                                  <SelectValue />
+                                <SelectTrigger id="clientState">
+                                  <SelectValue placeholder="Select state" />
                                 </SelectTrigger>
-                                <SelectContent align="end" className="min-w-[70px]">
-                                  {getTaxOptions(formData.seller.country).map((tax) => (
-                                    <SelectItem key={tax} value={String(tax)} className="text-sm">
-                                      {tax}%
+                                <SelectContent>
+                                  {INDIAN_STATES.map((state) => (
+                                    <SelectItem key={state} value={state}>
+                                      {state}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
-                            );
-                          }
+                            ) : (
+                              <Input
+                                id="clientState"
+                                placeholder="e.g. Dubai"
+                                value={formData.clientState}
+                                onChange={(e) => handleInputChange("clientState", e.target.value)}
+                                disabled={!!selectedClientId}
+                              />
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="clientZip">ZIP / Postal Code</Label>
+                            <Input
+                              id="clientZip"
+                              placeholder="e.g. 00000"
+                              value={formData.clientZip}
+                              onChange={(e) => handleInputChange("clientZip", e.target.value)}
+                              disabled={!!selectedClientId}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="clientCountry">Country</Label>
+                            <Select 
+                              value={formData.clientCountry} 
+                              onValueChange={handleClientCountryChange}
+                              disabled={!!selectedClientId}
+                            >
+                              <SelectTrigger id="clientCountry">
+                                <SelectValue placeholder="Select country" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="India">India</SelectItem>
+                                <SelectItem value="UAE">UAE</SelectItem>
+                                <SelectItem value="US">United States</SelectItem>
+                                <SelectItem value="UK">United Kingdom</SelectItem>
+                                <SelectItem value="Austria">Austria</SelectItem>
+                                <SelectItem value="Belgium">Belgium</SelectItem>
+                                <SelectItem value="Bulgaria">Bulgaria</SelectItem>
+                                <SelectItem value="Croatia">Croatia</SelectItem>
+                                <SelectItem value="Cyprus">Cyprus</SelectItem>
+                                <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                                <SelectItem value="Denmark">Denmark</SelectItem>
+                                <SelectItem value="Estonia">Estonia</SelectItem>
+                                <SelectItem value="Finland">Finland</SelectItem>
+                                <SelectItem value="France">France</SelectItem>
+                                <SelectItem value="Germany">Germany</SelectItem>
+                                <SelectItem value="Greece">Greece</SelectItem>
+                                <SelectItem value="Hungary">Hungary</SelectItem>
+                                <SelectItem value="Ireland">Ireland</SelectItem>
+                                <SelectItem value="Italy">Italy</SelectItem>
+                                <SelectItem value="Latvia">Latvia</SelectItem>
+                                <SelectItem value="Lithuania">Lithuania</SelectItem>
+                                <SelectItem value="Luxembourg">Luxembourg</SelectItem>
+                                <SelectItem value="Malta">Malta</SelectItem>
+                                <SelectItem value="Netherlands">Netherlands</SelectItem>
+                                <SelectItem value="Poland">Poland</SelectItem>
+                                <SelectItem value="Portugal">Portugal</SelectItem>
+                                <SelectItem value="Romania">Romania</SelectItem>
+                                <SelectItem value="Slovakia">Slovakia</SelectItem>
+                                <SelectItem value="Slovenia">Slovenia</SelectItem>
+                                <SelectItem value="Spain">Spain</SelectItem>
+                                <SelectItem value="Sweden">Sweden</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            </div>
+
+            {/* Line Items */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-foreground">Line Items</h3>
+                <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Item
+                </Button>
+              </div>
+
+              <div className="border rounded-lg overflow-hidden">
+                <div className="grid grid-cols-12 gap-2 p-3 bg-muted text-sm font-medium">
+                  <div className="col-span-4">Description</div>
+                  <div className="col-span-1">Qty</div>
+                  <div className="col-span-2">Unit</div>
+                  <div className="col-span-2">Rate</div>
+                  <div className="col-span-1">Tax %</div>
+                  <div className="col-span-1 text-right">Total</div>
+                  <div className="col-span-1"></div>
+                </div>
+
+                {formData.lineItems.map((item) => (
+                  <div key={item.id} className="grid grid-cols-12 gap-2 p-3 border-t items-center">
+                    <div className="col-span-4">
+                      <Input
+                        placeholder="Description"
+                        value={item.description}
+                        onChange={(e) => handleLineItemChange(item.id, "description", e.target.value)}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.quantity}
+                        onChange={(e) => handleLineItemChange(item.id, "quantity", parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Select value={item.unit} onValueChange={(value) => handleLineItemChange(item.id, "unit", value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Units">Units</SelectItem>
+                          <SelectItem value="Hours">Hours</SelectItem>
+                          <SelectItem value="Days">Days</SelectItem>
+                          <SelectItem value="Weeks">Weeks</SelectItem>
+                          <SelectItem value="Months">Months</SelectItem>
+                          <SelectItem value="Kg">Kg</SelectItem>
+                          <SelectItem value="Grams">Grams</SelectItem>
+                          <SelectItem value="Liters">Liters</SelectItem>
+                          <SelectItem value="Meters">Meters</SelectItem>
+                          <SelectItem value="Sq. Meters">Sq. Meters</SelectItem>
+                          <SelectItem value="Feet">Feet</SelectItem>
+                          <SelectItem value="Sq. Feet">Sq. Feet</SelectItem>
+                          <SelectItem value="Boxes">Boxes</SelectItem>
+                          <SelectItem value="Cartons">Cartons</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="col-span-2">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={item.rate || ""}
+                        onChange={(e) => handleLineItemChange(item.id, "rate", parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      {(() => {
+                        const isCrossBorder = formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
+                        if (isCrossBorder) {
                           return (
                             <Input
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={item.taxPercent}
-                              onChange={(e) =>
-                                handleLineItemChange(item.id, "taxPercent", parseFloat(e.target.value) || 0)
-                              }
-                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              type="text"
+                              value="0"
+                              disabled
+                              className="[appearance:textfield] bg-muted"
                             />
                           );
-                        })()}
-                      </div>
-                      <div className="col-span-1 text-right font-medium">{calculateLineTotal(item).toFixed(2)}</div>
-                      <div className="col-span-1 flex justify-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => removeLineItem(item.id)}
-                          disabled={formData.lineItems.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                        }
+                        if (hasTaxDropdown(formData.seller.country)) {
+                          return (
+                            <Select 
+                              value={String(item.taxPercent)} 
+                              onValueChange={(value) => handleLineItemChange(item.id, "taxPercent", parseFloat(value))}
+                            >
+                              <SelectTrigger className="w-full h-10 px-2 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent align="end" className="min-w-[70px]">
+                                {getTaxOptions(formData.seller.country).map((tax) => (
+                                  <SelectItem key={tax} value={String(tax)} className="text-sm">{tax}%</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+                        }
+                        return (
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={item.taxPercent}
+                            onChange={(e) => handleLineItemChange(item.id, "taxPercent", parseFloat(e.target.value) || 0)}
+                            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        );
+                      })()}
                     </div>
-                  ))}
+                    <div className="col-span-1 text-right font-medium">
+                      {calculateLineTotal(item).toFixed(2)}
+                    </div>
+                    <div className="col-span-1 flex justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeLineItem(item.id)}
+                        disabled={formData.lineItems.length === 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
 
-                  {/* Totals */}
-                  <div className="border-t bg-muted/50 p-3 space-y-2">
-                    <div className="flex justify-end gap-8 text-sm">
-                      <span className="text-muted-foreground">Subtotal:</span>
-                      <span className="font-medium w-24 text-right">
-                        {formData.currency} {calculateSubtotal().toFixed(2)}
-                      </span>
-                    </div>
-                    {(() => {
-                      const taxSummary = buildTaxSummary();
-                      if (taxSummary) {
-                        return Object.entries(taxSummary).map(([label, { rate, amount }]) => (
-                          <div key={label} className="flex justify-end gap-8 text-sm">
-                            <span className="text-muted-foreground">
-                              {label} ({rate}%):
-                            </span>
-                            <span className="font-medium w-24 text-right">
-                              {formData.currency} {amount.toFixed(2)}
-                            </span>
-                          </div>
-                        ));
-                      }
-                      // Fallback for cross-border or None
-                      const taxLabel = formData.taxType && formData.taxType !== "None" ? formData.taxType : "Tax";
-                      const isCrossBorder =
-                        formData.seller.country &&
-                        formData.clientCountry &&
-                        formData.seller.country !== formData.clientCountry;
-                      return (
-                        <div className="flex justify-end gap-8 text-sm">
-                          <span className="text-muted-foreground">
-                            {taxLabel}
-                            {isCrossBorder ? " (0%)" : ""}:
-                          </span>
-                          <span className="font-medium w-24 text-right">
-                            {formData.currency} {isCrossBorder ? "0.00" : calculateTotalTax().toFixed(2)}
-                          </span>
+                {/* Totals */}
+                <div className="border-t bg-muted/50 p-3 space-y-2">
+                  <div className="flex justify-end gap-8 text-sm">
+                    <span className="text-muted-foreground">Subtotal:</span>
+                    <span className="font-medium w-24 text-right">{formData.currency} {calculateSubtotal().toFixed(2)}</span>
+                  </div>
+                  {(() => {
+                    const taxSummary = buildTaxSummary();
+                    if (taxSummary) {
+                      return Object.entries(taxSummary).map(([label, { rate, amount }]) => (
+                        <div key={label} className="flex justify-end gap-8 text-sm">
+                          <span className="text-muted-foreground">{label} ({rate}%):</span>
+                          <span className="font-medium w-24 text-right">{formData.currency} {amount.toFixed(2)}</span>
                         </div>
-                      );
-                    })()}
-                    <div className="flex justify-end gap-8 text-base font-semibold">
-                      <span>Total:</span>
-                      <span className="w-24 text-right">
-                        {formData.currency} {calculateTotal().toFixed(2)}
-                      </span>
-                    </div>
+                      ));
+                    }
+                    // Fallback for cross-border or None
+                    const taxLabel = formData.taxType && formData.taxType !== 'None' ? formData.taxType : 'Tax';
+                    const isCrossBorder = formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
+                    return (
+                      <div className="flex justify-end gap-8 text-sm">
+                        <span className="text-muted-foreground">{taxLabel}{isCrossBorder ? ' (0%)' : ''}:</span>
+                        <span className="font-medium w-24 text-right">{formData.currency} {isCrossBorder ? '0.00' : calculateTotalTax().toFixed(2)}</span>
+                      </div>
+                    );
+                  })()}
+                  <div className="flex justify-end gap-8 text-base font-semibold">
+                    <span>Total:</span>
+                    <span className="w-24 text-right">{formData.currency} {calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Bank Details */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Bank / Payment Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="bankName">Bank Name</Label>
-                    <Input
-                      id="bankName"
-                      placeholder="e.g. WIO Bank"
-                      value={formData.bankName}
-                      onChange={(e) => handleInputChange("bankName", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="accountName">Account Name</Label>
-                    <Input
-                      id="accountName"
-                      placeholder="e.g. Numor Technologies Pvt Ltd"
-                      value={formData.accountName}
-                      onChange={(e) => handleInputChange("accountName", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="iban">IBAN</Label>
-                    <Input
-                      id="iban"
-                      placeholder="e.g. AE730860000096565699265"
-                      value={formData.iban}
-                      onChange={(e) => handleInputChange("iban", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="swiftBic">SWIFT/BIC</Label>
-                    <Input
-                      id="swiftBic"
-                      placeholder="e.g. WIOBAEADXXX"
-                      value={formData.swiftBic}
-                      onChange={(e) => handleInputChange("swiftBic", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ifscCode">IFSC Code</Label>
-                    <Input
-                      id="ifscCode"
-                      placeholder="e.g. HDFC0000123"
-                      value={formData.ifscCode}
-                      onChange={(e) => handleInputChange("ifscCode", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bankAddress">Bank Address</Label>
-                    <Input
-                      id="bankAddress"
-                      placeholder="e.g. Level 5, Etihad Airways Centre, Abu Dhabi"
-                      value={formData.bankAddress}
-                      onChange={(e) => handleInputChange("bankAddress", e.target.value)}
-                    />
-                  </div>
+            {/* Bank Details */}
+            <div className="space-y-4">
+              <h3 className="font-medium text-foreground">Bank / Payment Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="bankName">Bank Name</Label>
+                  <Input
+                    id="bankName"
+                    placeholder="e.g. WIO Bank"
+                    value={formData.bankName}
+                    onChange={(e) => handleInputChange("bankName", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="accountName">Account Name</Label>
+                  <Input
+                    id="accountName"
+                    placeholder="e.g. Numor Technologies Pvt Ltd"
+                    value={formData.accountName}
+                    onChange={(e) => handleInputChange("accountName", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="iban">IBAN</Label>
+                  <Input
+                    id="iban"
+                    placeholder="e.g. AE730860000096565699265"
+                    value={formData.iban}
+                    onChange={(e) => handleInputChange("iban", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="swiftBic">SWIFT/BIC</Label>
+                  <Input
+                    id="swiftBic"
+                    placeholder="e.g. WIOBAEADXXX"
+                    value={formData.swiftBic}
+                    onChange={(e) => handleInputChange("swiftBic", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ifscCode">IFSC Code</Label>
+                  <Input
+                    id="ifscCode"
+                    placeholder="e.g. HDFC0000123"
+                    value={formData.ifscCode}
+                    onChange={(e) => handleInputChange("ifscCode", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bankAddress">Bank Address</Label>
+                  <Input
+                    id="bankAddress"
+                    placeholder="e.g. Level 5, Etihad Airways Centre, Abu Dhabi"
+                    value={formData.bankAddress}
+                    onChange={(e) => handleInputChange("bankAddress", e.target.value)}
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Notes */}
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes / Terms</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="e.g. Payment due within 14 days of invoice date..."
-                  value={formData.notes}
-                  onChange={(e) => handleInputChange("notes", e.target.value)}
-                  rows={3}
-                />
-              </div>
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes / Terms</Label>
+              <Textarea
+                id="notes"
+                placeholder="e.g. Payment due within 14 days of invoice date..."
+                value={formData.notes}
+                onChange={(e) => handleInputChange("notes", e.target.value)}
+                rows={3}
+              />
+            </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 pb-6 border-t">
-                <Button variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
-                  {savingDraft ? "Saving..." : "Save as Draft"}
-                </Button>
-                <Button onClick={handlePreview}>Create Invoice</Button>
-              </div>
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-4 pb-6 border-t">
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
+                {savingDraft ? "Saving..." : "Save as Draft"}
+              </Button>
+              <Button onClick={handlePreview}>
+                Create Invoice
+              </Button>
+            </div>
             </div>
           </div>
         )}
