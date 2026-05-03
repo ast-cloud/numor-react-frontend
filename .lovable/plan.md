@@ -1,20 +1,12 @@
+## Plan
 
-
-## Problem
-When a new invoice is created on the Income page, the dashboard doesn't reflect the change because:
-- The Income page fetches invoices via direct `fetch` calls and stores them in local state
-- The Dashboard reads invoices from React Query's `["invoices"]` cache
-- Creating an invoice only refreshes the Income page's local state — it never invalidates the React Query cache
-
-## Solution
-After invoice creation (and deletion/updates), invalidate the React Query `["invoices"]` cache so the dashboard picks up changes automatically.
+Reduce the visual size of the Edit and Delete buttons in the expense receipt detail header (`src/pages/Expenses.tsx`, lines ~1745-1760).
 
 ### Changes
+- Replace text+icon buttons with compact icon-only buttons:
+  - `size="icon"` → use a smaller `h-8 w-8` class override
+  - Keep `variant="outline"`, keep destructive color for delete
+  - Add `title` attribute ("Edit" / "Delete") for accessibility/tooltip
+  - Use `w-3.5 h-3.5` icons instead of `w-4 h-4`
 
-**`src/pages/Income.tsx`**
-- Import `useQueryClient` from `@tanstack/react-query`
-- In the `loadInvoices` callback (called after create/edit/delete), add `queryClient.invalidateQueries({ queryKey: ["invoices"] })` to ensure the React Query cache is refreshed
-- Also invalidate on invoice deletion (the `handleDeleteInvoice` function)
-
-This is a minimal, targeted fix — the Income page keeps its own local state for immediate UI updates, but now also tells React Query to refetch so the dashboard stays in sync.
-
+Result: two small square icon buttons next to "Back to Receipts", clearly smaller than the current pill-shaped labeled buttons.

@@ -1744,19 +1744,21 @@ const Expenses = () => {
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="icon"
                       onClick={() => handleEditReceipt(selectedReceipt)}
-                      className="gap-1"
+                      className="h-8 w-8"
+                      title="Edit"
                     >
-                      <Pencil className="w-4 h-4" /> Edit
+                      <Pencil className="w-3.5 h-3.5" />
                     </Button>
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="icon"
                       onClick={() => setExpenseToDelete(selectedReceipt)}
-                      className="gap-1 text-destructive hover:text-destructive"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      title="Delete"
                     >
-                      <Trash2 className="w-4 h-4" /> Delete
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </div>
