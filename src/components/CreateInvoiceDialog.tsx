@@ -649,11 +649,10 @@ const CreateInvoiceDialog = ({
     setSavingDraft(true);
     try {
       const payload = buildPayload("DRAFT");
-      if (isEditMode && editInvoiceId) {
-        await updateInvoice(editInvoiceId, payload);
-      } else {
-        await createInvoice(payload);
-      }
+      const finalPayload = isEditMode && editInvoiceId
+        ? { ...payload, id: editInvoiceId }
+        : payload;
+      await createInvoice(finalPayload);
       toast({ title: "Draft saved", description: "Invoice has been saved as a draft." });
       setOpen(false);
       setFormData(getInitialFormData());
