@@ -717,8 +717,6 @@ const CreateInvoiceDialog = ({
                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     Generating PDF...
                   </>
-                ) : isEditMode ? (
-                  "Confirm & Update Invoice"
                 ) : (
                   "Confirm & Create Invoice"
                 )}
