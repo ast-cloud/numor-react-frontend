@@ -1,12 +1,36 @@
-## Plan
+## Goal
+When confirming a draft invoice from the preview step, call the create endpoint (with the existing id in the payload) instead of the update endpoint, and update the button label.
 
-Reduce the visual size of the Edit and Delete buttons in the expense receipt detail header (`src/pages/Expenses.tsx`, lines ~1745-1760).
+## Changes — `src/components/CreateInvoiceDialog.tsx`
 
-### Changes
-- Replace text+icon buttons with compact icon-only buttons:
-  - `size="icon"` → use a smaller `h-8 w-8` class override
-  - Keep `variant="outline"`, keep destructive color for delete
-  - Add `title` attribute ("Edit" / "Delete") for accessibility/tooltip
-  - Use `w-3.5 h-3.5` icons instead of `w-4 h-4`
+### 1. `handleConfirmInvoice` (around lines 621–647)
+Replace the edit-mode branch so it always calls `createInvoice`, including the existing invoice id in the payload when in edit mode (draft confirmation):
 
-Result: two small square icon buttons next to "Back to Receipts", clearly smaller than the current pill-shaped labeled buttons.
+```ts
+const payload = buildPayload(undefined);
+const finalPayload = isEditMode && editInvoiceId
+  ? { ...payload, id: editInvoiceId }
+  : payload;
+const data = await createInvoice(finalPayload);
+await pollPdfStatus(data.id);
+```
+
+Remove the `updateInvoice` call from this function. Keep `updateInvoice` import (still used by `handleSaveAsDraft`).
+
+### 2. Button label (line 717–727)
+Change the confirm button text so both edit-mode (draft) and create-mode show "Confirm & Create Invoice":
+
+```tsx
+{confirmingInvoice ? (
+  <>... Generating PDF...</>
+) : (
+  "Confirm & Create Invoice"
+)}
+```
+
+### 3. Toast (line 633)
+Change to always say "Invoice created" regardless of `isEditMode`.
+
+## Notes
+- `handleSaveAsDraft` (Save as Draft button) is unchanged — it still uses `updateInvoice` for existing drafts.
+- Backend will detect the `id` in the create payload and treat it as PDF generation for an already-existing draft.

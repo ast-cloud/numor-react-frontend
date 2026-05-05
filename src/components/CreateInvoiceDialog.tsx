@@ -622,15 +622,12 @@ const CreateInvoiceDialog = ({
     setConfirmingInvoice(true);
     try {
       const payload = buildPayload(undefined);
-      let data: InvoiceData;
-      if (isEditMode && editInvoiceId) {
-        data = await updateInvoice(editInvoiceId, payload);
-      } else {
-        data = await createInvoice(payload);
-      }
+      const finalPayload =
+        isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
+      const data = await createInvoice(finalPayload);
       await pollPdfStatus(data.id);
       toast({
-        title: isEditMode ? "Invoice updated" : "Invoice created",
+        title: "Invoice created",
         description: "Invoice has been created and PDF is ready.",
       });
       setOpen(false);
