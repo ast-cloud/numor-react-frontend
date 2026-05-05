@@ -621,7 +621,7 @@ const CreateInvoiceDialog = ({
   const handleConfirmInvoice = async () => {
     setConfirmingInvoice(true);
     try {
-      const payload = buildPayload("UNPAID");
+      const payload = buildPayload(undefined);
       let data: InvoiceData;
       if (isEditMode && editInvoiceId) {
         data = await updateInvoice(editInvoiceId, payload);
