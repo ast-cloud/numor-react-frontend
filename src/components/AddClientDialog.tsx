@@ -130,7 +130,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="flex items-center gap-2"><Home className="w-3.5 h-3.5 text-muted-foreground" />Street Address</Label>
+            <Label className="flex items-center gap-2"><Home className="w-3.5 h-3.5 text-muted-foreground" />Street Address *</Label>
             <Input
               value={form.streetAddress}
               onChange={(e) => setForm({ ...form, streetAddress: e.target.value })}
