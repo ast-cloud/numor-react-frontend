@@ -676,8 +676,18 @@ const Income = () => {
             <div className="rounded-lg border border-border bg-muted/20 p-4 mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalIncome, currency)}</span>
+                  <div className="flex items-start gap-1.5">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                      {summaryStats.incomeByCurrencyEntries.length > 0 ? (
+                        summaryStats.incomeByCurrencyEntries.map(([cur, amt]) => (
+                          <span key={cur} className="font-semibold text-foreground">
+                            {formatCurrencyVal(amt, cur)}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="font-semibold text-foreground">{formatCurrencyVal(0, currency)}</span>
+                      )}
+                    </div>
                     <span className="text-muted-foreground">Total Income</span>
                   </div>
                   <div className="flex items-center gap-1.5">
