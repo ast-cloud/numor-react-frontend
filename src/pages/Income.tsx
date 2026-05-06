@@ -164,18 +164,19 @@ const InvoiceRow = ({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Circle className="mr-2 h-4 w-4" />
-                Change Status
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent onClick={(e) => e.stopPropagation()}>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "draft")}>Draft</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "paid")}>Paid</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "unpaid")}>Unpaid</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "overdue")}>Overdue</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
+            {invoice.status !== "draft" && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Circle className="mr-2 h-4 w-4" />
+                  Change Status
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "paid")}>Paid</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "unpaid")}>Unpaid</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onStatusChange(invoice.id, "overdue")}>Overdue</DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
             {invoice.status !== "draft" && (
               <>
                 <DropdownMenuSeparator />
