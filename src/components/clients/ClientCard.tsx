@@ -233,7 +233,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">ZIP / Postal Code</Label>
+                    <Label className="text-xs">ZIP / Postal Code *</Label>
                     {isEditing ? (
                       <Input
                         value={client.zipCode}
