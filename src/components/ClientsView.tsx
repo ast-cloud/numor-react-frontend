@@ -37,6 +37,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
+  const [newClientId, setNewClientId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const backupRef = useRef<Client | null>(null);
@@ -74,6 +75,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
     setClients([newClient, ...clients]);
     backupRef.current = { ...newClient };
     setEditingClientId(newClient.id);
+    setNewClientId(newClient.id);
   };
 
   const handleEditClient = (id: string) => {
@@ -159,6 +161,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
         });
       }
       setEditingClientId(null);
+      setNewClientId(null);
       backupRef.current = null;
     } catch {
       toast({
@@ -183,6 +186,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
     }
     backupRef.current = null;
     setEditingClientId(null);
+    setNewClientId(null);
   };
 
   const handleDeleteClient = async (id: string) => {
@@ -244,6 +248,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
                 onCancel={() => handleCancelEdit(client.id)}
                 onDelete={() => handleDeleteClient(client.id)}
                 onUpdate={(field, value) => handleUpdateClient(client.id, field, value)}
+                isNew={newClientId === client.id}
               />
             ))}
           </div>
