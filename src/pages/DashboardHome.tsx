@@ -322,7 +322,19 @@ const DashboardHome = () => {
         <Button
           variant={isEditMode ? "default" : "ghost"}
           size="sm"
-          onClick={() => setIsEditMode(!isEditMode)}
+          onClick={async () => {
+            if (isEditMode) {
+              const keys = activeWidgets
+                .map((t) => WIDGET_KEY_MAP[t])
+                .filter(Boolean);
+              try {
+                await saveUserWidgets(keys);
+              } catch (e) {
+                toast({ title: "Failed to save widgets", variant: "destructive" });
+              }
+            }
+            setIsEditMode(!isEditMode);
+          }}
           className="gap-1.5 h-7 text-xs"
         >
           {isEditMode ? (
