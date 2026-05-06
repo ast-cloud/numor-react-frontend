@@ -480,6 +480,11 @@ const Income = () => {
   const summaryStats = useMemo(() => {
     const filtered = filterInvoices(activeTab).filter((inv) => inv.status !== "draft");
     const totalIncome = filtered.reduce((sum, inv) => sum + inv.amount, 0);
+    const incomeByCurrency = filtered.reduce<Record<string, number>>((acc, inv) => {
+      acc[inv.currency] = (acc[inv.currency] || 0) + inv.amount;
+      return acc;
+    }, {});
+    const incomeByCurrencyEntries = Object.entries(incomeByCurrency).sort((a, b) => b[1] - a[1]);
     const paidInvoices = filtered.filter((inv) => inv.status === "paid");
     const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
     const unpaidInvoices = filtered.filter((inv) => inv.status === "unpaid" || inv.status === "overdue");
@@ -493,7 +498,7 @@ const Income = () => {
     });
     const topClient = Object.entries(clientRevenue).sort((a, b) => b[1] - a[1])[0];
 
-    return { totalIncome, totalPaid, totalUnpaid, invoiceCount, topClient: topClient ? { name: topClient[0], amount: topClient[1] } : null };
+    return { totalIncome, incomeByCurrencyEntries, totalPaid, totalUnpaid, invoiceCount, topClient: topClient ? { name: topClient[0], amount: topClient[1] } : null };
   }, [invoices, activeTab, timeRangePreset, customDateRange, sortOption]);
 
   const getTimeRangeLabel = () => {
@@ -671,8 +676,18 @@ const Income = () => {
             <div className="rounded-lg border border-border bg-muted/20 p-4 mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalIncome, currency)}</span>
+                  <div className="flex items-start gap-1.5">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                      {summaryStats.incomeByCurrencyEntries.length > 0 ? (
+                        summaryStats.incomeByCurrencyEntries.map(([cur, amt]) => (
+                          <span key={cur} className="font-semibold text-foreground">
+                            {formatCurrencyVal(amt, cur)}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="font-semibold text-foreground">{formatCurrencyVal(0, currency)}</span>
+                      )}
+                    </div>
                     <span className="text-muted-foreground">Total Income</span>
                   </div>
                   <div className="flex items-center gap-1.5">
