@@ -44,10 +44,28 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) {
+    const required: { key: keyof typeof form; label: string }[] = [
+      { key: "name", label: "Name" },
+      { key: "email", label: "Email" },
+      { key: "streetAddress", label: "Street Address" },
+      { key: "city", label: "City" },
+      { key: "state", label: "State" },
+      { key: "zipCode", label: "Zip Code" },
+      { key: "country", label: "Country" },
+    ];
+    const missing = required.find((f) => !form[f.key].trim());
+    if (missing) {
       toast({
-        title: "Name required",
-        description: "Please enter a client name.",
+        title: `${missing.label} required`,
+        description: `Please enter ${missing.label.toLowerCase()}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
         variant: "destructive",
       });
       return;
