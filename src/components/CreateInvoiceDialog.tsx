@@ -673,6 +673,7 @@ const CreateInvoiceDialog = ({
   };
 
   const [savingDraft, setSavingDraft] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false);
 
   const handleSaveAsDraft = async () => {
     setSavingDraft(true);
