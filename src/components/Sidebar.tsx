@@ -115,11 +115,13 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
             const isActive = isExactMatch ? location.pathname === item.url : location.pathname.startsWith(item.url);
 
             return (
-              <li key={item.title}>
+              <li key={item.title} className={effectiveCollapsed ? "flex justify-center" : ""}>
                 <NavLink
                   to={item.url}
                   onClick={handleNavClick}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center rounded-lg text-sm font-medium transition-colors ${
+                    effectiveCollapsed ? "justify-center w-10 h-10" : "gap-3 px-3 py-2.5 w-full"
+                  } ${
                     isActive
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -136,12 +138,14 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
       </nav>
 
       {/* Bottom Section: Settings & Logout */}
-      <div className="p-4 border-t border-border space-y-1">
+      <div className={`p-4 border-t border-border space-y-1 ${effectiveCollapsed ? "flex flex-col items-center" : ""}`}>
         <NavLink
           to={activeRole === "CA_USER" ? "/ca/settings" : "/sme/settings"}
           onClick={handleNavClick}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            `flex items-center rounded-lg text-sm font-medium transition-colors ${
+              effectiveCollapsed ? "justify-center w-10 h-10" : "gap-3 px-3 py-2.5 w-full"
+            } ${
               isActive
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -155,7 +159,10 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
         <Button
           variant="ghost"
-          className={`w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10`}
+          size={effectiveCollapsed ? "icon" : "default"}
+          className={`text-muted-foreground hover:text-destructive hover:bg-destructive/10 ${
+            effectiveCollapsed ? "w-10 h-10 p-0" : "w-full justify-start gap-3"
+          }`}
           onClick={handleLogout}
           title={effectiveCollapsed ? "Logout" : undefined}
         >
