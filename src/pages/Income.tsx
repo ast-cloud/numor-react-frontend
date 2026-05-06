@@ -53,7 +53,7 @@ import { fetchCurrentOrganization } from "@/lib/api/user";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
-type SortOption = "due_date_asc" | "due_date_desc" | "amount_asc" | "amount_desc" | "client_asc" | "client_desc";
+type SortOption = "due_date_asc" | "due_date_desc" | "issue_date_asc" | "issue_date_desc" | "amount_asc" | "amount_desc" | "client_asc" | "client_desc";
 
 type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue";
 
@@ -62,6 +62,7 @@ interface Invoice {
   invoiceNumber: string;
   clientName: string;
   dueDate: string;
+  issueDate: string;
   amount: number;
   currency: string;
   status: InvoiceStatus;
@@ -81,6 +82,7 @@ const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoi
   invoiceNumber: inv.invoiceNumber,
   clientName: clientsMap.get(inv.clientId) || inv.sellerName,
   dueDate: format(parseISO(inv.dueDate), "dd/MM/yyyy"),
+  issueDate: inv.issueDate ? format(parseISO(inv.issueDate), "dd/MM/yyyy") : "",
   amount: parseFloat(inv.totalAmount),
   currency: inv.currency || "USD",
   status: mapApiStatus(inv.status),
@@ -441,6 +443,10 @@ const Income = () => {
           return parseDate(a.dueDate).getTime() - parseDate(b.dueDate).getTime();
         case "due_date_desc":
           return parseDate(b.dueDate).getTime() - parseDate(a.dueDate).getTime();
+        case "issue_date_asc":
+          return parseDate(a.issueDate).getTime() - parseDate(b.issueDate).getTime();
+        case "issue_date_desc":
+          return parseDate(b.issueDate).getTime() - parseDate(a.issueDate).getTime();
         case "amount_asc":
           return a.amount - b.amount;
         case "amount_desc":
@@ -587,6 +593,8 @@ const Income = () => {
               <SelectContent>
                 <SelectItem value="due_date_desc">Due Date (Newest)</SelectItem>
                 <SelectItem value="due_date_asc">Due Date (Oldest)</SelectItem>
+                <SelectItem value="issue_date_desc">Issue Date (Newest)</SelectItem>
+                <SelectItem value="issue_date_asc">Issue Date (Oldest)</SelectItem>
                 <SelectItem value="amount_desc">Amount (High-Low)</SelectItem>
                 <SelectItem value="amount_asc">Amount (Low-High)</SelectItem>
                 <SelectItem value="client_asc">Client (A-Z)</SelectItem>
