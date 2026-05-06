@@ -702,6 +702,7 @@ const CreateInvoiceDialog = ({
       setFormData(getInitialFormData());
       setShowPreview(false);
       setSelectedClientId(null);
+      setSendEmail(false);
     }
   };
 
