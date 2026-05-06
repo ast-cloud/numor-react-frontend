@@ -116,6 +116,7 @@ const SelectContent = React.forwardRef<
       }
       if (!atEdge) return;
 
+      e.stopPropagation();
       if (target === undefined) target = resolveScrollTarget();
 
       if (target) {
@@ -132,18 +133,20 @@ const SelectContent = React.forwardRef<
       const body = document.body;
       const lockValue = body.getAttribute("data-scroll-locked");
       const prevHtmlOverflow = html.style.overflow;
+      const prevHtmlOverflowPriority = html.style.getPropertyPriority("overflow");
       const prevBodyOverflow = body.style.overflow;
+      const prevBodyOverflowPriority = body.style.getPropertyPriority("overflow");
       body.removeAttribute("data-scroll-locked");
       html.style.setProperty("overflow", "auto", "important");
       body.style.setProperty("overflow", "auto", "important");
       scroller.scrollTop += e.deltaY;
-      html.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
+      html.style.setProperty("overflow", prevHtmlOverflow, prevHtmlOverflowPriority);
+      body.style.setProperty("overflow", prevBodyOverflow, prevBodyOverflowPriority);
       if (lockValue !== null) body.setAttribute("data-scroll-locked", lockValue);
     };
 
-    el.addEventListener("wheel", handleWheel, { passive: false });
-    return () => el.removeEventListener("wheel", handleWheel);
+    el.addEventListener("wheel", handleWheel, { capture: true, passive: false });
+    return () => el.removeEventListener("wheel", handleWheel, { capture: true });
   }, [contentElement]);
 
   return (
