@@ -1074,24 +1074,25 @@ const CreateInvoiceDialog = ({
               {/* Client Info */}
               <div className="space-y-4">
                 <h3 className="font-medium text-foreground">Client Information</h3>
-                {savedClients.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Select Saved Client</Label>
-                    <Select onValueChange={handleClientSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose from saved clients..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {savedClients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.name}
-                            {client.email ? ` (${client.email})` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label>Select Saved Client</Label>
+                  <Select value={selectedClientId || ""} onValueChange={handleClientSelect}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose from saved clients..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {savedClients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                          {client.email ? ` (${client.email})` : ""}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__add_new__" className="text-primary font-medium">
+                        + Add new client
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Collapsible open={clientExpanded} onOpenChange={setClientExpanded}>
                   <div className="border border-border rounded-lg overflow-hidden">
                     <CollapsibleTrigger asChild>
