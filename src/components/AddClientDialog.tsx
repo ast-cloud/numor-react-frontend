@@ -44,10 +44,28 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) {
+    const required: { key: keyof typeof form; label: string }[] = [
+      { key: "name", label: "Name" },
+      { key: "email", label: "Email" },
+      { key: "streetAddress", label: "Street Address" },
+      { key: "city", label: "City" },
+      { key: "state", label: "State" },
+      { key: "zipCode", label: "Zip Code" },
+      { key: "country", label: "Country" },
+    ];
+    const missing = required.find((f) => !form[f.key].trim());
+    if (missing) {
       toast({
-        title: "Name required",
-        description: "Please enter a client name.",
+        title: `${missing.label} required`,
+        description: `Please enter ${missing.label.toLowerCase()}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
         variant: "destructive",
       });
       return;
@@ -96,7 +114,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground" />Email</Label>
+              <Label className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground" />Email *</Label>
               <Input
                 type="email"
                 value={form.email}
@@ -112,7 +130,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="flex items-center gap-2"><Home className="w-3.5 h-3.5 text-muted-foreground" />Street Address</Label>
+            <Label className="flex items-center gap-2"><Home className="w-3.5 h-3.5 text-muted-foreground" />Street Address *</Label>
             <Input
               value={form.streetAddress}
               onChange={(e) => setForm({ ...form, streetAddress: e.target.value })}
@@ -120,14 +138,14 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Building2 className="w-3.5 h-3.5 text-muted-foreground" />City</Label>
+              <Label className="flex items-center gap-2"><Building2 className="w-3.5 h-3.5 text-muted-foreground" />City *</Label>
               <Input
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-muted-foreground" />State</Label>
+              <Label className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-muted-foreground" />State *</Label>
               {form.country === "India" ? (
                 <Select value={form.state} onValueChange={(v) => setForm({ ...form, state: v })}>
                   <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
@@ -147,14 +165,14 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Hash className="w-3.5 h-3.5 text-muted-foreground" />Zip Code</Label>
+              <Label className="flex items-center gap-2"><Hash className="w-3.5 h-3.5 text-muted-foreground" />Zip Code *</Label>
               <Input
                 value={form.zipCode}
                 onChange={(e) => setForm({ ...form, zipCode: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-muted-foreground" />Country</Label>
+              <Label className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-muted-foreground" />Country *</Label>
               <Select value={form.country} onValueChange={(v) => setForm({ ...form, country: v, state: "" })}>
                 <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
                 <SelectContent>
