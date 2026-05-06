@@ -154,11 +154,15 @@ export async function updateInvoiceStatus(invoiceId: string, status: string): Pr
   return json.data;
 }
 
-export async function createInvoice(payload: Record<string, unknown>): Promise<InvoiceData> {
+export async function createInvoice(
+  payload: Record<string, unknown>,
+  options?: { sendEmail?: boolean },
+): Promise<InvoiceData> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
 
-  const res = await fetch(`${config.backendHost}/api/invoices/createInvoice`, {
+  const query = options?.sendEmail ? '?sendEmail=true' : '';
+  const res = await fetch(`${config.backendHost}/api/invoices/createInvoice${query}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
