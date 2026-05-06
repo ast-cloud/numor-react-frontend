@@ -64,6 +64,7 @@ const SelectContent = React.forwardRef<
 >(({ className, children, position = "popper", ...props }, ref) => {
   const contentRef = React.useRef<HTMLDivElement | null>(null);
   const [contentElement, setContentElement] = React.useState<HTMLDivElement | null>(null);
+  const [lockSide, setLockSide] = React.useState(false);
   const setContentRef = React.useCallback(
     (node: HTMLDivElement | null) => {
       contentRef.current = node;
@@ -73,6 +74,15 @@ const SelectContent = React.forwardRef<
     },
     [ref],
   );
+
+  React.useEffect(() => {
+    if (!contentElement) {
+      setLockSide(false);
+      return;
+    }
+    const id = requestAnimationFrame(() => setLockSide(true));
+    return () => cancelAnimationFrame(id);
+  }, [contentElement]);
 
   React.useEffect(() => {
     const el = contentElement;
