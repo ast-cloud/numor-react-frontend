@@ -64,7 +64,7 @@ const SelectContent = React.forwardRef<
 >(({ className, children, position = "popper", ...props }, ref) => {
   const contentRef = React.useRef<HTMLDivElement | null>(null);
   const [contentElement, setContentElement] = React.useState<HTMLDivElement | null>(null);
-  const [lockSide, setLockSide] = React.useState(false);
+  const [lockedSide, setLockedSide] = React.useState<"top" | "bottom" | "left" | "right" | undefined>(undefined);
   const setContentRef = React.useCallback(
     (node: HTMLDivElement | null) => {
       contentRef.current = node;
@@ -77,10 +77,14 @@ const SelectContent = React.forwardRef<
 
   React.useEffect(() => {
     if (!contentElement) {
-      setLockSide(false);
+      setLockedSide(undefined);
       return;
     }
-    const id = requestAnimationFrame(() => setLockSide(true));
+    const id = requestAnimationFrame(() => {
+      const side = contentElement.getAttribute("data-side") as
+        | "top" | "bottom" | "left" | "right" | null;
+      if (side) setLockedSide(side);
+    });
     return () => cancelAnimationFrame(id);
   }, [contentElement]);
 
@@ -170,7 +174,8 @@ const SelectContent = React.forwardRef<
           className,
         )}
         position={position}
-        avoidCollisions={!lockSide}
+        side={lockedSide}
+        avoidCollisions={!lockedSide}
         {...props}
       >
         <SelectScrollUpButton />
