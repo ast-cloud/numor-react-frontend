@@ -95,12 +95,18 @@ const SelectContent = React.forwardRef<
     // Resolve a real scrollable ancestor of the trigger that opened this Select.
     // Radix locks body scroll while open, so document.scrollingElement is a no-op.
     const resolveScrollTarget = (): HTMLElement | null => {
-      const labelledBy = el.getAttribute("aria-labelledby");
       let trigger: HTMLElement | null = null;
+      const labelledBy = el.getAttribute("aria-labelledby");
       if (labelledBy) trigger = document.getElementById(labelledBy);
+      const contentId = el.id;
+      if (!trigger && contentId) {
+        trigger = document.querySelector(
+          `[aria-controls="${contentId}"]`,
+        ) as HTMLElement | null;
+      }
       if (!trigger) {
         trigger = document.querySelector(
-          '[data-state="open"][aria-haspopup="listbox"]',
+          '[data-state="open"][role="combobox"], [data-state="open"][aria-haspopup="listbox"]',
         ) as HTMLElement | null;
       }
       if (!trigger) return null;
