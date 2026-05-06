@@ -28,7 +28,10 @@ import {
   availableWidgets,
   WidgetType,
   TimeRangeConfig,
+  WIDGET_KEY_MAP,
 } from "@/components/dashboard/widgets";
+import { saveUserWidgets } from "@/lib/api/user";
+import { toast } from "@/hooks/use-toast";
 import {
   filterExpenses,
   filterInvoices,
