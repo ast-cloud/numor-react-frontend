@@ -161,6 +161,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
         });
       }
       setEditingClientId(null);
+      setNewClientId(null);
       backupRef.current = null;
     } catch {
       toast({
