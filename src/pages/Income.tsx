@@ -677,6 +677,7 @@ const Income = () => {
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-start gap-1.5">
+                    <span className="text-muted-foreground">Total Income:</span>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                       {summaryStats.incomeByCurrencyEntries.length > 0 ? (
                         summaryStats.incomeByCurrencyEntries.map(([cur, amt]) => (
@@ -688,22 +689,21 @@ const Income = () => {
                         <span className="font-semibold text-foreground">{formatCurrencyVal(0, currency)}</span>
                       )}
                     </div>
-                    <span className="text-muted-foreground">Total Income</span>
                   </div>
                   <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground">Paid:</span>
                     <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalPaid, currency)}</span>
-                    <span className="text-muted-foreground">Paid</span>
                   </div>
                 </div>
                 <span className="text-border hidden sm:inline mt-1">|</span>
                 <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground">Outstanding:</span>
                   <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalUnpaid, currency)}</span>
-                  <span className="text-muted-foreground">Outstanding</span>
                 </div>
                 <span className="text-border hidden sm:inline">|</span>
                 <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground">Invoice{summaryStats.invoiceCount !== 1 ? "s" : ""}:</span>
                   <span className="font-semibold text-foreground">{summaryStats.invoiceCount}</span>
-                  <span className="text-muted-foreground">Invoice{summaryStats.invoiceCount !== 1 ? "s" : ""}</span>
                 </div>
                 {summaryStats.topClient && (
                   <>
