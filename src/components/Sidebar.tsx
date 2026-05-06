@@ -155,7 +155,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
         <Button
           variant="ghost"
-          className={`w-full ${effectiveCollapsed ? "justify-center px-0" : "justify-start gap-3"} text-muted-foreground hover:text-destructive hover:bg-destructive/10`}
+          className={`w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10`}
           onClick={handleLogout}
           title={effectiveCollapsed ? "Logout" : undefined}
         >
