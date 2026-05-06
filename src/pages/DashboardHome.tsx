@@ -54,10 +54,23 @@ const DashboardHome = () => {
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
   const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [activeWidgets, setActiveWidgets] = useState<WidgetType[]>([
-    "revenue-over-time",
-    "expenses-by-category",
-  ]);
+  const [activeWidgets, setActiveWidgets] = useState<WidgetType[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const user = await fetchCurrentUser();
+        const keys: string[] = Array.isArray(user?.widgets) ? user.widgets : [];
+        const reverseMap = Object.fromEntries(
+          Object.entries(WIDGET_KEY_MAP).map(([k, v]) => [v, k])
+        ) as Record<string, WidgetType>;
+        const types = keys.map((k) => reverseMap[k]).filter(Boolean) as WidgetType[];
+        setActiveWidgets(types);
+      } catch {
+        // ignore
+      }
+    })();
+  }, []);
 
   const { expenses, invoices, clients, country, isLoading, isError } = useDashboardData();
 
