@@ -728,20 +728,21 @@ const Income = () => {
                 {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
               </DialogTitle>
               <div className="flex items-center gap-2">
-                <Select
-                  value={selectedInvoice?.status}
-                  onValueChange={(value: InvoiceStatus) => handleDialogStatusChange(value)}
-                >
-                  <SelectTrigger className="w-[120px] h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="unpaid">Unpaid</SelectItem>
-                    <SelectItem value="overdue">Overdue</SelectItem>
-                  </SelectContent>
-                </Select>
+                {selectedInvoice?.status !== "draft" && (
+                  <Select
+                    value={selectedInvoice?.status}
+                    onValueChange={(value: InvoiceStatus) => handleDialogStatusChange(value)}
+                  >
+                    <SelectTrigger className="w-[120px] h-8 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="unpaid">Unpaid</SelectItem>
+                      <SelectItem value="overdue">Overdue</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
                 {selectedInvoice?.status !== "draft" && (
                   <Button variant="outline" size="sm" onClick={() => handleDownloadPdf()}>
                     <Download className="h-4 w-4 mr-1.5" />
