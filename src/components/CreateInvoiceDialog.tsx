@@ -308,6 +308,7 @@ const CreateInvoiceDialog = ({
   const [clientExpanded, setClientExpanded] = useState(false);
   const [savedClients, setSavedClients] = useState<ClientData[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [addClientOpen, setAddClientOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
   // Fetch organization data and clients when dialog opens
