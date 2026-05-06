@@ -618,19 +618,20 @@ const Income = () => {
                   </div>
                 </div>
                 <span className="text-border hidden sm:inline mt-1">|</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground">Outstanding:</span>
-                  <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalUnpaid, currency)}</span>
-                </div>
-                {summaryStats.topClient && (
-                  <>
-                    <span className="text-border hidden sm:inline">|</span>
+                <div className="flex flex-1 justify-center">
+                  <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-muted-foreground">Top Client:</span>
-                      <span className="font-semibold text-foreground">{summaryStats.topClient.name}</span>
+                      <span className="text-muted-foreground">Outstanding:</span>
+                      <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalUnpaid, currency)}</span>
                     </div>
-                  </>
-                )}
+                    {summaryStats.topClient && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground">Top Client:</span>
+                        <span className="font-semibold text-foreground">{summaryStats.topClient.name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
