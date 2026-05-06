@@ -63,15 +63,16 @@ const SelectContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => {
   const contentRef = React.useRef<HTMLDivElement | null>(null);
+  const [contentElement, setContentElement] = React.useState<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    const el = contentRef.current;
+    const el = contentElement;
     if (!el) return;
 
     // Resolve a real scrollable ancestor of the trigger that opened this Select.
     // Radix locks body scroll while open, so document.scrollingElement is a no-op.
     const resolveScrollTarget = (): HTMLElement | null => {
-      const labelledBy = el.getAttribute('aria-labelledby');
+      const labelledBy = el.getAttribute("aria-labelledby");
       let trigger: HTMLElement | null = null;
       if (labelledBy) trigger = document.getElementById(labelledBy);
       if (!trigger) {
@@ -85,7 +86,7 @@ const SelectContent = React.forwardRef<
       while (node && node !== document.body) {
         const style = window.getComputedStyle(node);
         const oy = style.overflowY;
-        if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight) {
+        if ((oy === "auto" || oy === "scroll") && node.scrollHeight > node.clientHeight) {
           return node;
         }
         node = node.parentElement;
@@ -115,28 +116,33 @@ const SelectContent = React.forwardRef<
       }
 
       // Fallback: document is the scroller but Radix locks body scroll via
-      // react-remove-scroll. Temporarily neutralize the lock to chain scroll.
+      // react-remove-scroll and an !important data-scroll-locked rule.
       e.preventDefault();
+      const scroller = document.scrollingElement || document.documentElement;
       const html = document.documentElement;
       const body = document.body;
+      const lockValue = body.getAttribute("data-scroll-locked");
       const prevHtmlOverflow = html.style.overflow;
       const prevBodyOverflow = body.style.overflow;
-      html.style.overflow = 'auto';
-      body.style.overflow = 'auto';
-      window.scrollBy(0, e.deltaY);
+      body.removeAttribute("data-scroll-locked");
+      html.style.setProperty("overflow", "auto", "important");
+      body.style.setProperty("overflow", "auto", "important");
+      scroller.scrollTop += e.deltaY;
       html.style.overflow = prevHtmlOverflow;
       body.style.overflow = prevBodyOverflow;
+      if (lockValue !== null) body.setAttribute("data-scroll-locked", lockValue);
     };
 
-    el.addEventListener('wheel', handleWheel, { passive: false });
+    el.addEventListener("wheel", handleWheel, { passive: false });
     return () => el.removeEventListener('wheel', handleWheel);
-  }, []);
+  }, [contentElement]);
 
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         ref={(node) => {
           contentRef.current = node;
+          setContentElement(node);
           if (typeof ref === 'function') ref(node);
           else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
         }}
