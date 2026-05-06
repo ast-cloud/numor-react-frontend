@@ -593,6 +593,8 @@ const Income = () => {
               <SelectContent>
                 <SelectItem value="due_date_desc">Due Date (Newest)</SelectItem>
                 <SelectItem value="due_date_asc">Due Date (Oldest)</SelectItem>
+                <SelectItem value="issue_date_desc">Issue Date (Newest)</SelectItem>
+                <SelectItem value="issue_date_asc">Issue Date (Oldest)</SelectItem>
                 <SelectItem value="amount_desc">Amount (High-Low)</SelectItem>
                 <SelectItem value="amount_asc">Amount (Low-High)</SelectItem>
                 <SelectItem value="client_asc">Client (A-Z)</SelectItem>
