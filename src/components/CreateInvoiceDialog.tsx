@@ -1530,6 +1530,11 @@ const CreateInvoiceDialog = ({
           </div>
         )}
       </DialogContent>
+      <AddClientDialog
+        open={addClientOpen}
+        onOpenChange={setAddClientOpen}
+        onClientCreated={handleClientCreated}
+      />
     </Dialog>
   );
 };
