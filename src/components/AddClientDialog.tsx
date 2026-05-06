@@ -87,7 +87,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Name *</Label>
+            <Label className="flex items-center gap-2"><User className="w-3.5 h-3.5 text-muted-foreground" />Name *</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -96,7 +96,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground" />Email</Label>
               <Input
                 type="email"
                 value={form.email}
@@ -104,7 +104,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
               />
             </div>
             <div className="space-y-2">
-              <Label>Phone</Label>
+              <Label className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-muted-foreground" />Phone</Label>
               <Input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -112,7 +112,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Street Address</Label>
+            <Label className="flex items-center gap-2"><Home className="w-3.5 h-3.5 text-muted-foreground" />Street Address</Label>
             <Input
               value={form.streetAddress}
               onChange={(e) => setForm({ ...form, streetAddress: e.target.value })}
@@ -120,34 +120,14 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>City</Label>
+              <Label className="flex items-center gap-2"><Building2 className="w-3.5 h-3.5 text-muted-foreground" />City</Label>
               <Input
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label>Zip Code</Label>
-              <Input
-                value={form.zipCode}
-                onChange={(e) => setForm({ ...form, zipCode: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Country</Label>
-              <Select value={form.country} onValueChange={(v) => setForm({ ...form, country: v, state: "" })}>
-                <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>State</Label>
+              <Label className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-muted-foreground" />State</Label>
               {form.country === "India" ? (
                 <Select value={form.state} onValueChange={(v) => setForm({ ...form, state: v })}>
                   <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
@@ -163,6 +143,26 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
                   onChange={(e) => setForm({ ...form, state: e.target.value })}
                 />
               )}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2"><Hash className="w-3.5 h-3.5 text-muted-foreground" />Zip Code</Label>
+              <Input
+                value={form.zipCode}
+                onChange={(e) => setForm({ ...form, zipCode: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-muted-foreground" />Country</Label>
+              <Select value={form.country} onValueChange={(v) => setForm({ ...form, country: v, state: "" })}>
+                <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
