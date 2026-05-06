@@ -63,15 +63,25 @@ const SelectContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => {
   const contentRef = React.useRef<HTMLDivElement | null>(null);
+  const [contentElement, setContentElement] = React.useState<HTMLDivElement | null>(null);
+  const setContentRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      contentRef.current = node;
+      setContentElement(node);
+      if (typeof ref === "function") ref(node);
+      else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    },
+    [ref],
+  );
 
   React.useEffect(() => {
-    const el = contentRef.current;
+    const el = contentElement;
     if (!el) return;
 
     // Resolve a real scrollable ancestor of the trigger that opened this Select.
     // Radix locks body scroll while open, so document.scrollingElement is a no-op.
     const resolveScrollTarget = (): HTMLElement | null => {
-      const labelledBy = el.getAttribute('aria-labelledby');
+      const labelledBy = el.getAttribute("aria-labelledby");
       let trigger: HTMLElement | null = null;
       if (labelledBy) trigger = document.getElementById(labelledBy);
       if (!trigger) {
@@ -85,7 +95,7 @@ const SelectContent = React.forwardRef<
       while (node && node !== document.body) {
         const style = window.getComputedStyle(node);
         const oy = style.overflowY;
-        if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight) {
+        if ((oy === "auto" || oy === "scroll") && node.scrollHeight > node.clientHeight) {
           return node;
         }
         node = node.parentElement;
@@ -106,6 +116,7 @@ const SelectContent = React.forwardRef<
       }
       if (!atEdge) return;
 
+      e.stopPropagation();
       if (target === undefined) target = resolveScrollTarget();
 
       if (target) {
@@ -115,31 +126,33 @@ const SelectContent = React.forwardRef<
       }
 
       // Fallback: document is the scroller but Radix locks body scroll via
-      // react-remove-scroll. Temporarily neutralize the lock to chain scroll.
+      // react-remove-scroll and an !important data-scroll-locked rule.
       e.preventDefault();
+      const scroller = document.scrollingElement || document.documentElement;
       const html = document.documentElement;
       const body = document.body;
+      const lockValue = body.getAttribute("data-scroll-locked");
       const prevHtmlOverflow = html.style.overflow;
+      const prevHtmlOverflowPriority = html.style.getPropertyPriority("overflow");
       const prevBodyOverflow = body.style.overflow;
-      html.style.overflow = 'auto';
-      body.style.overflow = 'auto';
-      window.scrollBy(0, e.deltaY);
-      html.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
+      const prevBodyOverflowPriority = body.style.getPropertyPriority("overflow");
+      body.removeAttribute("data-scroll-locked");
+      html.style.setProperty("overflow", "auto", "important");
+      body.style.setProperty("overflow", "auto", "important");
+      scroller.scrollTop += e.deltaY;
+      html.style.setProperty("overflow", prevHtmlOverflow, prevHtmlOverflowPriority);
+      body.style.setProperty("overflow", prevBodyOverflow, prevBodyOverflowPriority);
+      if (lockValue !== null) body.setAttribute("data-scroll-locked", lockValue);
     };
 
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
-  }, []);
+    el.addEventListener("wheel", handleWheel, { capture: true, passive: false });
+    return () => el.removeEventListener("wheel", handleWheel, { capture: true });
+  }, [contentElement]);
 
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
-        ref={(node) => {
-          contentRef.current = node;
-          if (typeof ref === 'function') ref(node);
-          else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
-        }}
+        ref={setContentRef}
         className={cn(
           "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
           position === "popper" &&
