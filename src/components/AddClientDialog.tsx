@@ -1,0 +1,183 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { createClient, type ClientData } from "@/lib/api/clients";
+import { INDIAN_STATES } from "@/lib/constants";
+import { toast } from "@/hooks/use-toast";
+
+interface AddClientDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onClientCreated: (client: ClientData) => void;
+}
+
+const COUNTRIES = [
+  "India", "UAE", "United States", "United Kingdom", "Austria", "Belgium",
+  "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia",
+  "Finland", "France", "Germany", "Greece", "Hungary", "Ireland", "Italy",
+  "Latvia", "Lithuania", "Luxembourg", "Malta", "Netherlands", "Poland",
+  "Portugal", "Romania", "Slovakia", "Slovenia", "Spain", "Sweden",
+];
+
+const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialogProps) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    streetAddress: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
+  });
+
+  const reset = () => {
+    setForm({
+      name: "", email: "", phone: "", streetAddress: "",
+      city: "", state: "", zipCode: "", country: "",
+    });
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter a client name.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const created = await createClient({
+        name: form.name,
+        email: form.email || null,
+        phone: form.phone || null,
+        streetAddress: form.streetAddress || null,
+        city: form.city || null,
+        state: form.state || null,
+        zipCode: form.zipCode || null,
+        country: form.country || null,
+      });
+      toast({ title: "Client created", description: "New client has been added." });
+      onClientCreated(created);
+      reset();
+      onOpenChange(false);
+    } catch {
+      toast({
+        title: "Save failed",
+        description: "Could not create client.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Add New Client</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Name *</Label>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Client name"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Street Address</Label>
+            <Input
+              value={form.streetAddress}
+              onChange={(e) => setForm({ ...form, streetAddress: e.target.value })}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>City</Label>
+              <Input
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Zip Code</Label>
+              <Input
+                value={form.zipCode}
+                onChange={(e) => setForm({ ...form, zipCode: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Country</Label>
+              <Select value={form.country} onValueChange={(v) => setForm({ ...form, country: v, state: "" })}>
+                <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>State</Label>
+              {form.country === "India" ? (
+                <Select value={form.state} onValueChange={(v) => setForm({ ...form, state: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
+                  <SelectContent>
+                    {INDIAN_STATES.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  value={form.state}
+                  onChange={(e) => setForm({ ...form, state: e.target.value })}
+                />
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Save Client
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AddClientDialog;
