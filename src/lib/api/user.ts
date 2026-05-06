@@ -241,3 +241,21 @@ export async function deleteOrganizationLogo(): Promise<boolean> {
   const json = await res.json();
   return json.success === true;
 }
+
+export async function saveUserWidgets(widgets: string[]) {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${config.backendHost}/api/user/widgets`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ widgets }),
+  });
+
+  if (!res.ok) throw new Error("Failed to save widgets");
+  const json = await res.json();
+  return json.data ?? json;
+}
