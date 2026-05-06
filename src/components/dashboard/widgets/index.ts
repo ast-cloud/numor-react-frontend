@@ -7,6 +7,16 @@ export { default as PaymentStatusWidget } from "./PaymentStatusWidget";
 export { default as ExpensesOverTimeWidget } from "./ExpensesOverTimeWidget";
 export type { TimeRangeConfig, TimeRangePreset } from "./widgetData";
 
+export const WIDGET_KEY_MAP: Record<string, string> = {
+  "revenue-over-time": "revenue_vs_time",
+  "expenses-over-time": "expense_vs_time",
+  "cash-flow": "cashflow_vs_time",
+  "income-vs-expenses": "income_expense_vs_time",
+  "top-clients": "client_vs_revenue",
+  "payment-status": "invoice_status_wise_breakdown",
+  "expenses-by-category": "expense_category_wise_breakdown",
+};
+
 export type WidgetType = 
   | "expenses-by-category"
   | "revenue-over-time"
