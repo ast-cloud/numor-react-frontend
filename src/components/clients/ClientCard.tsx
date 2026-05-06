@@ -17,9 +17,10 @@ interface ClientCardProps {
   onCancel: () => void;
   onDelete: () => void;
   onUpdate: (field: keyof Client, value: string) => void;
+  isNew?: boolean;
 }
 
-const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onUpdate }: ClientCardProps) => {
+const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onUpdate, isNew }: ClientCardProps) => {
   const [isOpen, setIsOpen] = useState(isEditing);
 
   // Auto-expand when editing starts
