@@ -170,7 +170,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2 md:col-span-2">
-                    <Label className="text-xs">Street Address</Label>
+                    <Label className="text-xs">Street Address *</Label>
                     {isEditing ? (
                       <Input
                         value={client.streetAddress}
