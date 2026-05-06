@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -646,7 +647,7 @@ const CreateInvoiceDialog = ({
       const payload = buildPayload(undefined);
       const finalPayload =
         isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
-      const data = await createInvoice(finalPayload);
+      const data = await createInvoice(finalPayload, { sendEmail });
       if (data?.pdfStatus === "NOT_STARTED") {
         toast({
           title: "Saved as draft",
@@ -673,6 +674,7 @@ const CreateInvoiceDialog = ({
   };
 
   const [savingDraft, setSavingDraft] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false);
 
   const handleSaveAsDraft = async () => {
     setSavingDraft(true);
@@ -701,6 +703,7 @@ const CreateInvoiceDialog = ({
       setFormData(getInitialFormData());
       setShowPreview(false);
       setSelectedClientId(null);
+      setSendEmail(false);
     }
   };
 
@@ -735,20 +738,29 @@ const CreateInvoiceDialog = ({
                 <InvoicePreview formData={formData} />
               </div>
             </div>
-            <div className="flex justify-end gap-3 p-6 border-t flex-shrink-0">
-              <Button variant="outline" onClick={handleBackToForm}>
-                Back to Edit
-              </Button>
-              <Button onClick={handleConfirmInvoice} disabled={confirmingInvoice}>
-                {confirmingInvoice ? (
-                  <>
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Generating PDF...
-                  </>
-                ) : (
-                  "Confirm & Create Invoice"
-                )}
-              </Button>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 border-t flex-shrink-0">
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <Checkbox
+                  checked={sendEmail}
+                  onCheckedChange={(c) => setSendEmail(c === true)}
+                />
+                Share Invoice with client on email
+              </label>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={handleBackToForm}>
+                  Back to Edit
+                </Button>
+                <Button onClick={handleConfirmInvoice} disabled={confirmingInvoice}>
+                  {confirmingInvoice ? (
+                    <>
+                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    "Confirm & Create Invoice"
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
