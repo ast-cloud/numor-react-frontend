@@ -90,15 +90,33 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
 
   const handleSaveClient = async (id: string) => {
     const client = clients.find(c => c.id === id);
-    if (client && !client.name.trim()) {
+    if (!client) return;
+    const requiredFields: { key: keyof Client; label: string }[] = [
+      { key: "name", label: "Name" },
+      { key: "email", label: "Email" },
+      { key: "streetAddress", label: "Street Address" },
+      { key: "city", label: "City" },
+      { key: "state", label: "State" },
+      { key: "zipCode", label: "Zip Code" },
+      { key: "country", label: "Country" },
+    ];
+    const missing = requiredFields.find((f) => !client[f.key].trim());
+    if (missing) {
       toast({
-        title: "Name required",
-        description: "Please enter a client name.",
+        title: `${missing.label} required`,
+        description: `Please enter ${missing.label.toLowerCase()}.`,
         variant: "destructive",
       });
       return;
     }
-    if (!client) return;
+    if (!/^\S+@\S+\.\S+$/.test(client.email.trim())) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const isNewClient = backupRef.current && !backupRef.current.name.trim();
 

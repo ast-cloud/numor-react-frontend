@@ -44,7 +44,20 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
           <div className="flex gap-2 shrink-0 ml-3">
             {isEditing ? (
               <>
-                <Button size="sm" className="h-7 text-xs" onClick={onSave}>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={onSave}
+                  disabled={
+                    !client.name.trim() ||
+                    !client.email.trim() ||
+                    !client.streetAddress.trim() ||
+                    !client.city.trim() ||
+                    !client.state.trim() ||
+                    !client.zipCode.trim() ||
+                    !client.country.trim()
+                  }
+                >
                   <Save className="w-3 h-3 mr-1.5" />
                   Save
                 </Button>
@@ -93,7 +106,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs">
                   <User className="w-3 h-3 text-muted-foreground" />
-                  Name
+                  Name *
                 </Label>
                 {isEditing ? (
                   <Input
@@ -112,7 +125,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs">
                   <Mail className="w-3 h-3 text-muted-foreground" />
-                  Email
+                  Email *
                 </Label>
                 {isEditing ? (
                   <Input
@@ -157,7 +170,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2 md:col-span-2">
-                    <Label className="text-xs">Street Address</Label>
+                    <Label className="text-xs">Street Address *</Label>
                     {isEditing ? (
                       <Input
                         value={client.streetAddress}
@@ -172,7 +185,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">City</Label>
+                    <Label className="text-xs">City *</Label>
                     {isEditing ? (
                       <Input
                         value={client.city}
@@ -187,7 +200,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">State / Province</Label>
+                    <Label className="text-xs">State / Province *</Label>
                     {isEditing ? (
                       client.country === "India" ? (
                         <Select
@@ -220,7 +233,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">ZIP / Postal Code</Label>
+                    <Label className="text-xs">ZIP / Postal Code *</Label>
                     {isEditing ? (
                       <Input
                         value={client.zipCode}
@@ -235,7 +248,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">Country</Label>
+                    <Label className="text-xs">Country *</Label>
                     {isEditing ? (
                       <Select
                         value={client.country}
