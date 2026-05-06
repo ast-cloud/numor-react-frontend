@@ -62,6 +62,7 @@ interface Invoice {
   invoiceNumber: string;
   clientName: string;
   dueDate: string;
+  issueDate: string;
   amount: number;
   currency: string;
   status: InvoiceStatus;
