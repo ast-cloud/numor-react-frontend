@@ -119,7 +119,25 @@ const SelectContent = React.forwardRef<
 
     let target: HTMLElement | null | undefined;
 
-    const handleWheel = (e: WheelEvent) => {
+    const bypassBodyLockScroll = (deltaY: number) => {
+      const scroller = document.scrollingElement || document.documentElement;
+      const html = document.documentElement;
+      const body = document.body;
+      const lockValue = body.getAttribute("data-scroll-locked");
+      const prevHtmlOverflow = html.style.overflow;
+      const prevHtmlOverflowPriority = html.style.getPropertyPriority("overflow");
+      const prevBodyOverflow = body.style.overflow;
+      const prevBodyOverflowPriority = body.style.getPropertyPriority("overflow");
+      body.removeAttribute("data-scroll-locked");
+      html.style.setProperty("overflow", "auto", "important");
+      body.style.setProperty("overflow", "auto", "important");
+      scroller.scrollTop += deltaY;
+      html.style.setProperty("overflow", prevHtmlOverflow, prevHtmlOverflowPriority);
+      body.style.setProperty("overflow", prevBodyOverflow, prevBodyOverflowPriority);
+      if (lockValue !== null) body.setAttribute("data-scroll-locked", lockValue);
+    };
+
+    const handleWheelInside = (e: WheelEvent) => {
       const viewport = el.querySelector('[data-radix-select-viewport]') as HTMLElement | null;
       let atEdge = true;
       if (viewport) {
@@ -138,29 +156,29 @@ const SelectContent = React.forwardRef<
         target.scrollTop += e.deltaY;
         return;
       }
-
-      // Fallback: document is the scroller but Radix locks body scroll via
-      // react-remove-scroll and an !important data-scroll-locked rule.
       e.preventDefault();
-      const scroller = document.scrollingElement || document.documentElement;
-      const html = document.documentElement;
-      const body = document.body;
-      const lockValue = body.getAttribute("data-scroll-locked");
-      const prevHtmlOverflow = html.style.overflow;
-      const prevHtmlOverflowPriority = html.style.getPropertyPriority("overflow");
-      const prevBodyOverflow = body.style.overflow;
-      const prevBodyOverflowPriority = body.style.getPropertyPriority("overflow");
-      body.removeAttribute("data-scroll-locked");
-      html.style.setProperty("overflow", "auto", "important");
-      body.style.setProperty("overflow", "auto", "important");
-      scroller.scrollTop += e.deltaY;
-      html.style.setProperty("overflow", prevHtmlOverflow, prevHtmlOverflowPriority);
-      body.style.setProperty("overflow", prevBodyOverflow, prevBodyOverflowPriority);
-      if (lockValue !== null) body.setAttribute("data-scroll-locked", lockValue);
+      bypassBodyLockScroll(e.deltaY);
     };
 
-    el.addEventListener("wheel", handleWheel, { capture: true, passive: false });
-    return () => el.removeEventListener("wheel", handleWheel, { capture: true });
+    const handleWheelOutside = (e: WheelEvent) => {
+      const node = e.target as Node | null;
+      if (node && el.contains(node)) return;
+      if (target === undefined) target = resolveScrollTarget();
+      if (target) {
+        e.preventDefault();
+        target.scrollTop += e.deltaY;
+        return;
+      }
+      e.preventDefault();
+      bypassBodyLockScroll(e.deltaY);
+    };
+
+    el.addEventListener("wheel", handleWheelInside, { capture: true, passive: false });
+    window.addEventListener("wheel", handleWheelOutside, { capture: true, passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleWheelInside, { capture: true } as any);
+      window.removeEventListener("wheel", handleWheelOutside, { capture: true } as any);
+    };
   }, [contentElement]);
 
   return (
