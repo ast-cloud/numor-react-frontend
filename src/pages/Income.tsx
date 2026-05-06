@@ -82,6 +82,7 @@ const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoi
   invoiceNumber: inv.invoiceNumber,
   clientName: clientsMap.get(inv.clientId) || inv.sellerName,
   dueDate: format(parseISO(inv.dueDate), "dd/MM/yyyy"),
+  issueDate: inv.issueDate ? format(parseISO(inv.issueDate), "dd/MM/yyyy") : "",
   amount: parseFloat(inv.totalAmount),
   currency: inv.currency || "USD",
   status: mapApiStatus(inv.status),
