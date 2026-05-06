@@ -125,7 +125,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs">
                   <Mail className="w-3 h-3 text-muted-foreground" />
-                  Email
+                  Email *
                 </Label>
                 {isEditing ? (
                   <Input
