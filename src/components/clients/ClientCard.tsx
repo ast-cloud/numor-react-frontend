@@ -185,7 +185,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">City</Label>
+                    <Label className="text-xs">City *</Label>
                     {isEditing ? (
                       <Input
                         value={client.city}
