@@ -68,25 +68,64 @@ const SelectContent = React.forwardRef<
     const el = contentRef.current;
     if (!el) return;
 
+    // Resolve a real scrollable ancestor of the trigger that opened this Select.
+    // Radix locks body scroll while open, so document.scrollingElement is a no-op.
+    const resolveScrollTarget = (): HTMLElement | null => {
+      const labelledBy = el.getAttribute('aria-labelledby');
+      let trigger: HTMLElement | null = null;
+      if (labelledBy) trigger = document.getElementById(labelledBy);
+      if (!trigger) {
+        trigger = document.querySelector(
+          '[data-state="open"][aria-haspopup="listbox"]',
+        ) as HTMLElement | null;
+      }
+      if (!trigger) return null;
+
+      let node: HTMLElement | null = trigger.parentElement;
+      while (node && node !== document.body) {
+        const style = window.getComputedStyle(node);
+        const oy = style.overflowY;
+        if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight) {
+          return node;
+        }
+        node = node.parentElement;
+      }
+      return null;
+    };
+
+    let target: HTMLElement | null | undefined;
+
     const handleWheel = (e: WheelEvent) => {
-      // Find the scrollable viewport inside the content
       const viewport = el.querySelector('[data-radix-select-viewport]') as HTMLElement | null;
-      if (!viewport) {
-        // No viewport or not scrollable, propagate to page
-        const scrollableParent = document.scrollingElement || document.documentElement;
-        scrollableParent.scrollTop += e.deltaY;
+      let atEdge = true;
+      if (viewport) {
+        const { scrollTop, scrollHeight, clientHeight } = viewport;
+        const atTop = scrollTop <= 0 && e.deltaY < 0;
+        const atBottom = scrollTop + clientHeight >= scrollHeight - 1 && e.deltaY > 0;
+        atEdge = atTop || atBottom;
+      }
+      if (!atEdge) return;
+
+      if (target === undefined) target = resolveScrollTarget();
+
+      if (target) {
+        e.preventDefault();
+        target.scrollTop += e.deltaY;
         return;
       }
 
-      const { scrollTop, scrollHeight, clientHeight } = viewport;
-      const atTop = scrollTop <= 0 && e.deltaY < 0;
-      const atBottom = scrollTop + clientHeight >= scrollHeight - 1 && e.deltaY > 0;
-
-      if (atTop || atBottom) {
-        e.preventDefault();
-        const scrollableParent = document.scrollingElement || document.documentElement;
-        scrollableParent.scrollTop += e.deltaY;
-      }
+      // Fallback: document is the scroller but Radix locks body scroll via
+      // react-remove-scroll. Temporarily neutralize the lock to chain scroll.
+      e.preventDefault();
+      const html = document.documentElement;
+      const body = document.body;
+      const prevHtmlOverflow = html.style.overflow;
+      const prevBodyOverflow = body.style.overflow;
+      html.style.overflow = 'auto';
+      body.style.overflow = 'auto';
+      window.scrollBy(0, e.deltaY);
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
     };
 
     el.addEventListener('wheel', handleWheel, { passive: false });
