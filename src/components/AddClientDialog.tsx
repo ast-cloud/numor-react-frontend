@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, User, Mail, Phone, Home, Building2, MapPin, Hash, Globe } from "lucide-react";
 import { createClient, type ClientData } from "@/lib/api/clients";
 import { INDIAN_STATES } from "@/lib/constants";
 import { toast } from "@/hooks/use-toast";
