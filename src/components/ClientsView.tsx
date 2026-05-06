@@ -186,6 +186,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
     }
     backupRef.current = null;
     setEditingClientId(null);
+    setNewClientId(null);
   };
 
   const handleDeleteClient = async (id: string) => {
