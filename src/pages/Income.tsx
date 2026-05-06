@@ -480,6 +480,11 @@ const Income = () => {
   const summaryStats = useMemo(() => {
     const filtered = filterInvoices(activeTab).filter((inv) => inv.status !== "draft");
     const totalIncome = filtered.reduce((sum, inv) => sum + inv.amount, 0);
+    const incomeByCurrency = filtered.reduce<Record<string, number>>((acc, inv) => {
+      acc[inv.currency] = (acc[inv.currency] || 0) + inv.amount;
+      return acc;
+    }, {});
+    const incomeByCurrencyEntries = Object.entries(incomeByCurrency).sort((a, b) => b[1] - a[1]);
     const paidInvoices = filtered.filter((inv) => inv.status === "paid");
     const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
     const unpaidInvoices = filtered.filter((inv) => inv.status === "unpaid" || inv.status === "overdue");
@@ -493,7 +498,7 @@ const Income = () => {
     });
     const topClient = Object.entries(clientRevenue).sort((a, b) => b[1] - a[1])[0];
 
-    return { totalIncome, totalPaid, totalUnpaid, invoiceCount, topClient: topClient ? { name: topClient[0], amount: topClient[1] } : null };
+    return { totalIncome, incomeByCurrencyEntries, totalPaid, totalUnpaid, invoiceCount, topClient: topClient ? { name: topClient[0], amount: topClient[1] } : null };
   }, [invoices, activeTab, timeRangePreset, customDateRange, sortOption]);
 
   const getTimeRangeLabel = () => {
