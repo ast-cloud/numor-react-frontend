@@ -443,6 +443,10 @@ const Income = () => {
           return parseDate(a.dueDate).getTime() - parseDate(b.dueDate).getTime();
         case "due_date_desc":
           return parseDate(b.dueDate).getTime() - parseDate(a.dueDate).getTime();
+        case "issue_date_asc":
+          return parseDate(a.issueDate).getTime() - parseDate(b.issueDate).getTime();
+        case "issue_date_desc":
+          return parseDate(b.issueDate).getTime() - parseDate(a.issueDate).getTime();
         case "amount_asc":
           return a.amount - b.amount;
         case "amount_desc":
