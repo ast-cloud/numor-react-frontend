@@ -200,7 +200,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">State / Province</Label>
+                    <Label className="text-xs">State / Province *</Label>
                     {isEditing ? (
                       client.country === "India" ? (
                         <Select
