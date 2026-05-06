@@ -37,6 +37,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
+  const [newClientId, setNewClientId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const backupRef = useRef<Client | null>(null);
