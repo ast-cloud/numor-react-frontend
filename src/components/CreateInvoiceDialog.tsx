@@ -629,7 +629,6 @@ const CreateInvoiceDialog = ({
         toast({
           title: "Saved as draft",
           description: "PDF generation failed. Invoice has been saved as a draft.",
-          variant: "destructive",
         });
       } else {
         await pollPdfStatus(data.id);
