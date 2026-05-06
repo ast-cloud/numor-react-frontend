@@ -174,7 +174,8 @@ const SelectContent = React.forwardRef<
           className,
         )}
         position={position}
-        avoidCollisions={!lockSide}
+        side={lockedSide}
+        avoidCollisions={!lockedSide}
         {...props}
       >
         <SelectScrollUpButton />
