@@ -625,11 +625,19 @@ const CreateInvoiceDialog = ({
       const finalPayload =
         isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
       const data = await createInvoice(finalPayload);
-      await pollPdfStatus(data.id);
-      toast({
-        title: "Invoice created",
-        description: "Invoice has been created and PDF is ready.",
-      });
+      if (data?.pdfStatus === "NOT_STARTED") {
+        toast({
+          title: "Saved as draft",
+          description: "PDF generation failed. Invoice has been saved as a draft.",
+          variant: "destructive",
+        });
+      } else {
+        await pollPdfStatus(data.id);
+        toast({
+          title: "Invoice created",
+          description: "Invoice has been created and PDF is ready.",
+        });
+      }
       setOpen(false);
       setFormData(getInitialFormData());
       setShowPreview(false);
