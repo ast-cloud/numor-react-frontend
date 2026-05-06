@@ -588,84 +588,6 @@ const Income = () => {
           ))}
         </TabsList>
 
-        <div className="flex justify-end mt-4 mb-2">
-          <div className="flex items-center gap-2">
-            <Select value={sortOption} onValueChange={(value: SortOption) => setSortOption(value)}>
-              <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
-                <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="due_date_desc">Due Date (Newest)</SelectItem>
-                <SelectItem value="due_date_asc">Due Date (Oldest)</SelectItem>
-                <SelectItem value="issue_date_desc">Issue Date (Newest)</SelectItem>
-                <SelectItem value="issue_date_asc">Issue Date (Oldest)</SelectItem>
-                <SelectItem value="amount_desc">Amount (High-Low)</SelectItem>
-                <SelectItem value="amount_asc">Amount (Low-High)</SelectItem>
-                <SelectItem value="client_asc">Client (A-Z)</SelectItem>
-                <SelectItem value="client_desc">Client (Z-A)</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
-              <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
-                <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                <SelectValue placeholder="All Time" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Time</SelectItem>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="this_week">This Week</SelectItem>
-                <SelectItem value="this_month">This Month</SelectItem>
-                <SelectItem value="this_quarter">This Quarter</SelectItem>
-                <SelectItem value="custom">Custom Range</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {timeRangePreset === "custom" && (
-              <Popover open={isCustomDatePopoverOpen} onOpenChange={handleOpenChange}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 text-sm justify-start text-left font-normal">
-                    <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                    {customDateRange?.from ? (
-                      customDateRange.to ? (
-                        <>
-                          {format(customDateRange.from, "dd/MM/yy")} - {format(customDateRange.to, "dd/MM/yy")}
-                        </>
-                      ) : (
-                        format(customDateRange.from, "dd/MM/yy")
-                      )
-                    ) : (
-                      "Pick range"
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="range"
-                    selected={tempDateRange}
-                    onSelect={setTempDateRange}
-                    numberOfMonths={2}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                  <div className="flex justify-end p-3 pt-0 border-t border-border">
-                    <Button size="sm" onClick={handleApplyDateRange} disabled={!tempDateRange?.from}>
-                      Apply
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
-
-            {timeRangePreset !== "all" && (
-              <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-8 w-8">
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            )}
-          </div>
-        </div>
-
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -673,7 +595,7 @@ const Income = () => {
         ) : invoices.length > 0 ? (
           <>
             {/* Summary Card */}
-            <div className="rounded-lg border border-border bg-muted/20 p-4 mb-6">
+            <div className="rounded-lg border border-border bg-muted/20 p-4 mt-4 mb-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-start gap-1.5">
@@ -708,6 +630,84 @@ const Income = () => {
                       <span className="font-semibold text-foreground">{summaryStats.topClient.name}</span>
                     </div>
                   </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end mb-2">
+              <div className="flex items-center gap-2">
+                <Select value={sortOption} onValueChange={(value: SortOption) => setSortOption(value)}>
+                  <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
+                    <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" />
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="due_date_desc">Due Date (Newest)</SelectItem>
+                    <SelectItem value="due_date_asc">Due Date (Oldest)</SelectItem>
+                    <SelectItem value="issue_date_desc">Issue Date (Newest)</SelectItem>
+                    <SelectItem value="issue_date_asc">Issue Date (Oldest)</SelectItem>
+                    <SelectItem value="amount_desc">Amount (High-Low)</SelectItem>
+                    <SelectItem value="amount_asc">Amount (Low-High)</SelectItem>
+                    <SelectItem value="client_asc">Client (A-Z)</SelectItem>
+                    <SelectItem value="client_desc">Client (Z-A)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
+                  <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
+                    <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                    <SelectValue placeholder="All Time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="this_week">This Week</SelectItem>
+                    <SelectItem value="this_month">This Month</SelectItem>
+                    <SelectItem value="this_quarter">This Quarter</SelectItem>
+                    <SelectItem value="custom">Custom Range</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {timeRangePreset === "custom" && (
+                  <Popover open={isCustomDatePopoverOpen} onOpenChange={handleOpenChange}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 text-sm justify-start text-left font-normal">
+                        <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                        {customDateRange?.from ? (
+                          customDateRange.to ? (
+                            <>
+                              {format(customDateRange.from, "dd/MM/yy")} - {format(customDateRange.to, "dd/MM/yy")}
+                            </>
+                          ) : (
+                            format(customDateRange.from, "dd/MM/yy")
+                          )
+                        ) : (
+                          "Pick range"
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="range"
+                        selected={tempDateRange}
+                        onSelect={setTempDateRange}
+                        numberOfMonths={2}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                      <div className="flex justify-end p-3 pt-0 border-t border-border">
+                        <Button size="sm" onClick={handleApplyDateRange} disabled={!tempDateRange?.from}>
+                          Apply
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+
+                {timeRangePreset !== "all" && (
+                  <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-8 w-8">
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
                 )}
               </div>
             </div>
