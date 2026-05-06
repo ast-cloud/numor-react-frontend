@@ -17,6 +17,7 @@ import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
+import AddClientDialog from "@/components/AddClientDialog";
 import {
   createInvoice,
   updateInvoice,
@@ -307,6 +308,7 @@ const CreateInvoiceDialog = ({
   const [clientExpanded, setClientExpanded] = useState(false);
   const [savedClients, setSavedClients] = useState<ClientData[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [addClientOpen, setAddClientOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
   // Fetch organization data and clients when dialog opens
@@ -368,9 +370,29 @@ const CreateInvoiceDialog = ({
   }, [open, editInvoiceId, isEditMode]);
 
   const handleClientSelect = (clientId: string) => {
+    if (clientId === "__add_new__") {
+      setAddClientOpen(true);
+      return;
+    }
     const client = savedClients.find((c) => c.id === clientId);
     if (!client) return;
     setSelectedClientId(clientId);
+    setFormData((prev) => ({
+      ...prev,
+      clientName: client.name || "",
+      clientEmail: client.email || "",
+      clientStreetAddress: client.streetAddress || "",
+      clientCity: client.city || "",
+      clientState: client.state || "",
+      clientZip: client.zipCode || "",
+      clientCountry: client.country || "",
+    }));
+    setClientExpanded(false);
+  };
+
+  const handleClientCreated = (client: ClientData) => {
+    setSavedClients((prev) => [client, ...prev]);
+    setSelectedClientId(client.id);
     setFormData((prev) => ({
       ...prev,
       clientName: client.name || "",
@@ -1052,24 +1074,25 @@ const CreateInvoiceDialog = ({
               {/* Client Info */}
               <div className="space-y-4">
                 <h3 className="font-medium text-foreground">Client Information</h3>
-                {savedClients.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Select Saved Client</Label>
-                    <Select onValueChange={handleClientSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose from saved clients..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {savedClients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.name}
-                            {client.email ? ` (${client.email})` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label>Select Saved Client</Label>
+                  <Select value={selectedClientId || ""} onValueChange={handleClientSelect}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose from saved clients..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {savedClients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                          {client.email ? ` (${client.email})` : ""}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__add_new__" className="text-primary font-medium">
+                        + Add new client
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Collapsible open={clientExpanded} onOpenChange={setClientExpanded}>
                   <div className="border border-border rounded-lg overflow-hidden">
                     <CollapsibleTrigger asChild>
@@ -1507,6 +1530,11 @@ const CreateInvoiceDialog = ({
           </div>
         )}
       </DialogContent>
+      <AddClientDialog
+        open={addClientOpen}
+        onOpenChange={setAddClientOpen}
+        onClientCreated={handleClientCreated}
+      />
     </Dialog>
   );
 };
