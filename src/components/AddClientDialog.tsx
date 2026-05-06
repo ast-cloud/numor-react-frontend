@@ -114,7 +114,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground" />Email</Label>
+              <Label className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground" />Email *</Label>
               <Input
                 type="email"
                 value={form.email}
