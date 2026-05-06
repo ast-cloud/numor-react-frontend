@@ -700,11 +700,6 @@ const Income = () => {
                   <span className="text-muted-foreground">Outstanding:</span>
                   <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalUnpaid, currency)}</span>
                 </div>
-                <span className="text-border hidden sm:inline">|</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground">Invoice{summaryStats.invoiceCount !== 1 ? "s" : ""}:</span>
-                  <span className="font-semibold text-foreground">{summaryStats.invoiceCount}</span>
-                </div>
                 {summaryStats.topClient && (
                   <>
                     <span className="text-border hidden sm:inline">|</span>
