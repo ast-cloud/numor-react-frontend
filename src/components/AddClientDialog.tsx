@@ -187,7 +187,19 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button
+              onClick={handleSave}
+              disabled={
+                isSaving ||
+                !form.name.trim() ||
+                !form.email.trim() ||
+                !form.streetAddress.trim() ||
+                !form.city.trim() ||
+                !form.state.trim() ||
+                !form.zipCode.trim() ||
+                !form.country.trim()
+              }
+            >
               {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Save Client
             </Button>
