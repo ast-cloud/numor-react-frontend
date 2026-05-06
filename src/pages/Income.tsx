@@ -703,14 +703,17 @@ const Income = () => {
             </div>
             {tabs.map((tab) => {
               const tabInvoices = filterInvoices(tab.value);
-              const currencyTotals = tabInvoices.reduce<Record<string, number>>((acc, inv) => {
+              const totalsSource = tab.value === "all"
+                ? tabInvoices.filter((inv) => inv.status !== "draft")
+                : tabInvoices;
+              const currencyTotals = totalsSource.reduce<Record<string, number>>((acc, inv) => {
                 acc[inv.currency] = (acc[inv.currency] || 0) + inv.amount;
                 return acc;
               }, {});
               const currencyEntries = Object.entries(currencyTotals).sort((a, b) => b[1] - a[1]);
               return (
                 <TabsContent key={tab.value} value={tab.value} className="mt-6">
-                  {tab.value !== "all" && currencyEntries.length > 0 && (
+                  {tab.value !== "draft" && currencyEntries.length > 0 && (
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3 px-1 text-sm">
                       <span className="text-muted-foreground">Total:</span>
                       {currencyEntries.map(([cur, amt]) => (
