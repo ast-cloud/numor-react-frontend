@@ -53,7 +53,7 @@ import { fetchCurrentOrganization } from "@/lib/api/user";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
-type SortOption = "due_date_asc" | "due_date_desc" | "amount_asc" | "amount_desc" | "client_asc" | "client_desc";
+type SortOption = "due_date_asc" | "due_date_desc" | "issue_date_asc" | "issue_date_desc" | "amount_asc" | "amount_desc" | "client_asc" | "client_desc";
 
 type InvoiceStatus = "draft" | "paid" | "unpaid" | "overdue";
 
