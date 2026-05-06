@@ -701,26 +701,44 @@ const Income = () => {
                 )}
               </div>
             </div>
-            {tabs.map((tab) => (
-              <TabsContent key={tab.value} value={tab.value} className="mt-6">
-                <div className="bg-card rounded-lg border border-border overflow-hidden">
-                  {filterInvoices(tab.value).length > 0 ? (
-                    filterInvoices(tab.value).map((invoice) => (
-                      <InvoiceRow
-                        key={invoice.id}
-                        invoice={invoice}
-                        onClick={() => handleInvoiceClick(invoice)}
-                        onStatusChange={handleStatusChange}
-                        onDownload={handleDownloadPdf}
-                        onDelete={(inv) => setDeleteTarget(inv)}
-                      />
-                    ))
-                  ) : (
-                    <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
+            {tabs.map((tab) => {
+              const tabInvoices = filterInvoices(tab.value);
+              const currencyTotals = tabInvoices.reduce<Record<string, number>>((acc, inv) => {
+                acc[inv.currency] = (acc[inv.currency] || 0) + inv.amount;
+                return acc;
+              }, {});
+              const currencyEntries = Object.entries(currencyTotals).sort((a, b) => b[1] - a[1]);
+              return (
+                <TabsContent key={tab.value} value={tab.value} className="mt-6">
+                  {tab.value !== "all" && currencyEntries.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3 px-1 text-sm">
+                      <span className="text-muted-foreground">Total:</span>
+                      {currencyEntries.map(([cur, amt]) => (
+                        <span key={cur} className="font-semibold text-foreground">
+                          {formatCurrencyVal(amt, cur)}
+                        </span>
+                      ))}
+                    </div>
                   )}
-                </div>
-              </TabsContent>
-            ))}
+                  <div className="bg-card rounded-lg border border-border overflow-hidden">
+                    {tabInvoices.length > 0 ? (
+                      tabInvoices.map((invoice) => (
+                        <InvoiceRow
+                          key={invoice.id}
+                          invoice={invoice}
+                          onClick={() => handleInvoiceClick(invoice)}
+                          onStatusChange={handleStatusChange}
+                          onDownload={handleDownloadPdf}
+                          onDelete={(inv) => setDeleteTarget(inv)}
+                        />
+                      ))
+                    ) : (
+                      <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
+                    )}
+                  </div>
+                </TabsContent>
+              );
+            })}
           </>
         ) : (
           <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
