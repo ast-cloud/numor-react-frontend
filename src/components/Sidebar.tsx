@@ -61,7 +61,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
       className={`${inMobileSheet ? "w-full" : effectiveCollapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}
     >
       {/* Header with Logo and Controls */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
+      <div className={`p-4 border-b border-border flex items-center ${effectiveCollapsed ? "justify-start" : "justify-between"}`}>
         {!effectiveCollapsed && <h1 className="text-xl font-display font-bold text-primary">Numor</h1>}
 
         {inMobileSheet ? (
@@ -79,7 +79,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
             variant="ghost"
             size="icon"
             onClick={toggle}
-            className={`${effectiveCollapsed ? "mx-auto" : ""} text-muted-foreground hover:text-foreground`}
+            className="text-muted-foreground hover:text-foreground"
             aria-label="Toggle sidebar"
           >
             <Menu className="w-5 h-5" />
