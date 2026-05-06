@@ -617,7 +617,7 @@ const Income = () => {
                     <span className="font-semibold text-foreground">{formatCurrencyVal(summaryStats.totalPaid, currency)}</span>
                   </div>
                 </div>
-                <span className="text-border hidden sm:inline mt-1">|</span>
+                
                 <div className="flex flex-1 justify-center">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5">
