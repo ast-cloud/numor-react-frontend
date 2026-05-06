@@ -1802,7 +1802,13 @@ const Expenses = () => {
                         <TableCell>{normalizeUnitType(item.unitType)}</TableCell>
                         <TableCell className="text-right">{parseFloat(item.unitPrice).toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                         <TableCell className="text-right">{parseFloat(item.taxRate) > 0 ? `${item.taxRate}%` : "—"}</TableCell>
-                        <TableCell className="text-right font-medium">{parseFloat(item.totalPrice).toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                        <TableCell className="text-right font-medium">{(() => {
+                          const qty = parseFloat(item.quantity) || 0;
+                          const up = parseFloat(item.unitPrice) || 0;
+                          const tax = parseFloat(item.taxRate) || 0;
+                          const total = Math.round(qty * up * (1 + tax / 100) * 100) / 100;
+                          return total.toLocaleString(undefined, { style: "currency", currency: countryCurrency[orgCountry || ""] || "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        })()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
