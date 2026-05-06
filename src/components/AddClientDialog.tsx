@@ -172,7 +172,7 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
               />
             </div>
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-muted-foreground" />Country</Label>
+              <Label className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-muted-foreground" />Country *</Label>
               <Select value={form.country} onValueChange={(v) => setForm({ ...form, country: v, state: "" })}>
                 <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
                 <SelectContent>
