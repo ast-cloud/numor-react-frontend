@@ -1,44 +1,62 @@
 ## Problem
 
-When a Select dropdown is open and the user scrolls with the cursor outside the dropdown's bounds, nothing happens. Radix uses `react-remove-scroll` which body-locks the page, so wheel events on the rest of the document do nothing.
+After uploading and parsing an expense, the "Item Price" field shows the pre-tax total. It only becomes the tax-inclusive value after the user edits any field (qty/unit price/tax), because the recalculation formula `qty * unitPrice * (1 + tax/100)` only runs in the on-change handlers.
 
-Our existing wheel handler in `src/components/ui/select.tsx` only fires for wheel events on the dropdown content itself (it's attached to `el`). Events outside the dropdown never reach it.
+## Root cause
+
+In `src/pages/Expenses.tsx` (around line 855–862), the OCR prefill maps each parsed item with:
+
+```ts
+itemPrice: String(item.total ?? item.totalPrice ?? item.itemPrice ?? "")
+```
+
+The backend's `total`/`totalPrice` from OCR is the pre-tax amount, so the initial display doesn't include tax. The same pattern applies in `handleEditReceipt` (line 897–904) when reopening a saved receipt.
 
 ## Fix
 
-In `src/components/ui/select.tsx`, inside the existing `useEffect` that wires `handleWheel`, add a second listener attached to `window` (capture phase, non-passive) that handles wheel events whose target is NOT inside the dropdown content `el`.
+Compute `itemPrice` from the parsed `quantity`, `unitPrice`, and `taxRate` using the same formula already used in the on-change handlers, instead of trusting the API's `total` field.
 
-That outside-handler will:
+### Change 1 — OCR prefill (`handleFileUpload`, ~line 855)
 
-1. Skip if the event target is inside `el` (the existing per-content handler covers that case, including its at-edge gating).
-2. Resolve the same scrollable ancestor via the existing `resolveScrollTarget()` helper. If found, `preventDefault()` and apply `target.scrollTop += e.deltaY` so the surrounding scrollable panel (e.g. DialogContent) scrolls.
-3. Otherwise, document is the scroller — reuse the existing body-lock bypass block (temporarily clear `data-scroll-locked` and `html`/`body` `overflow` to `auto !important`, scroll `document.scrollingElement`, then restore).
-4. Refactor the body-lock bypass into a small local `bypassBodyLockScroll(deltaY)` helper so both the inside- and outside-handlers share it.
-
-Cleanup removes both listeners. No behavioral change to the existing inside-dropdown wheel handling, the locked-side logic, or any other component.
-
-This makes wheel-over-page scroll the page (or the nearest scrollable ancestor) while the dropdown stays open and pinned to its initial side.
-
-## Technical details
-
-File: `src/components/ui/select.tsx` only.
-
-```text
-useEffect(contentElement):
-  el = contentElement
-  resolveScrollTarget()  // existing
-  bypassBodyLockScroll(deltaY)  // extracted from current fallback branch
-
-  handleWheelInside(e)   // current handler, unchanged behavior
-  handleWheelOutside(e):
-    if el.contains(e.target) return
-    target = resolveScrollTarget()
-    if target: e.preventDefault(); target.scrollTop += e.deltaY
-    else: e.preventDefault(); bypassBodyLockScroll(e.deltaY)
-
-  el.addEventListener('wheel', handleWheelInside, {capture:true, passive:false})
-  window.addEventListener('wheel', handleWheelOutside, {capture:true, passive:false})
-  cleanup: remove both
+```ts
+const prefillBillItems: BillItem[] = items.map((item: any) => {
+  const quantity = Number(item.quantity) || 1;
+  const unitPrice = Number(item.unitPrice ?? item.unit_price_before_tax ?? 0) || 0;
+  const taxRate = Number(item.taxRate ?? item.taxPercent ?? item.tax_percentage ?? 0) || 0;
+  const computed = Math.round(quantity * unitPrice * (1 + taxRate / 100) * 100) / 100;
+  return {
+    name: item.itemName || item.name || "",
+    quantity: String(item.quantity || 1),
+    unitType: normalizeUnitType(item.unitType),
+    unitPrice: String(item.unitPrice ?? item.unit_price_before_tax ?? 0),
+    taxRate: String(item.taxRate ?? item.taxPercent ?? item.tax_percentage ?? ""),
+    itemPrice: String(computed),
+  };
+});
 ```
 
-No other files change.
+### Change 2 — Edit receipt prefill (`handleEditReceipt`, ~line 897)
+
+Apply the same computation so the displayed Item Price stays tax-inclusive on reopen, regardless of how `totalPrice` was stored:
+
+```ts
+const prefillBillItems: BillItem[] = (receipt.items || []).map((item) => {
+  const quantity = Number(item.quantity) || 1;
+  const unitPrice = Number(item.unitPrice) || 0;
+  const taxRate = Number(item.taxRate) || 0;
+  const computed = Math.round(quantity * unitPrice * (1 + taxRate / 100) * 100) / 100;
+  return {
+    name: item.itemName || "",
+    quantity: String(item.quantity ?? "1"),
+    unitType: normalizeUnitType(item.unitType),
+    unitPrice: String(item.unitPrice ?? ""),
+    taxRate: String(item.taxRate ?? ""),
+    itemPrice: String(computed),
+  };
+});
+```
+
+## Scope
+
+- File: `src/pages/Expenses.tsx` only.
+- Frontend / presentation only — no API or submission logic changes (submission already sends `parseFloat(item.itemPrice)` as `total`, which now correctly includes tax from the start).

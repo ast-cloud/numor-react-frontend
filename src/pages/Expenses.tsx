@@ -852,14 +852,20 @@ const Expenses = () => {
         }
 
         // Map parsed items to bill items
-        const prefillBillItems: BillItem[] = items.map((item: any) => ({
-          name: item.itemName || item.name || "",
-          quantity: String(item.quantity || 1),
-          unitType: normalizeUnitType(item.unitType),
-          unitPrice: String(item.unitPrice ?? item.unit_price_before_tax ?? 0),
-          taxRate: String(item.taxRate ?? item.taxPercent ?? item.tax_percentage ?? ""),
-          itemPrice: String(item.total ?? item.totalPrice ?? item.itemPrice ?? ""),
-        }));
+        const prefillBillItems: BillItem[] = items.map((item: any) => {
+          const quantity = Number(item.quantity) || 1;
+          const unitPrice = Number(item.unitPrice ?? item.unit_price_before_tax ?? 0) || 0;
+          const taxRate = Number(item.taxRate ?? item.taxPercent ?? item.tax_percentage ?? 0) || 0;
+          const computed = Math.round(quantity * unitPrice * (1 + taxRate / 100) * 100) / 100;
+          return {
+            name: item.itemName || item.name || "",
+            quantity: String(item.quantity || 1),
+            unitType: normalizeUnitType(item.unitType),
+            unitPrice: String(item.unitPrice ?? item.unit_price_before_tax ?? 0),
+            taxRate: String(item.taxRate ?? item.taxPercent ?? item.tax_percentage ?? ""),
+            itemPrice: String(computed),
+          };
+        });
 
         // Set bill common fields
         setBillCommon({
@@ -894,14 +900,20 @@ const Expenses = () => {
 
   // Edit a receipt: prefill the bill-mode dialog with existing expense data
   const handleEditReceipt = (receipt: ExpenseAPI) => {
-    const prefillBillItems: BillItem[] = (receipt.items || []).map((item) => ({
-      name: item.itemName || "",
-      quantity: String(item.quantity ?? "1"),
-      unitType: normalizeUnitType(item.unitType),
-      unitPrice: String(item.unitPrice ?? ""),
-      taxRate: String(item.taxRate ?? ""),
-      itemPrice: String(item.totalPrice ?? ""),
-    }));
+    const prefillBillItems: BillItem[] = (receipt.items || []).map((item) => {
+      const quantity = Number(item.quantity) || 1;
+      const unitPrice = Number(item.unitPrice) || 0;
+      const taxRate = Number(item.taxRate) || 0;
+      const computed = Math.round(quantity * unitPrice * (1 + taxRate / 100) * 100) / 100;
+      return {
+        name: item.itemName || "",
+        quantity: String(item.quantity ?? "1"),
+        unitType: normalizeUnitType(item.unitType),
+        unitPrice: String(item.unitPrice ?? ""),
+        taxRate: String(item.taxRate ?? ""),
+        itemPrice: String(computed),
+      };
+    });
 
     const billDate = receipt.expenseDate
       ? new Date(receipt.expenseDate).toISOString().split("T")[0]
