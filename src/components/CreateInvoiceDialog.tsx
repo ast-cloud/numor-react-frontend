@@ -370,9 +370,29 @@ const CreateInvoiceDialog = ({
   }, [open, editInvoiceId, isEditMode]);
 
   const handleClientSelect = (clientId: string) => {
+    if (clientId === "__add_new__") {
+      setAddClientOpen(true);
+      return;
+    }
     const client = savedClients.find((c) => c.id === clientId);
     if (!client) return;
     setSelectedClientId(clientId);
+    setFormData((prev) => ({
+      ...prev,
+      clientName: client.name || "",
+      clientEmail: client.email || "",
+      clientStreetAddress: client.streetAddress || "",
+      clientCity: client.city || "",
+      clientState: client.state || "",
+      clientZip: client.zipCode || "",
+      clientCountry: client.country || "",
+    }));
+    setClientExpanded(false);
+  };
+
+  const handleClientCreated = (client: ClientData) => {
+    setSavedClients((prev) => [client, ...prev]);
+    setSelectedClientId(client.id);
     setFormData((prev) => ({
       ...prev,
       clientName: client.name || "",
