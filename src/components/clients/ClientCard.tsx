@@ -106,7 +106,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs">
                   <User className="w-3 h-3 text-muted-foreground" />
-                  Name
+                  Name *
                 </Label>
                 {isEditing ? (
                   <Input
