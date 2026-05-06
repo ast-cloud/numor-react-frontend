@@ -75,6 +75,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
     setClients([newClient, ...clients]);
     backupRef.current = { ...newClient };
     setEditingClientId(newClient.id);
+    setNewClientId(newClient.id);
   };
 
   const handleEditClient = (id: string) => {
