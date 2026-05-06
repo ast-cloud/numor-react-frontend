@@ -44,7 +44,20 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
           <div className="flex gap-2 shrink-0 ml-3">
             {isEditing ? (
               <>
-                <Button size="sm" className="h-7 text-xs" onClick={onSave}>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={onSave}
+                  disabled={
+                    !client.name.trim() ||
+                    !client.email.trim() ||
+                    !client.streetAddress.trim() ||
+                    !client.city.trim() ||
+                    !client.state.trim() ||
+                    !client.zipCode.trim() ||
+                    !client.country.trim()
+                  }
+                >
                   <Save className="w-3 h-3 mr-1.5" />
                   Save
                 </Button>
