@@ -646,7 +646,7 @@ const CreateInvoiceDialog = ({
       const payload = buildPayload(undefined);
       const finalPayload =
         isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
-      const data = await createInvoice(finalPayload);
+      const data = await createInvoice(finalPayload, { sendEmail });
       if (data?.pdfStatus === "NOT_STARTED") {
         toast({
           title: "Saved as draft",
