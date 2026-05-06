@@ -737,20 +737,29 @@ const CreateInvoiceDialog = ({
                 <InvoicePreview formData={formData} />
               </div>
             </div>
-            <div className="flex justify-end gap-3 p-6 border-t flex-shrink-0">
-              <Button variant="outline" onClick={handleBackToForm}>
-                Back to Edit
-              </Button>
-              <Button onClick={handleConfirmInvoice} disabled={confirmingInvoice}>
-                {confirmingInvoice ? (
-                  <>
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Generating PDF...
-                  </>
-                ) : (
-                  "Confirm & Create Invoice"
-                )}
-              </Button>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 border-t flex-shrink-0">
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <Checkbox
+                  checked={sendEmail}
+                  onCheckedChange={(c) => setSendEmail(c === true)}
+                />
+                Share Invoice with client on email
+              </label>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={handleBackToForm}>
+                  Back to Edit
+                </Button>
+                <Button onClick={handleConfirmInvoice} disabled={confirmingInvoice}>
+                  {confirmingInvoice ? (
+                    <>
+                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    "Confirm & Create Invoice"
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
