@@ -248,12 +248,34 @@ const ChatBot = () => {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 && (
-              <div className="text-center text-muted-foreground text-sm mt-12">
-                <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
-                  <MessageCircle className="w-6 h-6" />
+              <div className="relative h-full flex flex-col items-center justify-center text-center text-muted-foreground text-sm overflow-hidden">
+                {/* Floating ambient bubbles */}
+                <div className="pointer-events-none absolute inset-0">
+                  <span className="absolute left-[12%] top-[20%] w-2 h-2 rounded-full bg-primary/30 animate-[float_4s_ease-in-out_infinite]" />
+                  <span className="absolute left-[78%] top-[28%] w-1.5 h-1.5 rounded-full bg-primary/40 animate-[float_5s_ease-in-out_infinite] [animation-delay:0.6s]" />
+                  <span className="absolute left-[22%] top-[72%] w-1.5 h-1.5 rounded-full bg-primary/30 animate-[float_4.5s_ease-in-out_infinite] [animation-delay:1.2s]" />
+                  <span className="absolute left-[85%] top-[78%] w-2 h-2 rounded-full bg-primary/30 animate-[float_5.5s_ease-in-out_infinite] [animation-delay:0.3s]" />
+                  <span className="absolute left-[50%] top-[12%] w-1 h-1 rounded-full bg-primary/40 animate-[float_3.8s_ease-in-out_infinite] [animation-delay:1.5s]" />
                 </div>
-                <p className="font-medium text-foreground">Hi there! 👋</p>
-                <p className="mt-1 text-xs">How can I help you today?</p>
+
+                {/* Pulsing icon with rings */}
+                <div className="relative mb-3">
+                  <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                  <span className="absolute -inset-2 rounded-full border border-primary/20 animate-[pulse_2s_ease-in-out_infinite]" />
+                  <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 text-primary animate-[float_3s_ease-in-out_infinite]" />
+                  </div>
+                </div>
+
+                <p className="font-medium text-foreground animate-fade-in">Hi there! 👋</p>
+                <p className="mt-1 text-xs animate-fade-in [animation-delay:0.2s]">How can I help you today?</p>
+
+                {/* Animated typing dots */}
+                <div className="mt-4 flex gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
               </div>
             )}
             {messages.map((message) => (
