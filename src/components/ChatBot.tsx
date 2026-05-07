@@ -199,7 +199,7 @@ const ChatBot = () => {
         )}
         aria-label="Open chat assistant"
       >
-        <MessageCircle className="w-5 h-5" />
+        <BotMascot size={20} />
       </button>
 
       {/* Chat Popup */}
@@ -216,7 +216,7 @@ const ChatBot = () => {
           <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border-b border-border/50">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <MessageCircle className="w-4 h-4 text-primary" />
+                <BotMascot size={16} className="text-primary" />
               </div>
               <div>
                 <span className="font-medium text-sm text-foreground">Numo AI</span>
@@ -264,7 +264,7 @@ const ChatBot = () => {
                   <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
                   <span className="absolute -inset-2 rounded-full border border-primary/20 animate-[pulse_2s_ease-in-out_infinite]" />
                   <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-                    <MessageCircle className="w-6 h-6 text-primary" />
+                    <BotMascot size={24} className="text-primary" />
                   </div>
                 </div>
 
