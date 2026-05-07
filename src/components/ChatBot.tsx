@@ -219,7 +219,7 @@ const ChatBot = () => {
                 <BotMascot size={16} className="text-primary" />
               </div>
             <div>
-              <span className="font-medium text-sm text-foreground">Numo Knows</span>
+              <span className="font-medium text-sm text-foreground">Numo Knows 😉</span>
             </div>
             </div>
             <button
@@ -272,7 +272,7 @@ const ChatBot = () => {
                   </div>
                 </div>
 
-                <p className="font-medium text-foreground animate-fade-in">Hey there! Ready to clear some financial headspace?</p>
+                <p className="font-medium text-foreground animate-fade-in">Hey there! Ready to clear some financial headspace? 👋</p>
 
                 {/* Animated typing dots */}
                 <div className="mt-4 flex gap-1">
