@@ -218,10 +218,9 @@ const ChatBot = () => {
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <BotMascot size={16} className="text-primary" />
               </div>
-              <div>
-                <span className="font-medium text-sm text-foreground">Numo AI</span>
-                <p className="text-xs text-muted-foreground">Ask me anything</p>
-              </div>
+            <div>
+              <span className="font-medium text-sm text-foreground">Numo Knows</span>
+            </div>
             </div>
             <button
               onClick={() => messages.length === 0 ? setIsOpen(false) : setShowConfirm(true)}
