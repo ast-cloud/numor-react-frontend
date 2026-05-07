@@ -57,7 +57,11 @@ const ChatBot = () => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        setShowConfirm(true);
+        if (messages.length === 0) {
+          setIsOpen(false);
+        } else {
+          setShowConfirm(true);
+        }
       }
     };
     document.addEventListener("keydown", handleEscape);
@@ -219,7 +223,7 @@ const ChatBot = () => {
               </div>
             </div>
             <button
-              onClick={() => setShowConfirm(true)}
+              onClick={() => messages.length === 0 ? setIsOpen(false) : setShowConfirm(true)}
               className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               aria-label="Close chat"
             >
