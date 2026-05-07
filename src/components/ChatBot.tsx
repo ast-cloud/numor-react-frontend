@@ -263,7 +263,7 @@ const ChatBot = () => {
                   <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
                   <span className="absolute -inset-2 rounded-full border border-primary/20 animate-[pulse_2s_ease-in-out_infinite]" />
                   <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-                    <MessageCircle className="w-6 h-6 text-primary animate-[float_3s_ease-in-out_infinite]" />
+                    <MessageCircle className="w-6 h-6 text-primary" />
                   </div>
                 </div>
 
