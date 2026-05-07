@@ -223,7 +223,7 @@ const ChatBot = () => {
               </div>
             </div>
             <button
-              onClick={() => setShowConfirm(true)}
+              onClick={() => messages.length === 0 ? setIsOpen(false) : setShowConfirm(true)}
               className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               aria-label="Close chat"
             >
