@@ -219,7 +219,7 @@ const ChatBot = () => {
                 <BotMascot size={16} className="text-primary" />
               </div>
             <div>
-              <span className="font-medium text-sm text-foreground">Numo Knows 😉</span>
+              <span className="font-medium text-sm text-foreground">Numo Knows 😜</span>
             </div>
             </div>
             <button
