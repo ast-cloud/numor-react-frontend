@@ -249,7 +249,7 @@ const ChatBot = () => {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 && (
-              <div className="relative h-full flex flex-col items-center justify-center text-center text-muted-foreground text-sm overflow-hidden">
+              <div className="relative min-h-full flex flex-col items-center justify-center text-center text-muted-foreground text-sm overflow-hidden">
                 {/* Floating ambient bubbles */}
                 <div className="pointer-events-none absolute inset-0">
                   <span className="absolute left-[12%] top-[20%] w-2 h-2 rounded-full bg-primary/30 animate-[float_4s_ease-in-out_infinite]" />
