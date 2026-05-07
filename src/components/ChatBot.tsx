@@ -267,8 +267,7 @@ const ChatBot = () => {
                   </div>
                 </div>
 
-                <p className="font-medium text-foreground animate-fade-in">Hi there! 👋</p>
-                <p className="mt-1 text-xs animate-fade-in [animation-delay:0.2s]">How can I help you today?</p>
+                <p className="font-semibold text-foreground text-base animate-fade-in">Numo AI</p>
 
                 {/* Animated typing dots */}
                 <div className="mt-4 flex gap-1">
