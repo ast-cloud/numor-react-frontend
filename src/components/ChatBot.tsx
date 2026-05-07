@@ -218,7 +218,7 @@ const ChatBot = () => {
                 <MessageCircle className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <span className="font-medium text-sm text-foreground">Assistant</span>
+                <span className="font-medium text-sm text-foreground">Numo AI</span>
                 <p className="text-xs text-muted-foreground">Ask me anything</p>
               </div>
             </div>
