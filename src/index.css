@@ -125,6 +125,17 @@
   h6 {
     font-family: var(--font-display);
   }
+
+  /* Subtle hover micro-interaction on editable form fields (only when not focused/disabled) */
+  input:not([disabled]):not([readonly]):not(:focus):hover,
+  textarea:not([disabled]):not([readonly]):not(:focus):hover,
+  select:not([disabled]):not(:focus):hover,
+  [role="combobox"]:not([data-disabled]):not([data-state="open"]):hover {
+    border-color: hsl(var(--primary) / 0.5);
+    background-color: hsl(var(--primary) / 0.03);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.06);
+    transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+  }
 }
 
 @layer utilities {
