@@ -199,8 +199,8 @@ const ChatBot = () => {
         )}
         aria-label="Open chat assistant"
       >
-        {/* Pulsing ring */}
-        <span className="absolute inset-0 rounded-full border-2 border-primary/60 animate-ping opacity-60 pointer-events-none" />
+        {/* Soft breathing halo (calm, slow) */}
+        <span className="absolute inset-0 rounded-full bg-primary/15 blur-md animate-pulse-glow pointer-events-none" style={{ animationDuration: "4s" }} />
         {/* Soft glow halo */}
         <span className="absolute inset-0 rounded-full bg-primary/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         <BotMascot
