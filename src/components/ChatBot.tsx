@@ -193,9 +193,8 @@ const ChatBot = () => {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(true)}
-        style={{ right: "calc(1.5rem + var(--removed-body-scroll-bar-size, 0px))" }}
         className={cn(
-          "group fixed bottom-6 z-50 w-12 h-12 rounded-full bg-card text-primary border-2 border-primary shadow-glow flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 hover:shadow-xl hover:bg-card active:scale-95",
+          "group fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-card text-primary border-2 border-primary shadow-glow flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 hover:shadow-xl hover:bg-card active:scale-95",
           isOpen && "hidden"
         )}
         aria-label="Open chat assistant"
