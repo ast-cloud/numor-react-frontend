@@ -194,12 +194,12 @@ const ChatBot = () => {
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-secondary text-foreground shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl hover:bg-secondary/80",
+          "fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-glow ring-2 ring-primary/30 flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-xl hover:bg-primary/90",
           isOpen && "hidden"
         )}
         aria-label="Open chat assistant"
       >
-        <BotMascot size={20} />
+        <BotMascot size={26} />
       </button>
 
       {/* Chat Popup */}
