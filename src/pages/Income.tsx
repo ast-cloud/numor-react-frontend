@@ -581,7 +581,7 @@ const Income = () => {
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-0 text-muted-foreground data-[state=active]:text-foreground font-medium"
+              className="group bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-0 text-muted-foreground data-[state=active]:text-foreground font-medium transition-colors duration-200 hover:text-foreground relative"
             >
               {tab.label}
             </TabsTrigger>
