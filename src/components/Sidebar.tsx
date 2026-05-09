@@ -39,7 +39,6 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const { user, activeRole, logout } = useAuth();
   const { collapsed, toggle, setHovered, effectiveCollapsed: sidebarEffectiveCollapsed } = useSidebarState();
 
-  // When rendered inside the mobile sheet, we treat it as "mobile".
   const inMobileSheet = typeof onMobileClose === "function";
   const effectiveCollapsed = inMobileSheet ? false : sidebarEffectiveCollapsed;
 
@@ -55,50 +54,57 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
     if (inMobileSheet) onMobileClose?.();
   };
 
+  // Label fades; icons stay anchored at the same x in both states.
+  const labelClass = `whitespace-nowrap transition-opacity duration-200 ${
+    effectiveCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+  }`;
+
   return (
     <aside
       onMouseLeave={() => { if (!inMobileSheet) setHovered(false); }}
-      className={`${inMobileSheet ? "w-full" : effectiveCollapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-all duration-300`}
+      className={`${inMobileSheet ? "w-full" : effectiveCollapsed ? "w-16" : "w-64"} h-screen bg-card border-r border-border flex flex-col transition-[width] duration-300 overflow-hidden`}
     >
-      {/* Header with Logo and Controls */}
-      <div className={`p-4 border-b border-border flex items-center ${effectiveCollapsed ? "justify-start" : "justify-between"}`}>
-        {!effectiveCollapsed && <h1 className="text-xl font-display font-bold text-primary">Numor</h1>}
-
+      {/* Header with Logo and Controls — fixed left padding so toggle stays put */}
+      <div className="h-16 px-3 border-b border-border flex items-center gap-3">
         {inMobileSheet ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onMobileClose?.()}
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Close sidebar"
-          >
-            <X className="w-5 h-5" />
-          </Button>
+          <>
+            <h1 className="text-xl font-display font-bold text-primary">Numor</h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onMobileClose?.()}
+              className="ml-auto text-muted-foreground hover:text-foreground"
+              aria-label="Close sidebar"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </>
         ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggle}
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Toggle sidebar"
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggle}
+              className="text-muted-foreground hover:text-foreground w-10 h-10 flex-shrink-0"
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            <h1 className={`text-xl font-display font-bold text-primary ${labelClass}`}>Numor</h1>
+          </>
         )}
       </div>
 
       {/* User Profile Section */}
-      <div className="p-4 border-b border-border">
+      <div className="p-3 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <User className="w-5 h-5 text-primary" />
           </div>
-          {!effectiveCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{user?.name || "User"}</p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email || ""}</p>
-            </div>
-          )}
+          <div className={`flex-1 min-w-0 ${labelClass}`}>
+            <p className="text-sm font-medium text-foreground truncate">{user?.name || "User"}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email || ""}</p>
+          </div>
         </div>
       </div>
 
@@ -107,74 +113,65 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
         className="flex flex-col flex-1 min-h-0"
         onMouseEnter={() => { if (!inMobileSheet && collapsed) setHovered(true); }}
       >
-      {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-1">
-          {navItems.map((item) => {
-            const isExactMatch = item.url === "/sme/dashboard" || item.url === "/ca/dashboard";
-            const isActive = isExactMatch ? location.pathname === item.url : location.pathname.startsWith(item.url);
+        {/* Navigation */}
+        <nav className="flex-1 p-3">
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const isExactMatch = item.url === "/sme/dashboard" || item.url === "/ca/dashboard";
+              const isActive = isExactMatch ? location.pathname === item.url : location.pathname.startsWith(item.url);
 
-            return (
-              <li key={item.title} className={effectiveCollapsed ? "flex justify-center" : ""}>
-                <NavLink
-                  to={item.url}
-                  onClick={handleNavClick}
-                  className={`flex items-center rounded-lg text-sm font-medium transition-colors ${
-                    effectiveCollapsed ? "justify-center w-10 h-10" : "gap-3 px-3 py-2.5 w-full"
-                  } ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                  title={effectiveCollapsed ? item.title : undefined}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {!effectiveCollapsed && item.title}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+              return (
+                <li key={item.title}>
+                  <NavLink
+                    to={item.url}
+                    onClick={handleNavClick}
+                    className={`flex items-center gap-3 h-10 px-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                    title={effectiveCollapsed ? item.title : undefined}
+                  >
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span className={labelClass}>{item.title}</span>
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-      {/* Bottom Section: Settings & Logout */}
-      <div className={`p-4 border-t border-border space-y-1 ${effectiveCollapsed ? "flex flex-col items-center" : ""}`}>
-        <NavLink
-          to={activeRole === "CA_USER" ? "/ca/settings" : "/sme/settings"}
-          onClick={handleNavClick}
-          className={({ isActive }) =>
-            `flex items-center rounded-lg text-sm font-medium transition-colors ${
-              effectiveCollapsed ? "justify-center w-10 h-10" : "gap-3 px-3 py-2.5 w-full"
-            } ${
-              isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`
-          }
-          title={effectiveCollapsed ? "Settings" : undefined}
-        >
-          <Settings className="w-5 h-5 flex-shrink-0" />
-          {!effectiveCollapsed && "Settings"}
-        </NavLink>
+        {/* Bottom Section: Settings & Logout */}
+        <div className="p-3 border-t border-border space-y-1">
+          <NavLink
+            to={activeRole === "CA_USER" ? "/ca/settings" : "/sme/settings"}
+            onClick={handleNavClick}
+            className={({ isActive }) =>
+              `flex items-center gap-3 h-10 px-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`
+            }
+            title={effectiveCollapsed ? "Settings" : undefined}
+          >
+            <Settings className="w-5 h-5 flex-shrink-0" />
+            <span className={labelClass}>Settings</span>
+          </NavLink>
 
-        <Button
-          variant="ghost"
-          size={effectiveCollapsed ? "icon" : "default"}
-          className={`text-muted-foreground hover:text-destructive hover:bg-destructive/10 ${
-            effectiveCollapsed ? "w-10 h-10 p-0" : "w-full justify-start gap-3"
-          }`}
-          onClick={handleLogout}
-          title={effectiveCollapsed ? "Logout" : undefined}
-        >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!effectiveCollapsed && "Logout"}
-        </Button>
-      </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title={effectiveCollapsed ? "Logout" : undefined}
+            className="flex items-center gap-3 h-10 px-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <span className={labelClass}>Logout</span>
+          </button>
+        </div>
       </div>
     </aside>
   );
 };
 
 export default Sidebar;
-
-
