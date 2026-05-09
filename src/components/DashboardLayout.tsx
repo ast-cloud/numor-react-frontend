@@ -65,13 +65,13 @@ const DashboardContent = () => {
       <div className="absolute top-4 right-4 flex items-center gap-2 z-50">
         {/* Profile Toggle - Only for CA users */}
         {isCA && (
-          <div className="flex items-center bg-muted rounded-full p-0.5">
+          <div className="flex items-center bg-muted rounded-full p-0.5 group/switch">
             <button
               onClick={handleSwitchToRegular}
               className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ease-in-out ${
                 activeRole === "SME_USER"
-                  ? "bg-primary text-primary-foreground shadow-sm scale-105"
-                  : "bg-transparent text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm scale-105 hover:scale-[1.08] hover:shadow-md"
+                  : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 hover:scale-[1.03]"
               }`}
             >
               Regular
@@ -80,8 +80,8 @@ const DashboardContent = () => {
               onClick={handleSwitchToCA}
               className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ease-in-out ${
                 activeRole === "CA_USER"
-                  ? "bg-primary text-primary-foreground shadow-sm scale-105"
-                  : "bg-transparent text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm scale-105 hover:scale-[1.08] hover:shadow-md"
+                  : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 hover:scale-[1.03]"
               }`}
             >
               CA
