@@ -250,6 +250,8 @@ const createEmptyItem = (orgCountry?: string): ExpenseItem => {
 
 const Expenses = () => {
   const { toast } = useToast();
+  const { can } = useAuth();
+  const canWriteExpense = can("expense", "write");
   const queryClient = useQueryClient();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [apiExpenses, setApiExpenses] = useState<ExpenseAPI[]>([]);
