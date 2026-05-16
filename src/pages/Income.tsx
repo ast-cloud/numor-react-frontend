@@ -224,6 +224,8 @@ const Income = () => {
   const [clientsData, setClientsData] = useState<ClientData[]>([]);
   const [orgCountry, setOrgCountry] = useState<string>("US");
   const { toast } = useToast();
+  const { can } = useAuth();
+  const canWriteIncome = can("income", "write");
 
   useEffect(() => {
     fetchCurrentOrganization()
@@ -561,8 +563,8 @@ const Income = () => {
           <Button variant="outline" size="icon" title="Manage Clients" onClick={() => navigate("/sme/income/clients")}>
             <Users className="h-4 w-4" />
           </Button>
-          <CreateInvoiceDialog onInvoiceCreated={loadInvoices} />
-          {editDraftId && (
+          {canWriteIncome && <CreateInvoiceDialog onInvoiceCreated={loadInvoices} />}
+          {canWriteIncome && editDraftId && (
             <CreateInvoiceDialog
               editInvoiceId={editDraftId}
               editOpen={editDraftOpen}
