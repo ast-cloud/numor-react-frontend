@@ -17,16 +17,16 @@ import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 
 const regularNavItems = [
-  { title: "Dashboard", url: "/sme/dashboard", icon: LayoutDashboard },
-  { title: "Expenses", url: "/sme/expenses", icon: Receipt },
-  { title: "Income", url: "/sme/income", icon: FileText },
-  { title: "CA Connect", url: "/sme/ca-connect", icon: Users },
+  { title: "Dashboard", url: "/sme/dashboard", icon: LayoutDashboard, module: "dashboard" as const },
+  { title: "Expenses", url: "/sme/expenses", icon: Receipt, module: "expense" as const },
+  { title: "Income", url: "/sme/income", icon: FileText, module: "income" as const },
+  { title: "CA Connect", url: "/sme/ca-connect", icon: Users, module: null },
 ];
 
 const caNavItems = [
-  { title: "Dashboard", url: "/ca/dashboard", icon: LayoutDashboard },
-  { title: "Availability", url: "/ca/availability", icon: Calendar },
-  { title: "Bookings", url: "/ca/bookings", icon: CalendarCheck },
+  { title: "Dashboard", url: "/ca/dashboard", icon: LayoutDashboard, module: null },
+  { title: "Availability", url: "/ca/availability", icon: Calendar, module: null },
+  { title: "Bookings", url: "/ca/bookings", icon: CalendarCheck, module: null },
 ];
 
 type SidebarProps = {
@@ -36,13 +36,17 @@ type SidebarProps = {
 const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, activeRole, logout } = useAuth();
+  const { user, activeRole, logout, isSubAccount, can } = useAuth();
   const { collapsed, toggle, setHovered, effectiveCollapsed: sidebarEffectiveCollapsed } = useSidebarState();
 
   const inMobileSheet = typeof onMobileClose === "function";
   const effectiveCollapsed = inMobileSheet ? false : sidebarEffectiveCollapsed;
 
-  const navItems = activeRole === "CA_USER" ? caNavItems : regularNavItems;
+  const baseItems = activeRole === "CA_USER" ? caNavItems : regularNavItems;
+  const navItems = isSubAccount
+    ? baseItems.filter((it) => it.module !== null && can(it.module, "read"))
+    : baseItems;
+  const showSettings = !isSubAccount || can("settings", "read");
 
   const handleLogout = () => {
     logout();
