@@ -147,6 +147,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
         {/* Bottom Section: Settings & Logout */}
         <div className="p-3 border-t border-border space-y-1">
+          {showSettings && (
           <NavLink
             to={activeRole === "CA_USER" ? "/ca/settings" : "/sme/settings"}
             onClick={handleNavClick}
@@ -162,6 +163,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
             <Settings className="w-5 h-5 flex-shrink-0" />
             <span className={labelClass}>Settings</span>
           </NavLink>
+          )}
 
           <button
             type="button"
