@@ -1,14 +1,16 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from "react";
 import { getToken, clearToken } from "@/lib/api/authToken";
 import { fetchCurrentUser } from "@/lib/api/user";
 import { login as apiLogin } from "@/lib/api/auth";
-import type { UserRole } from "@/lib/authStore";
+import type { UserRole, ModulePermissions, ModuleKey } from "@/lib/authStore";
+import { can as canCheck, normalizePermissions } from "@/lib/permissions";
 
 export interface AuthUser {
   name: string;
   email: string;
   company?: string;
   roles: UserRole[];
+  permissions: ModulePermissions | null;
 }
 
 interface LoginResult {
@@ -21,11 +23,13 @@ interface AuthContextType {
   user: AuthUser | null;
   activeRole: UserRole | null;
   isLoading: boolean;
+  isSubAccount: boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => void;
   hasRole: (role: UserRole) => boolean;
   setActiveRole: (role: UserRole) => void;
   refreshUser: () => Promise<void>;
+  can: (module: ModuleKey, action: "read" | "write") => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -39,6 +43,7 @@ const mapBackendRole = (role: string): UserRole => {
     case "CA": return "CA_USER";
     case "SME_USER": return "SME_USER";
     case "REGULAR_USER": return "SME_USER";
+    case "SUB_ACCOUNT": return "SUB_ACCOUNT";
     default: return "SME_USER";
   }
 };
@@ -54,6 +59,8 @@ const parseRoles = (data: Record<string, unknown>): UserRole[] => {
 };
 
 const resolveActiveRole = (roles: UserRole[]): UserRole => {
+  if (roles.includes("SUB_ACCOUNT")) return "SUB_ACCOUNT";
+
   const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as UserRole | null;
   const canRestoreSavedRole =
     !!saved &&
@@ -74,11 +81,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await fetchCurrentUser();
       const roles = parseRoles(data);
+      const permissions = roles.includes("SUB_ACCOUNT")
+        ? normalizePermissions(data.permissions)
+        : null;
       const authUser: AuthUser = {
         name: data.name || "",
         email: data.email || "",
         company: data.company || data.organization?.name || "",
         roles,
+        permissions,
       };
       setUser(authUser);
       const role = resolveActiveRole(roles);
@@ -133,6 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const setActiveRole = useCallback((role: UserRole) => {
     if (!user) return;
+    if (user.roles.includes("SUB_ACCOUNT")) return; // sub-accounts cannot switch
 
     const canSwitchToRole =
       user.roles.includes(role) ||
@@ -144,8 +156,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  const isSubAccount = useMemo(() => user?.roles.includes("SUB_ACCOUNT") ?? false, [user]);
+
+  const can = useCallback(
+    (module: ModuleKey, action: "read" | "write") =>
+      canCheck(user?.permissions ?? null, module, action, isSubAccount),
+    [user, isSubAccount],
+  );
+
   return (
-    <AuthContext.Provider value={{ user, activeRole, isLoading, login, logout, hasRole, setActiveRole, refreshUser }}>
+    <AuthContext.Provider value={{ user, activeRole, isLoading, isSubAccount, login, logout, hasRole, setActiveRole, refreshUser, can }}>
       {children}
     </AuthContext.Provider>
   );
