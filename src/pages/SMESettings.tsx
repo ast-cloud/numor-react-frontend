@@ -318,10 +318,12 @@ const SMESettings = () => {
             <CardDescription className="text-sm">Your business information for invoices and documents</CardDescription>
           </div>
           {!isEditingCompany ? (
+            canWriteSettings && (
             <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => setIsEditingCompany(true)}>
               <Pencil className="w-3 h-3 mr-1.5" />
               Edit
             </Button>
+            )
           ) : (
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={handleCancelCompany}>
@@ -554,6 +556,9 @@ const SMESettings = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Team & Permissions (SME owners only) */}
+      {!isSubAccount && <SubAccountsSection />}
 
     </div>
   );
