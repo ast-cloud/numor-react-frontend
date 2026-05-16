@@ -226,10 +226,12 @@ const SMESettings = () => {
             <CardDescription className="text-sm">Your personal details</CardDescription>
           </div>
           {!isEditingProfile ? (
+            canWriteSettings && (
             <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => setIsEditingProfile(true)}>
               <Pencil className="w-3 h-3 mr-1.5" />
               Edit
             </Button>
+            )
           ) : (
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={handleCancelProfile}>
