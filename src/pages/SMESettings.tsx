@@ -12,6 +12,7 @@ import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import CompanyLogoUpload from "@/components/CompanyLogoUpload";
 import { INDIAN_STATES } from "@/lib/constants";
+import SubAccountsSection from "@/components/SubAccountsSection";
 
 const COUNTRIES = [
   "India",
@@ -48,8 +49,9 @@ const COUNTRIES = [
 ];
 
 const SMESettings = () => {
-  const { user } = useAuth();
+  const { user, isSubAccount, can } = useAuth();
   const { toast } = useToast();
+  const canWriteSettings = can("settings", "write");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
