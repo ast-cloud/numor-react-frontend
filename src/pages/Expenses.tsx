@@ -28,6 +28,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay, startOfWeek, startOfMonth, startOfQuarter, endOfDay, isWithinInterval } from "date-fns";
 import { fetchCurrentOrganization } from "@/lib/api/user";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
