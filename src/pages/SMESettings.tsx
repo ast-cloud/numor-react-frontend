@@ -12,6 +12,7 @@ import { User, Building2, Mail, Pencil, Save, X, Phone, FileText, MapPin, Upload
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import CompanyLogoUpload from "@/components/CompanyLogoUpload";
 import { INDIAN_STATES } from "@/lib/constants";
+import SubAccountsSection from "@/components/SubAccountsSection";
 
 const COUNTRIES = [
   "India",
@@ -48,8 +49,9 @@ const COUNTRIES = [
 ];
 
 const SMESettings = () => {
-  const { user } = useAuth();
+  const { user, isSubAccount, can } = useAuth();
   const { toast } = useToast();
+  const canWriteSettings = can("settings", "write");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
@@ -224,10 +226,12 @@ const SMESettings = () => {
             <CardDescription className="text-sm">Your personal details</CardDescription>
           </div>
           {!isEditingProfile ? (
+            canWriteSettings && (
             <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => setIsEditingProfile(true)}>
               <Pencil className="w-3 h-3 mr-1.5" />
               Edit
             </Button>
+            )
           ) : (
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={handleCancelProfile}>
@@ -314,10 +318,12 @@ const SMESettings = () => {
             <CardDescription className="text-sm">Your business information for invoices and documents</CardDescription>
           </div>
           {!isEditingCompany ? (
+            canWriteSettings && (
             <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => setIsEditingCompany(true)}>
               <Pencil className="w-3 h-3 mr-1.5" />
               Edit
             </Button>
+            )
           ) : (
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={handleCancelCompany}>
@@ -550,6 +556,9 @@ const SMESettings = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Team & Permissions (SME owners only) */}
+      {!isSubAccount && <SubAccountsSection />}
 
     </div>
   );

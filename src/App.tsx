@@ -36,6 +36,8 @@ import AuthCallback from "./pages/AuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleGuard from "./components/RoleGuard";
+import PermissionGuard from "./components/PermissionGuard";
+import NoAccess from "./pages/NoAccess";
 
 const queryClient = new QueryClient();
 
@@ -66,12 +68,13 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute><RoleGuard role="ADMIN"><AdminDashboard /></RoleGuard></ProtectedRoute>} />
             {/* SME Routes */}
             <Route path="/sme" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-              <Route path="dashboard" element={<DashboardHome />} />
-              <Route path="expenses" element={<Expenses />} />
-              <Route path="income" element={<Income />} />
-              <Route path="income/clients" element={<Clients />} />
-              <Route path="ca-connect" element={<CAConnect />} />
-              <Route path="settings" element={<SMESettings />} />
+              <Route path="dashboard" element={<PermissionGuard module="dashboard"><DashboardHome /></PermissionGuard>} />
+              <Route path="expenses" element={<PermissionGuard module="expense"><Expenses /></PermissionGuard>} />
+              <Route path="income" element={<PermissionGuard module="income"><Income /></PermissionGuard>} />
+              <Route path="income/clients" element={<PermissionGuard module="income"><Clients /></PermissionGuard>} />
+              <Route path="ca-connect" element={<RoleGuard role="SME_USER"><CAConnect /></RoleGuard>} />
+              <Route path="settings" element={<PermissionGuard module="settings"><SMESettings /></PermissionGuard>} />
+              <Route path="no-access" element={<NoAccess />} />
             </Route>
             {/* CA Routes */}
             <Route path="/ca" element={<ProtectedRoute><RoleGuard role="CA_USER"><DashboardLayout /></RoleGuard></ProtectedRoute>}>

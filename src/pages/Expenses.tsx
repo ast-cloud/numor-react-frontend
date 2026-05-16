@@ -28,6 +28,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay, startOfWeek, startOfMonth, startOfQuarter, endOfDay, isWithinInterval } from "date-fns";
 import { fetchCurrentOrganization } from "@/lib/api/user";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
@@ -249,6 +250,8 @@ const createEmptyItem = (orgCountry?: string): ExpenseItem => {
 
 const Expenses = () => {
   const { toast } = useToast();
+  const { can } = useAuth();
+  const canWriteExpense = can("expense", "write");
   const queryClient = useQueryClient();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [apiExpenses, setApiExpenses] = useState<ExpenseAPI[]>([]);
@@ -984,12 +987,14 @@ const Expenses = () => {
                 setEditingExpenseId(null);
               }
             }}>
+            {canWriteExpense && (
             <DialogTrigger asChild>
               <Button variant="default" size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
                 <span>Add Expense</span>
               </Button>
             </DialogTrigger>
+            )}
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[calc(100vw-2rem)] sm:w-full">
               <DialogHeader>
                 <DialogTitle>{editingExpenseId ? "Edit Expense" : "Add Expense"}</DialogTitle>
