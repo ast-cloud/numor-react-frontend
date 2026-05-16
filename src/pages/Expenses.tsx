@@ -987,12 +987,14 @@ const Expenses = () => {
                 setEditingExpenseId(null);
               }
             }}>
+            {canWriteExpense && (
             <DialogTrigger asChild>
               <Button variant="default" size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
                 <span>Add Expense</span>
               </Button>
             </DialogTrigger>
+            )}
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[calc(100vw-2rem)] sm:w-full">
               <DialogHeader>
                 <DialogTitle>{editingExpenseId ? "Edit Expense" : "Add Expense"}</DialogTitle>
