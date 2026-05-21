@@ -15,6 +15,7 @@ export interface Client {
   country: string;
   email: string;
   phone: string;
+  taxId: string;
 }
 
 interface ClientsViewProps {
@@ -31,6 +32,7 @@ const mapClientData = (c: ClientData): Client => ({
   country: c.country || "",
   email: c.email || "",
   phone: c.phone || "",
+  taxId: c.taxId || "",
 });
 
 const ClientsView = ({ onBack }: ClientsViewProps) => {
