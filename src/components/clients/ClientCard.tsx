@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, Mail, Phone, MapPin, Pencil, Save, Trash2, ChevronDown, X } from "lucide-react";
+import { User, Mail, Phone, MapPin, Pencil, Save, Trash2, ChevronDown, X, Receipt } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/constants";
+import { getTaxLabel } from "@/lib/taxSystem";
 import type { Client } from "@/components/ClientsView";
 
 interface ClientCardProps {
@@ -299,10 +300,29 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
                         {client.country || "Not set"}
                       </p>
                     )}
-                  </div>
                 </div>
               </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label className="flex items-center gap-2 text-xs">
+                  <Receipt className="w-3 h-3 text-muted-foreground" />
+                  {getTaxLabel(client.country)}
+                </Label>
+                {isEditing ? (
+                  <Input
+                    value={client.taxId}
+                    onChange={(e) => onUpdate("taxId", e.target.value)}
+                    placeholder="Enter tax identification number"
+                    className="h-8 text-sm"
+                  />
+                ) : (
+                  <p className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                    {client.taxId || "Not set"}
+                  </p>
+                )}
+              </div>
             </div>
+          </div>
           </div>
         </CollapsibleContent>
       </div>

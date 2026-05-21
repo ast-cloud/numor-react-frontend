@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, ArrowLeft, Loader2 } from "lucide-react";
 import { fetchClients, createClient, updateClient, deleteClient, type ClientData } from "@/lib/api/clients";
+import { getTaxSystem } from "@/lib/taxSystem";
 import ClientCard from "@/components/clients/ClientCard";
 
 export interface Client {
@@ -15,6 +16,7 @@ export interface Client {
   country: string;
   email: string;
   phone: string;
+  taxId: string;
 }
 
 interface ClientsViewProps {
@@ -31,6 +33,7 @@ const mapClientData = (c: ClientData): Client => ({
   country: c.country || "",
   email: c.email || "",
   phone: c.phone || "",
+  taxId: c.taxId || "",
 });
 
 const ClientsView = ({ onBack }: ClientsViewProps) => {
@@ -71,6 +74,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
       country: "",
       email: "",
       phone: "",
+      taxId: "",
     };
     setClients([newClient, ...clients]);
     backupRef.current = { ...newClient };
@@ -134,6 +138,8 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
           state: client.state || null,
           zipCode: client.zipCode || null,
           country: client.country || null,
+          taxId: client.taxId || null,
+          taxSystem: getTaxSystem(client.country) || null,
         });
 
         // Replace temp id with server id
@@ -154,6 +160,8 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
           state: client.state || null,
           zipCode: client.zipCode || null,
           country: client.country || null,
+          taxId: client.taxId || null,
+          taxSystem: getTaxSystem(client.country) || null,
         });
         toast({
           title: "Client saved",
