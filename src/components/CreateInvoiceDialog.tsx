@@ -18,6 +18,7 @@ import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
+import { getTaxLabel } from "@/lib/taxSystem";
 import AddClientDialog from "@/components/AddClientDialog";
 import {
   createInvoice,
@@ -71,6 +72,7 @@ interface InvoiceFormData {
   clientState: string;
   clientZip: string;
   clientCountry: string;
+  clientTaxId: string;
   lineItems: LineItem[];
   bankName: string;
   accountName: string;
@@ -195,6 +197,7 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
     clientState: "",
     clientZip: "",
     clientCountry: "",
+    clientTaxId: "",
     lineItems: [{ id: "1", description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 }],
     bankName: "",
     accountName: "",
@@ -242,6 +245,8 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
   let clientState = inv.client?.state || "";
   let clientZip = inv.client?.zipCode || "";
   let clientCountry = inv.client?.country || "";
+  let clientTaxId = "";
+
 
   if (!clientName && clients && inv.clientId) {
     const matched = clients.find((c) => c.id === inv.clientId);
@@ -253,6 +258,7 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
       clientState = matched.state || "";
       clientZip = matched.zipCode || "";
       clientCountry = matched.country || "";
+      clientTaxId = matched.taxId || "";
     }
   }
 
@@ -270,6 +276,7 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
     clientState,
     clientZip,
     clientCountry,
+    clientTaxId,
     lineItems: inv.items?.length
       ? inv.items.map((item, i) => ({
           id: String(i + 1),
@@ -387,6 +394,7 @@ const CreateInvoiceDialog = ({
       clientState: client.state || "",
       clientZip: client.zipCode || "",
       clientCountry: client.country || "",
+      clientTaxId: client.taxId || "",
     }));
     setClientExpanded(false);
   };
@@ -403,6 +411,7 @@ const CreateInvoiceDialog = ({
       clientState: client.state || "",
       clientZip: client.zipCode || "",
       clientCountry: client.country || "",
+      clientTaxId: client.taxId || "",
     }));
     setClientExpanded(false);
   };
@@ -1261,6 +1270,18 @@ const CreateInvoiceDialog = ({
                                   <SelectItem value="Sweden">Sweden</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="clientTaxId">
+                                {getTaxLabel(formData.clientCountry)}
+                              </Label>
+                              <Input
+                                id="clientTaxId"
+                                placeholder="e.g. 22AAAAA0000A1Z5"
+                                value={formData.clientTaxId}
+                                onChange={(e) => handleInputChange("clientTaxId", e.target.value)}
+                                disabled={!!selectedClientId}
+                              />
                             </div>
                           </div>
                         </div>
