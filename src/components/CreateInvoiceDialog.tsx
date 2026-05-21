@@ -614,6 +614,7 @@ const CreateInvoiceDialog = ({
         zipCode: formData.seller.zip,
         country: formData.seller.country,
         taxId: formData.seller.taxId,
+        taxSystem: getTaxSystem(formData.seller.country),
       },
       bankDetails: {
         bankName: formData.bankName,
