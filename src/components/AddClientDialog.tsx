@@ -201,6 +201,14 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
               </Select>
             </div>
           </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2"><Receipt className="w-3.5 h-3.5 text-muted-foreground" />{getTaxLabel(form.country)}</Label>
+            <Input
+              value={form.taxId}
+              onChange={(e) => setForm({ ...form, taxId: e.target.value })}
+              placeholder="Enter tax identification number"
+            />
+          </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
               Cancel
