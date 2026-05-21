@@ -247,7 +247,6 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
   let clientCountry = inv.client?.country || "";
   let clientTaxId = "";
 
-
   if (!clientName && clients && inv.clientId) {
     const matched = clients.find((c) => c.id === inv.clientId);
     if (matched) {
@@ -614,7 +613,7 @@ const CreateInvoiceDialog = ({
         zipCode: formData.seller.zip,
         country: formData.seller.country,
         taxId: formData.seller.taxId,
-        taxSystem: getTaxSystem(formData.seller.country),
+        taxSystem: getTaxLabel(formData.seller.country),
       },
       bankDetails: {
         bankName: formData.bankName,
@@ -655,8 +654,7 @@ const CreateInvoiceDialog = ({
     setConfirmingInvoice(true);
     try {
       const payload = buildPayload(undefined);
-      const finalPayload =
-        isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
+      const finalPayload = isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
       const data = await createInvoice(finalPayload, { sendEmail });
       if (data?.pdfStatus === "NOT_STARTED") {
         toast({
@@ -690,9 +688,7 @@ const CreateInvoiceDialog = ({
     setSavingDraft(true);
     try {
       const payload = buildPayload("DRAFT");
-      const finalPayload = isEditMode && editInvoiceId
-        ? { ...payload, id: editInvoiceId }
-        : payload;
+      const finalPayload = isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
       await createInvoice(finalPayload);
       toast({ title: "Draft saved", description: "Invoice has been saved as a draft." });
       setOpen(false);
@@ -750,10 +746,7 @@ const CreateInvoiceDialog = ({
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 border-t flex-shrink-0">
               <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
-                <Checkbox
-                  checked={sendEmail}
-                  onCheckedChange={(c) => setSendEmail(c === true)}
-                />
+                <Checkbox checked={sendEmail} onCheckedChange={(c) => setSendEmail(c === true)} />
                 Share Invoice with client on email
               </label>
               <div className="flex justify-end gap-3">
@@ -1273,9 +1266,7 @@ const CreateInvoiceDialog = ({
                               </Select>
                             </div>
                             <div className="space-y-2 md:col-span-2">
-                              <Label htmlFor="clientTaxId">
-                                {getTaxLabel(formData.clientCountry)}
-                              </Label>
+                              <Label htmlFor="clientTaxId">{getTaxLabel(formData.clientCountry)}</Label>
                               <Input
                                 id="clientTaxId"
                                 placeholder="e.g. 22AAAAA0000A1Z5"
@@ -1580,11 +1571,7 @@ const CreateInvoiceDialog = ({
           </div>
         )}
       </DialogContent>
-      <AddClientDialog
-        open={addClientOpen}
-        onOpenChange={setAddClientOpen}
-        onClientCreated={handleClientCreated}
-      />
+      <AddClientDialog open={addClientOpen} onOpenChange={setAddClientOpen} onClientCreated={handleClientCreated} />
     </Dialog>
   );
 };
