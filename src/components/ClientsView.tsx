@@ -138,6 +138,8 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
           state: client.state || null,
           zipCode: client.zipCode || null,
           country: client.country || null,
+          taxId: client.taxId || null,
+          taxSystem: getTaxSystem(client.country) || null,
         });
 
         // Replace temp id with server id
@@ -158,6 +160,8 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
           state: client.state || null,
           zipCode: client.zipCode || null,
           country: client.country || null,
+          taxId: client.taxId || null,
+          taxSystem: getTaxSystem(client.country) || null,
         });
         toast({
           title: "Client saved",
