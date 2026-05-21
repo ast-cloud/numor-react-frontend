@@ -276,6 +276,7 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
     clientState,
     clientZip,
     clientCountry,
+    clientTaxId,
     lineItems: inv.items?.length
       ? inv.items.map((item, i) => ({
           id: String(i + 1),
