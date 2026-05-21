@@ -950,7 +950,7 @@ const CreateInvoiceDialog = ({
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="sellerTaxId">Tax ID</Label>
+                              <Label htmlFor="sellerTaxId">{getTaxLabel(formData.seller.country)}</Label>
                               <Input
                                 id="sellerTaxId"
                                 placeholder="e.g. TRN-100234567890003"
