@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, Mail, Phone, MapPin, Pencil, Save, Trash2, ChevronDown, X } from "lucide-react";
+import { User, Mail, Phone, MapPin, Pencil, Save, Trash2, ChevronDown, X, Receipt } from "lucide-react";
 import { INDIAN_STATES } from "@/lib/constants";
+import { getTaxLabel } from "@/lib/taxSystem";
 import type { Client } from "@/components/ClientsView";
 
 interface ClientCardProps {
