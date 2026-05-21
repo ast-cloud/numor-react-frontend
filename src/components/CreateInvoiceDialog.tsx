@@ -197,6 +197,7 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
     clientState: "",
     clientZip: "",
     clientCountry: "",
+    clientTaxId: "",
     lineItems: [{ id: "1", description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 }],
     bankName: "",
     accountName: "",
