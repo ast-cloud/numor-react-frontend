@@ -9,8 +9,8 @@ export const getTaxSystem = (country: string): TaxSystem | "" => {
 
 export const getTaxLabel = (country: string): string => {
   const sys = getTaxSystem(country);
-  if (sys === "GST") return "GST";
-  if (sys === "VAT") return "VAT";
-  if (sys === "SALES") return "Sales Tax";
+  if (sys === "GST") return "GSTIN";
+  if (sys === "VAT") return "VATIN";
+  if (sys === "SALES") return "Sales Tax ID";
   return "Tax ID (GST/VAT/Sales Tax)";
 };
