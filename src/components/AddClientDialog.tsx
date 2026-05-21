@@ -23,6 +23,21 @@ const COUNTRIES = [
   "Portugal", "Romania", "Slovakia", "Slovenia", "Spain", "Sweden",
 ];
 
+const getTaxSystem = (country: string): "GST" | "VAT" | "SALES" | "" => {
+  if (!country) return "";
+  if (country === "India") return "GST";
+  if (country === "United States" || country === "US") return "SALES";
+  return "VAT";
+};
+
+const getTaxLabel = (country: string): string => {
+  const sys = getTaxSystem(country);
+  if (sys === "GST") return "Tax ID (GST)";
+  if (sys === "VAT") return "Tax ID (VAT)";
+  if (sys === "SALES") return "Tax ID (Sales Tax)";
+  return "Tax ID (GST/VAT/Sales Tax)";
+};
+
 const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialogProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
@@ -34,12 +49,13 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
     state: "",
     zipCode: "",
     country: "",
+    taxId: "",
   });
 
   const reset = () => {
     setForm({
       name: "", email: "", phone: "", streetAddress: "",
-      city: "", state: "", zipCode: "", country: "",
+      city: "", state: "", zipCode: "", country: "", taxId: "",
     });
   };
 
