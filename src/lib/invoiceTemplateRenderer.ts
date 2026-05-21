@@ -157,6 +157,7 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
     sellerZipCode: formData.seller.zip || "",
     sellerCountry: formData.seller.country || "",
     sellerTaxId: formData.seller.taxId || "",
+    sellerTaxLabel: getTaxLabel(formData.seller.country) || "Tax ID",
     sellerEmail: formData.seller.email || "",
     sellerPhone: formData.seller.phone || "",
     sacCode: formData.sacCode || "",
@@ -170,6 +171,8 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
       email: formData.clientEmail || "",
       phone: formData.clientPhone || "",
       companyType: formData.clientCompanyType || "",
+      taxId: formData.clientTaxId || "",
+      taxLabel: getTaxLabel(formData.clientCountry) || "Tax ID",
     },
     items: formData.lineItems.map((item, index) => ({
       serialNo: index + 1,
