@@ -394,6 +394,7 @@ const CreateInvoiceDialog = ({
       clientState: client.state || "",
       clientZip: client.zipCode || "",
       clientCountry: client.country || "",
+      clientTaxId: client.taxId || "",
     }));
     setClientExpanded(false);
   };
