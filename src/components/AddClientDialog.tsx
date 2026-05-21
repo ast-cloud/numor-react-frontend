@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, User, Mail, Phone, Home, Building2, MapPin, Hash, Globe } from "lucide-react";
+import { Loader2, User, Mail, Phone, Home, Building2, MapPin, Hash, Globe, Receipt } from "lucide-react";
 import { createClient, type ClientData } from "@/lib/api/clients";
 import { INDIAN_STATES } from "@/lib/constants";
 import { toast } from "@/hooks/use-toast";
@@ -23,6 +23,21 @@ const COUNTRIES = [
   "Portugal", "Romania", "Slovakia", "Slovenia", "Spain", "Sweden",
 ];
 
+const getTaxSystem = (country: string): "GST" | "VAT" | "SALES" | "" => {
+  if (!country) return "";
+  if (country === "India") return "GST";
+  if (country === "United States" || country === "US") return "SALES";
+  return "VAT";
+};
+
+const getTaxLabel = (country: string): string => {
+  const sys = getTaxSystem(country);
+  if (sys === "GST") return "Tax ID (GST)";
+  if (sys === "VAT") return "Tax ID (VAT)";
+  if (sys === "SALES") return "Tax ID (Sales Tax)";
+  return "Tax ID (GST/VAT/Sales Tax)";
+};
+
 const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialogProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
@@ -34,12 +49,13 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
     state: "",
     zipCode: "",
     country: "",
+    taxId: "",
   });
 
   const reset = () => {
     setForm({
       name: "", email: "", phone: "", streetAddress: "",
-      city: "", state: "", zipCode: "", country: "",
+      city: "", state: "", zipCode: "", country: "", taxId: "",
     });
   };
 
@@ -81,6 +97,8 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
         state: form.state || null,
         zipCode: form.zipCode || null,
         country: form.country || null,
+        taxId: form.taxId || null,
+        taxSystem: getTaxSystem(form.country) || null,
       });
       toast({ title: "Client created", description: "New client has been added." });
       onClientCreated(created);
@@ -182,6 +200,14 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2"><Receipt className="w-3.5 h-3.5 text-muted-foreground" />{getTaxLabel(form.country)}</Label>
+            <Input
+              value={form.taxId}
+              onChange={(e) => setForm({ ...form, taxId: e.target.value })}
+              placeholder="Enter tax identification number"
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
