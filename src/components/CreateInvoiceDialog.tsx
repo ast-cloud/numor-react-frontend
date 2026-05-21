@@ -18,7 +18,7 @@ import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
-import { getTaxLabel } from "@/lib/taxSystem";
+import { getTaxLabel, getTaxSystem } from "@/lib/taxSystem";
 import AddClientDialog from "@/components/AddClientDialog";
 import {
   createInvoice,
