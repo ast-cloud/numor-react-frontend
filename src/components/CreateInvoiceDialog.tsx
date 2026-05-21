@@ -1271,6 +1271,18 @@ const CreateInvoiceDialog = ({
                                 </SelectContent>
                               </Select>
                             </div>
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="clientTaxId">
+                                {getTaxLabel(formData.clientCountry)}
+                              </Label>
+                              <Input
+                                id="clientTaxId"
+                                placeholder="e.g. 22AAAAA0000A1Z5"
+                                value={formData.clientTaxId}
+                                onChange={(e) => handleInputChange("clientTaxId", e.target.value)}
+                                disabled={!!selectedClientId}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
