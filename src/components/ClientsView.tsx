@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, ArrowLeft, Loader2 } from "lucide-react";
 import { fetchClients, createClient, updateClient, deleteClient, type ClientData } from "@/lib/api/clients";
+import { getTaxSystem } from "@/lib/taxSystem";
 import ClientCard from "@/components/clients/ClientCard";
 
 export interface Client {
