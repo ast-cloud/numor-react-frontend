@@ -1477,33 +1477,49 @@ const CreateInvoiceDialog = ({
                       onChange={(e) => handleInputChange("accountName", e.target.value)}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="iban">IBAN</Label>
-                    <Input
-                      id="iban"
-                      placeholder="e.g. AE730860000096565699265"
-                      value={formData.iban}
-                      onChange={(e) => handleInputChange("iban", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="swiftBic">SWIFT/BIC</Label>
-                    <Input
-                      id="swiftBic"
-                      placeholder="e.g. WIOBAEADXXX"
-                      value={formData.swiftBic}
-                      onChange={(e) => handleInputChange("swiftBic", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ifscCode">IFSC Code</Label>
-                    <Input
-                      id="ifscCode"
-                      placeholder="e.g. HDFC0000123"
-                      value={formData.ifscCode}
-                      onChange={(e) => handleInputChange("ifscCode", e.target.value)}
-                    />
-                  </div>
+                  {formData.seller.country === "India" ? (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="iban">Account Number</Label>
+                        <Input
+                          id="iban"
+                          placeholder="e.g. 1234567890"
+                          value={formData.iban}
+                          onChange={(e) => handleInputChange("iban", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="ifscCode">IFSC Code</Label>
+                        <Input
+                          id="ifscCode"
+                          placeholder="e.g. HDFC0000123"
+                          value={formData.ifscCode}
+                          onChange={(e) => handleInputChange("ifscCode", e.target.value)}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="iban">IBAN</Label>
+                        <Input
+                          id="iban"
+                          placeholder="e.g. AE730860000096565699265"
+                          value={formData.iban}
+                          onChange={(e) => handleInputChange("iban", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="swiftBic">SWIFT/BIC</Label>
+                        <Input
+                          id="swiftBic"
+                          placeholder="e.g. WIOBAEADXXX"
+                          value={formData.swiftBic}
+                          onChange={(e) => handleInputChange("swiftBic", e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="bankAddress">Bank Address</Label>
                     <Input
