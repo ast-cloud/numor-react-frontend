@@ -305,3 +305,9 @@
 .table-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 100, 100, 0.6);
 }
+
+/* Lighter placeholders globally */
+input::placeholder,
+textarea::placeholder {
+  color: hsl(var(--muted-foreground) / 0.5);
+}
