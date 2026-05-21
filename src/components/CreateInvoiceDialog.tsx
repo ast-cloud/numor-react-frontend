@@ -72,6 +72,7 @@ interface InvoiceFormData {
   clientState: string;
   clientZip: string;
   clientCountry: string;
+  clientTaxId: string;
   lineItems: LineItem[];
   bankName: string;
   accountName: string;
