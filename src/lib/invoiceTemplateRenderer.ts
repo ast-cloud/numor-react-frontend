@@ -1,6 +1,7 @@
 import Handlebars from "handlebars";
 import invoiceTemplateHtml from "@/templates/invoice.html?raw";
 import { format } from "date-fns";
+import { getTaxLabel } from "@/lib/taxSystem";
 
 interface LineItem {
   id: string;
@@ -40,6 +41,7 @@ export interface InvoiceFormData {
   clientState: string;
   clientZip: string;
   clientCountry: string;
+  clientTaxId?: string;
   lineItems: LineItem[];
   bankName: string;
   accountName: string;
@@ -155,6 +157,7 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
     sellerZipCode: formData.seller.zip || "",
     sellerCountry: formData.seller.country || "",
     sellerTaxId: formData.seller.taxId || "",
+    sellerTaxLabel: getTaxLabel(formData.seller.country) || "Tax ID",
     sellerEmail: formData.seller.email || "",
     sellerPhone: formData.seller.phone || "",
     sacCode: formData.sacCode || "",
@@ -168,6 +171,8 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
       email: formData.clientEmail || "",
       phone: formData.clientPhone || "",
       companyType: formData.clientCompanyType || "",
+      taxId: formData.clientTaxId || "",
+      taxLabel: getTaxLabel(formData.clientCountry) || "Tax ID",
     },
     items: formData.lineItems.map((item, index) => ({
       serialNo: index + 1,
