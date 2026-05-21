@@ -73,6 +73,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
       country: "",
       email: "",
       phone: "",
+      taxId: "",
     };
     setClients([newClient, ...clients]);
     backupRef.current = { ...newClient };
