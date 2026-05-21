@@ -258,6 +258,7 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
       clientState = matched.state || "";
       clientZip = matched.zipCode || "";
       clientCountry = matched.country || "";
+      clientTaxId = matched.taxId || "";
     }
   }
 
