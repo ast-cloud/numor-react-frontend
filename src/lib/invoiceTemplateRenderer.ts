@@ -1,6 +1,7 @@
 import Handlebars from "handlebars";
 import invoiceTemplateHtml from "@/templates/invoice.html?raw";
 import { format } from "date-fns";
+import { getTaxLabel } from "@/lib/taxSystem";
 
 interface LineItem {
   id: string;
