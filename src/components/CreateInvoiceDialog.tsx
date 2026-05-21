@@ -245,6 +245,8 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
   let clientState = inv.client?.state || "";
   let clientZip = inv.client?.zipCode || "";
   let clientCountry = inv.client?.country || "";
+  let clientTaxId = "";
+
 
   if (!clientName && clients && inv.clientId) {
     const matched = clients.find((c) => c.id === inv.clientId);
