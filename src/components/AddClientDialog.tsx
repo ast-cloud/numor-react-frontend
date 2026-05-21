@@ -97,6 +97,8 @@ const AddClientDialog = ({ open, onOpenChange, onClientCreated }: AddClientDialo
         state: form.state || null,
         zipCode: form.zipCode || null,
         country: form.country || null,
+        taxId: form.taxId || null,
+        taxSystem: getTaxSystem(form.country) || null,
       });
       toast({ title: "Client created", description: "New client has been added." });
       onClientCreated(created);
