@@ -22,21 +22,35 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<string>
     image.src = imageSrc;
   });
 
+  // Preserve aspect ratio; fit longest side within MAX.
+  const MAX = 1024;
+  const srcW = Math.max(1, Math.round(pixelCrop.width));
+  const srcH = Math.max(1, Math.round(pixelCrop.height));
+  const scale = Math.min(1, MAX / Math.max(srcW, srcH));
+  const outW = Math.max(1, Math.round(srcW * scale));
+  const outH = Math.max(1, Math.round(srcH * scale));
+
   const canvas = document.createElement("canvas");
-  const size = 512;
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = outW;
+  canvas.height = outH;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get canvas context");
 
   ctx.drawImage(
     image,
-    pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height,
-    0, 0, size, size
+    pixelCrop.x, pixelCrop.y, srcW, srcH,
+    0, 0, outW, outH
   );
 
   return canvas.toDataURL("image/png", 0.95);
 }
+
+type AspectPreset = "free" | "square" | "wide" | "tall";
+const ASPECT_VALUES: Record<Exclude<AspectPreset, "free">, number> = {
+  square: 1,
+  wide: 3,      // 3:1 banner
+  tall: 3 / 4,  // 3:4 portrait
+};
 
 const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: CompanyLogoUploadProps) => {
   const { toast } = useToast();
