@@ -182,10 +182,11 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
           </DialogHeader>
           <div className="flex items-center gap-1 flex-wrap">
             {([
-              { id: "square", label: "Square" },
-              { id: "wide", label: "Wide" },
-              { id: "tall", label: "Tall" },
-              { id: "free", label: "Free" },
+              { id: "square", label: "1:1" },
+              { id: "landscape", label: "4:3" },
+              { id: "wide", label: "16:9" },
+              { id: "banner", label: "3:1" },
+              { id: "tall", label: "3:4" },
             ] as { id: AspectPreset; label: string }[]).map((opt) => (
               <Button
                 key={opt.id}
