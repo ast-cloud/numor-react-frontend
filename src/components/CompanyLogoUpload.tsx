@@ -64,7 +64,7 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isCropping, setIsCropping] = useState(false);
   const [aspectPreset, setAspectPreset] = useState<AspectPreset>("square");
-  const aspectValue = aspectPreset === "free" ? undefined : ASPECT_VALUES[aspectPreset];
+  const aspectValue = ASPECT_VALUES[aspectPreset];
 
   const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
     setCroppedAreaPixels(croppedPixels);
