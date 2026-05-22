@@ -176,7 +176,7 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
       </div>
 
       <Dialog open={isCropDialogOpen} onOpenChange={(open) => { if (!open) { setIsCropDialogOpen(false); setRawImage(null); } }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-sm max-w-[92vw] max-h-[90vh] overflow-y-auto p-4 gap-3">
           <DialogHeader>
             <DialogTitle>Crop Company Logo</DialogTitle>
           </DialogHeader>
@@ -204,7 +204,7 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
               </Button>
             ))}
           </div>
-          <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
+          <div className="relative w-full h-[260px] sm:h-[300px] bg-muted rounded-lg overflow-hidden">
             {rawImage && (
               <Cropper
                 key={aspectPreset}
