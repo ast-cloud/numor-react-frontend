@@ -45,11 +45,13 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<string>
   return canvas.toDataURL("image/png", 0.95);
 }
 
-type AspectPreset = "free" | "square" | "wide" | "tall";
-const ASPECT_VALUES: Record<Exclude<AspectPreset, "free">, number> = {
-  square: 1,
-  wide: 3,      // 3:1 banner
-  tall: 3 / 4,  // 3:4 portrait
+type AspectPreset = "square" | "wide" | "banner" | "landscape" | "tall";
+const ASPECT_VALUES: Record<AspectPreset, number> = {
+  square: 1,         // 1:1
+  landscape: 4 / 3,  // 4:3
+  wide: 16 / 9,      // 16:9
+  banner: 3,         // 3:1
+  tall: 3 / 4,       // 3:4 portrait
 };
 
 const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: CompanyLogoUploadProps) => {
