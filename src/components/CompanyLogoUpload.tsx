@@ -178,15 +178,41 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
           <DialogHeader>
             <DialogTitle>Crop Company Logo</DialogTitle>
           </DialogHeader>
+          <div className="flex items-center gap-1 flex-wrap">
+            {([
+              { id: "square", label: "Square" },
+              { id: "wide", label: "Wide" },
+              { id: "tall", label: "Tall" },
+              { id: "free", label: "Free" },
+            ] as { id: AspectPreset; label: string }[]).map((opt) => (
+              <Button
+                key={opt.id}
+                type="button"
+                variant={aspectPreset === opt.id ? "default" : "outline"}
+                size="sm"
+                className="h-7 text-xs px-2"
+                onClick={() => {
+                  setAspectPreset(opt.id);
+                  setCrop({ x: 0, y: 0 });
+                  setZoom(1);
+                }}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
           <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
             {rawImage && (
               <Cropper
+                key={aspectPreset}
                 image={rawImage}
                 crop={crop}
                 zoom={zoom}
-                aspect={1}
+                aspect={aspectValue}
                 cropShape="rect"
                 showGrid
+                restrictPosition={false}
+                objectFit="contain"
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
