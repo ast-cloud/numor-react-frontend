@@ -204,7 +204,7 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
               </Button>
             ))}
           </div>
-          <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
+          <div className="relative w-full h-[260px] sm:h-[300px] bg-muted rounded-lg overflow-hidden">
             {rawImage && (
               <Cropper
                 key={aspectPreset}
