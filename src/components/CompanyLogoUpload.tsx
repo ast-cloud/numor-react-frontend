@@ -22,21 +22,35 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<string>
     image.src = imageSrc;
   });
 
+  // Preserve aspect ratio; fit longest side within MAX.
+  const MAX = 1024;
+  const srcW = Math.max(1, Math.round(pixelCrop.width));
+  const srcH = Math.max(1, Math.round(pixelCrop.height));
+  const scale = Math.min(1, MAX / Math.max(srcW, srcH));
+  const outW = Math.max(1, Math.round(srcW * scale));
+  const outH = Math.max(1, Math.round(srcH * scale));
+
   const canvas = document.createElement("canvas");
-  const size = 512;
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = outW;
+  canvas.height = outH;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get canvas context");
 
   ctx.drawImage(
     image,
-    pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height,
-    0, 0, size, size
+    pixelCrop.x, pixelCrop.y, srcW, srcH,
+    0, 0, outW, outH
   );
 
   return canvas.toDataURL("image/png", 0.95);
 }
+
+type AspectPreset = "free" | "square" | "wide" | "tall";
+const ASPECT_VALUES: Record<Exclude<AspectPreset, "free">, number> = {
+  square: 1,
+  wide: 3,      // 3:1 banner
+  tall: 3 / 4,  // 3:4 portrait
+};
 
 const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: CompanyLogoUploadProps) => {
   const { toast } = useToast();
@@ -47,6 +61,8 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isCropping, setIsCropping] = useState(false);
+  const [aspectPreset, setAspectPreset] = useState<AspectPreset>("square");
+  const aspectValue = aspectPreset === "free" ? undefined : ASPECT_VALUES[aspectPreset];
 
   const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
     setCroppedAreaPixels(croppedPixels);
@@ -70,6 +86,7 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
       setRawImage(reader.result as string);
       setCrop({ x: 0, y: 0 });
       setZoom(1);
+      setAspectPreset("square");
       setIsCropDialogOpen(true);
     };
     reader.readAsDataURL(file);
@@ -161,15 +178,41 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
           <DialogHeader>
             <DialogTitle>Crop Company Logo</DialogTitle>
           </DialogHeader>
+          <div className="flex items-center gap-1 flex-wrap">
+            {([
+              { id: "square", label: "Square" },
+              { id: "wide", label: "Wide" },
+              { id: "tall", label: "Tall" },
+              { id: "free", label: "Free" },
+            ] as { id: AspectPreset; label: string }[]).map((opt) => (
+              <Button
+                key={opt.id}
+                type="button"
+                variant={aspectPreset === opt.id ? "default" : "outline"}
+                size="sm"
+                className="h-7 text-xs px-2"
+                onClick={() => {
+                  setAspectPreset(opt.id);
+                  setCrop({ x: 0, y: 0 });
+                  setZoom(1);
+                }}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
           <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
             {rawImage && (
               <Cropper
+                key={aspectPreset}
                 image={rawImage}
                 crop={crop}
                 zoom={zoom}
-                aspect={1}
+                aspect={aspectValue}
                 cropShape="rect"
                 showGrid
+                restrictPosition={false}
+                objectFit="contain"
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
