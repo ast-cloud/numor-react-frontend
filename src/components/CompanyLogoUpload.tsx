@@ -86,6 +86,7 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
       setRawImage(reader.result as string);
       setCrop({ x: 0, y: 0 });
       setZoom(1);
+      setAspectPreset("square");
       setIsCropDialogOpen(true);
     };
     reader.readAsDataURL(file);
