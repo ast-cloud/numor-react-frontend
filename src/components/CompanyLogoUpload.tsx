@@ -176,7 +176,7 @@ const CompanyLogoUpload = ({ currentLogo, onLogoChange, disabled = false }: Comp
       </div>
 
       <Dialog open={isCropDialogOpen} onOpenChange={(open) => { if (!open) { setIsCropDialogOpen(false); setRawImage(null); } }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-sm max-w-[92vw] max-h-[90vh] overflow-y-auto p-4 gap-3">
           <DialogHeader>
             <DialogTitle>Crop Company Logo</DialogTitle>
           </DialogHeader>
