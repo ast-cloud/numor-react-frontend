@@ -46,7 +46,7 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
     setLoading(true);
     try {
       await createSubAccount({ name: name.trim(), email: email.trim(), permissions });
-      toast({ title: "Sub-account created", description: `A magic link has been sent to ${email} to set their password.` });
+      toast({ title: "Sub-account created", description: `A link has been sent to ${email} to set their password.` });
       reset();
       setOpen(false);
       onCreated();
@@ -79,7 +79,7 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
               <Input id="sa-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="employee@example.com" />
             </div>
             <p className="text-xs text-muted-foreground">
-              A magic link will be emailed to the employee so they can set their own password.
+              A link will be emailed to the employee so they can set their own password.
             </p>
 
           </div>
