@@ -20,12 +20,10 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [permissions, setPermissions] = useState<ModulePermissions>(defaultPermissions());
 
   const reset = () => {
-    setName(""); setEmail(""); setPassword(""); setConfirm("");
+    setName(""); setEmail("");
     setPermissions(defaultPermissions());
   };
 
