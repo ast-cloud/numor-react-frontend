@@ -344,11 +344,11 @@ const CreateInvoiceDialog = ({
         })
         .finally(() => setEditLoading(false));
     } else {
-      fetchCurrentOrganization()
-        .then((org) => {
+      Promise.all([fetchCurrentOrganization(), fetchOrganizationLogo().catch(() => null)])
+        .then(([org, logoUrl]) => {
           if (cancelled) return;
           const seller: SellerInfo = {
-            logo: "",
+            logo: logoUrl || "",
             name: org.name || "",
             streetAddress: org.streetAddress || "",
             city: org.city || "",
