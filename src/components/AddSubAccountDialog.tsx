@@ -18,7 +18,6 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [permissions, setPermissions] = useState<ModulePermissions>(defaultPermissions());
 
