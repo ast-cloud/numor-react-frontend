@@ -49,7 +49,7 @@ import { fetchInvoices, fetchInvoice, updateInvoiceStatus, fetchInvoicePdfStatus
 import InvoicePreviewWrapper from "@/components/InvoicePreview";
 import type { InvoiceFormData } from "@/lib/invoiceTemplateRenderer";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
-import { fetchCurrentOrganization } from "@/lib/api/user";
+import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user";
 import { useAuth } from "@/hooks/use-auth";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
