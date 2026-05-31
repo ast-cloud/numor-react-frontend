@@ -158,10 +158,10 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`
             }
-            title={effectiveCollapsed ? "Settings" : undefined}
+            title={effectiveCollapsed ? "Organization Settings" : undefined}
           >
             <Settings className="w-5 h-5 flex-shrink-0" />
-            <span className={labelClass}>Settings</span>
+            <span className={labelClass}>Organization Settings</span>
           </NavLink>
           )}
 
