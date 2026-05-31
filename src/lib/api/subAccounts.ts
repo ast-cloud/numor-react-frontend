@@ -39,7 +39,7 @@ export async function listSubAccounts(): Promise<SubAccount[]> {
 export async function createSubAccount(payload: {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   permissions: ModulePermissions;
 }): Promise<SubAccount> {
   return authedFetch("/api/sub-accounts", {
