@@ -117,7 +117,7 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
           <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            Create
+            Send Invite
           </Button>
         </DialogFooter>
       </DialogContent>
