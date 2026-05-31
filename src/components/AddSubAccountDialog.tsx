@@ -78,16 +78,6 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
               <Label htmlFor="sa-email">Email</Label>
               <Input id="sa-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="employee@example.com" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="sa-pass">Password</Label>
-                <Input id="sa-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 chars" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="sa-confirm">Confirm</Label>
-                <Input id="sa-confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-              </div>
-            </div>
           </div>
 
           <div className="space-y-2">
