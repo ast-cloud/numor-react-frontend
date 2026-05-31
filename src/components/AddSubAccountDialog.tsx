@@ -46,7 +46,7 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
     setLoading(true);
     try {
       await createSubAccount({ name: name.trim(), email: email.trim(), permissions });
-      toast({ title: "Sub-account created", description: `A magic link has been sent to ${email} to set their password.` });
+      toast({ title: "Sub-account created", description: `A link has been sent to ${email} to set their password.` });
       reset();
       setOpen(false);
       onCreated();
