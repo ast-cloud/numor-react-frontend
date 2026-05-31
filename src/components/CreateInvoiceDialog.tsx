@@ -326,12 +326,13 @@ const CreateInvoiceDialog = ({
     // In edit mode, fetch invoice details
     if (isEditMode && editInvoiceId) {
       setEditLoading(true);
-      Promise.all([fetchInvoice(editInvoiceId), fetchClients()])
-        .then(([invoiceData, clientData]) => {
+      Promise.all([fetchInvoice(editInvoiceId), fetchClients(), fetchOrganizationLogo().catch(() => null)])
+        .then(([invoiceData, clientData, logoUrl]) => {
           if (cancelled) return;
           console.log("Invoice data received:", JSON.stringify(invoiceData));
           setSavedClients(clientData);
           const mapped = mapInvoiceDataToForm(invoiceData, undefined, clientData);
+          if (logoUrl) mapped.seller.logo = logoUrl;
           console.log("Mapped form data:", JSON.stringify(mapped));
           setFormData(mapped);
           if (invoiceData.clientId) {
