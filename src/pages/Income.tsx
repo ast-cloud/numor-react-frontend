@@ -49,7 +49,7 @@ import { fetchInvoices, fetchInvoice, updateInvoiceStatus, fetchInvoicePdfStatus
 import InvoicePreviewWrapper from "@/components/InvoicePreview";
 import type { InvoiceFormData } from "@/lib/invoiceTemplateRenderer";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
-import { fetchCurrentOrganization } from "@/lib/api/user";
+import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user";
 import { useAuth } from "@/hooks/use-auth";
 
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
@@ -268,7 +268,10 @@ const Income = () => {
     setPreviewFormData(null);
     setIsPdfDialogOpen(true);
     try {
-      const detail = await fetchInvoice(invoice.id);
+      const [detail, logoUrl] = await Promise.all([
+        fetchInvoice(invoice.id),
+        fetchOrganizationLogo().catch(() => null),
+      ]);
       // Look up client from already-fetched clients data
       const client = clientsData.find((c) => c.id === detail.clientId);
 
@@ -279,7 +282,7 @@ const Income = () => {
         currency: detail.currency || "USD",
         taxType: detail.taxType || "GST",
         seller: {
-          logo: "",
+          logo: logoUrl || "",
           name: detail.sellerName || detail.seller?.name || "",
           streetAddress: detail.sellerStreetAddress || detail.seller?.streetAddress || "",
           city: detail.sellerCity || detail.seller?.city || "",
