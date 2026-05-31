@@ -37,7 +37,6 @@ export async function listSubAccounts(): Promise<SubAccount[]> {
 }
 
 export async function createSubAccount(payload: {
-  name: string;
   email: string;
   permissions: ModulePermissions;
 }): Promise<SubAccount> {
