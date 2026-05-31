@@ -39,22 +39,14 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !email.trim() || !password) {
-      toast({ title: "Missing fields", description: "Name, email and password are required.", variant: "destructive" });
-      return;
-    }
-    if (password.length < 8) {
-      toast({ title: "Weak password", description: "Use at least 8 characters.", variant: "destructive" });
-      return;
-    }
-    if (password !== confirm) {
-      toast({ title: "Passwords don't match", variant: "destructive" });
+    if (!name.trim() || !email.trim()) {
+      toast({ title: "Missing fields", description: "Name and email are required.", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      await createSubAccount({ name: name.trim(), email: email.trim(), password, permissions });
-      toast({ title: "Sub-account created", description: `${email} can now log in.` });
+      await createSubAccount({ name: name.trim(), email: email.trim(), permissions });
+      toast({ title: "Sub-account created", description: `${email} will receive a magic link to set their password.` });
       reset();
       setOpen(false);
       onCreated();
