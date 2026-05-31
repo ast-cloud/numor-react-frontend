@@ -18,12 +18,11 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [permissions, setPermissions] = useState<ModulePermissions>(defaultPermissions());
 
   const reset = () => {
-    setName(""); setEmail("");
+    setEmail("");
     setPermissions(defaultPermissions());
   };
 
@@ -39,13 +38,13 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !email.trim()) {
-      toast({ title: "Missing fields", description: "Name and email are required.", variant: "destructive" });
+    if (!email.trim()) {
+      toast({ title: "Missing fields", description: "Email is required.", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      await createSubAccount({ name: name.trim(), email: email.trim(), permissions });
+      await createSubAccount({ email: email.trim(), permissions });
       toast({ title: "Sub-account created", description: `A link has been sent to ${email} to set their password.` });
       reset();
       setOpen(false);
@@ -70,10 +69,6 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="grid gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="sa-name">Full Name</Label>
-              <Input id="sa-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Employee name" />
-            </div>
             <div className="space-y-1.5">
               <Label htmlFor="sa-email">Email</Label>
               <Input id="sa-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="employee@example.com" />
