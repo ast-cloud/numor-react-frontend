@@ -268,7 +268,10 @@ const Income = () => {
     setPreviewFormData(null);
     setIsPdfDialogOpen(true);
     try {
-      const detail = await fetchInvoice(invoice.id);
+      const [detail, logoUrl] = await Promise.all([
+        fetchInvoice(invoice.id),
+        fetchOrganizationLogo().catch(() => null),
+      ]);
       // Look up client from already-fetched clients data
       const client = clientsData.find((c) => c.id === detail.clientId);
 
@@ -279,7 +282,7 @@ const Income = () => {
         currency: detail.currency || "USD",
         taxType: detail.taxType || "GST",
         seller: {
-          logo: "",
+          logo: logoUrl || "",
           name: detail.sellerName || detail.seller?.name || "",
           streetAddress: detail.sellerStreetAddress || detail.seller?.streetAddress || "",
           city: detail.sellerCity || detail.seller?.city || "",
