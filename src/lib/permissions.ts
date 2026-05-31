@@ -6,7 +6,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   dashboard: "Dashboard",
   income: "Income",
   expense: "Expenses",
-  settings: "Settings",
+  settings: "Organization Settings",
 };
 
 export const defaultPermissions = (): ModulePermissions => ({

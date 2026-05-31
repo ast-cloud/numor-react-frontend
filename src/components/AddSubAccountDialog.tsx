@@ -20,12 +20,10 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [permissions, setPermissions] = useState<ModulePermissions>(defaultPermissions());
 
   const reset = () => {
-    setName(""); setEmail(""); setPassword(""); setConfirm("");
+    setName(""); setEmail("");
     setPermissions(defaultPermissions());
   };
 
@@ -41,22 +39,14 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !email.trim() || !password) {
-      toast({ title: "Missing fields", description: "Name, email and password are required.", variant: "destructive" });
-      return;
-    }
-    if (password.length < 8) {
-      toast({ title: "Weak password", description: "Use at least 8 characters.", variant: "destructive" });
-      return;
-    }
-    if (password !== confirm) {
-      toast({ title: "Passwords don't match", variant: "destructive" });
+    if (!name.trim() || !email.trim()) {
+      toast({ title: "Missing fields", description: "Name and email are required.", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      await createSubAccount({ name: name.trim(), email: email.trim(), password, permissions });
-      toast({ title: "Sub-account created", description: `${email} can now log in.` });
+      await createSubAccount({ name: name.trim(), email: email.trim(), permissions });
+      toast({ title: "Sub-account created", description: `A magic link has been sent to ${email} to set their password.` });
       reset();
       setOpen(false);
       onCreated();
@@ -88,16 +78,10 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
               <Label htmlFor="sa-email">Email</Label>
               <Input id="sa-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="employee@example.com" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="sa-pass">Password</Label>
-                <Input id="sa-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 chars" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="sa-confirm">Confirm</Label>
-                <Input id="sa-confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              A magic link will be emailed to the employee so they can set their own password.
+            </p>
+
           </div>
 
           <div className="space-y-2">
