@@ -151,6 +151,7 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
     dueDate: formData.dueDate ? format(formData.dueDate, "yyyy-MM-dd") : "-",
     currency: formData.currency,
     sellerName: formData.seller.name || "Company Name",
+    sellerLogo: formData.seller.logo || "",
     sellerStreetAddress: formData.seller.streetAddress || "",
     sellerCity: formData.seller.city || "",
     sellerState: formData.seller.state || "",

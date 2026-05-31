@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import InvoicePreview from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
-import { fetchCurrentOrganization } from "@/lib/api/user";
+import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
 import { getTaxLabel, getTaxSystem } from "@/lib/taxSystem";
 import AddClientDialog from "@/components/AddClientDialog";
@@ -326,12 +326,13 @@ const CreateInvoiceDialog = ({
     // In edit mode, fetch invoice details
     if (isEditMode && editInvoiceId) {
       setEditLoading(true);
-      Promise.all([fetchInvoice(editInvoiceId), fetchClients()])
-        .then(([invoiceData, clientData]) => {
+      Promise.all([fetchInvoice(editInvoiceId), fetchClients(), fetchOrganizationLogo().catch(() => null)])
+        .then(([invoiceData, clientData, logoUrl]) => {
           if (cancelled) return;
           console.log("Invoice data received:", JSON.stringify(invoiceData));
           setSavedClients(clientData);
           const mapped = mapInvoiceDataToForm(invoiceData, undefined, clientData);
+          if (logoUrl) mapped.seller.logo = logoUrl;
           console.log("Mapped form data:", JSON.stringify(mapped));
           setFormData(mapped);
           if (invoiceData.clientId) {
@@ -344,11 +345,11 @@ const CreateInvoiceDialog = ({
         })
         .finally(() => setEditLoading(false));
     } else {
-      fetchCurrentOrganization()
-        .then((org) => {
+      Promise.all([fetchCurrentOrganization(), fetchOrganizationLogo().catch(() => null)])
+        .then(([org, logoUrl]) => {
           if (cancelled) return;
           const seller: SellerInfo = {
-            logo: "",
+            logo: logoUrl || "",
             name: org.name || "",
             streetAddress: org.streetAddress || "",
             city: org.city || "",
