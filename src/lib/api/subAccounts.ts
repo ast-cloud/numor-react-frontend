@@ -63,11 +63,7 @@ export async function createSubAccount(payload: {
     body: JSON.stringify({
       email: payload.email,
       organizationId,
-      permissions: {
-        ...payload.permissions,
-        organizationSettings: payload.permissions.settings,
-        settings: undefined,
-      },
+      permissions: payload.permissions,
     }),
   });
 
