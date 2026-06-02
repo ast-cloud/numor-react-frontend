@@ -51,6 +51,7 @@ const COUNTRIES = [
 const SMESettings = () => {
   const { user, isSubAccount, can } = useAuth();
   const { toast } = useToast();
+  const canReadSettings = can("organizationSettings", "read");
   const canWriteSettings = can("organizationSettings", "write");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
@@ -311,6 +312,7 @@ const SMESettings = () => {
       </Card>
 
       {/* Company Details */}
+      {canReadSettings && (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="space-y-1">
@@ -556,6 +558,7 @@ const SMESettings = () => {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* Team & Permissions (SME owners only) */}
       {!isSubAccount && <SubAccountsSection />}
