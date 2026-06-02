@@ -39,11 +39,39 @@ export async function listSubAccounts(): Promise<SubAccount[]> {
 export async function createSubAccount(payload: {
   email: string;
   permissions: ModulePermissions;
-}): Promise<SubAccount> {
-  return authedFetch("/api/sub-accounts", {
-    method: "POST",
-    body: JSON.stringify(payload),
+}): Promise<{ success: boolean; message?: string }> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  // Fetch organization to get organizationId
+  const orgRes = await fetch(`${config.backendHost}/api/organization/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
   });
+  if (!orgRes.ok) throw new Error("Failed to fetch organization");
+  const orgJson = await orgRes.json();
+  const organizationId = String((orgJson.data ?? orgJson)?.id ?? "");
+
+  const res = await fetch(`${config.backendHost}/api/user/inviteNewUser`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: payload.email,
+      organizationId,
+      permissions: payload.permissions,
+    }),
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json?.success === false) {
+    throw new Error(json?.message || `Request failed: ${res.status}`);
+  }
+  return json;
 }
 
 export async function updateSubAccountPermissions(
