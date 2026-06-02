@@ -54,10 +54,9 @@ export function can(
 export function firstAllowedRoute(
   permissions: ModulePermissions | null | undefined,
 ): string {
-  if (!permissions) return "/sme/no-access";
+  if (!permissions) return "/sme/settings";
   if (permissions.dashboard.read) return "/sme/dashboard";
   if (permissions.income.read) return "/sme/income";
   if (permissions.expense.read) return "/sme/expenses";
-  if (permissions.organizationSettings.read) return "/sme/settings";
-  return "/sme/no-access";
+  return "/sme/settings";
 }
