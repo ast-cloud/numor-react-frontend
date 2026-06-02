@@ -54,11 +54,7 @@ export async function createSubAccount(payload: {
   const orgJson = await orgRes.json();
   const organizationId = String((orgJson.data ?? orgJson)?.id ?? "");
 
-  const { settings, ...restPermissions } = payload.permissions;
-  const apiPermissions = {
-    ...restPermissions,
-    organizationSettings: settings,
-  };
+  const apiPermissions = payload.permissions;
 
   const res = await fetch(`${config.backendHost}/api/user/inviteNewUser`, {
     method: "POST",

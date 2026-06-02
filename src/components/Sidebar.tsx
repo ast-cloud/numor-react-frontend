@@ -46,7 +46,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const navItems = isSubAccount
     ? baseItems.filter((it) => it.module !== null && can(it.module, "read"))
     : baseItems;
-  const showSettings = !isSubAccount || can("settings", "read");
+  const showSettings = !isSubAccount || can("organizationSettings", "read");
 
   const handleLogout = () => {
     logout();

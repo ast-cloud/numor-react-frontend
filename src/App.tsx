@@ -73,7 +73,7 @@ const App = () => (
               <Route path="income" element={<PermissionGuard module="income"><Income /></PermissionGuard>} />
               <Route path="income/clients" element={<PermissionGuard module="income"><Clients /></PermissionGuard>} />
               <Route path="ca-connect" element={<RoleGuard role="SME_USER"><CAConnect /></RoleGuard>} />
-              <Route path="settings" element={<PermissionGuard module="settings"><SMESettings /></PermissionGuard>} />
+              <Route path="settings" element={<PermissionGuard module="organizationSettings"><SMESettings /></PermissionGuard>} />
               <Route path="no-access" element={<NoAccess />} />
             </Route>
             {/* CA Routes */}
