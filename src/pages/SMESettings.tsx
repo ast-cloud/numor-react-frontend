@@ -51,6 +51,7 @@ const COUNTRIES = [
 const SMESettings = () => {
   const { user, isSubAccount, can } = useAuth();
   const { toast } = useToast();
+  const canReadSettings = can("organizationSettings", "read");
   const canWriteSettings = can("organizationSettings", "write");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
