@@ -558,6 +558,7 @@ const SMESettings = () => {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* Team & Permissions (SME owners only) */}
       {!isSubAccount && <SubAccountsSection />}
