@@ -312,6 +312,7 @@ const SMESettings = () => {
       </Card>
 
       {/* Company Details */}
+      {canReadSettings && (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="space-y-1">
