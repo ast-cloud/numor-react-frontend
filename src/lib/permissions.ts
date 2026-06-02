@@ -1,26 +1,26 @@
 import type { ModuleKey, ModulePermissions } from "./authStore";
 
-export const MODULE_KEYS: ModuleKey[] = ["dashboard", "income", "expense", "settings"];
+export const MODULE_KEYS: ModuleKey[] = ["dashboard", "income", "expense", "organizationSettings"];
 
 export const MODULE_LABELS: Record<ModuleKey, string> = {
   dashboard: "Dashboard",
   income: "Income",
   expense: "Expenses",
-  settings: "Organization Settings",
+  organizationSettings: "Organization Settings",
 };
 
 export const defaultPermissions = (): ModulePermissions => ({
   dashboard: { read: false, write: false },
   income: { read: false, write: false },
   expense: { read: false, write: false },
-  settings: { read: false, write: false },
+  organizationSettings: { read: false, write: false },
 });
 
 export const fullPermissions = (): ModulePermissions => ({
   dashboard: { read: true, write: true },
   income: { read: true, write: true },
   expense: { read: true, write: true },
-  settings: { read: true, write: true },
+  organizationSettings: { read: true, write: true },
 });
 
 export function normalizePermissions(
@@ -58,6 +58,6 @@ export function firstAllowedRoute(
   if (permissions.dashboard.read) return "/sme/dashboard";
   if (permissions.income.read) return "/sme/income";
   if (permissions.expense.read) return "/sme/expenses";
-  if (permissions.settings.read) return "/sme/settings";
+  if (permissions.organizationSettings.read) return "/sme/settings";
   return "/sme/no-access";
 }
