@@ -201,7 +201,7 @@ const SubAccountsSection = () => {
                         })}
                       </div>
                     </div>
-                    <div className="shrink-0">
+                    <div className="shrink-0 flex items-center gap-1.5">
                       {inv.isExpired ? (
                         <Badge variant="destructive" className="text-[9px] gap-1 px-1.5 py-0">
                           <AlertTriangle className="w-2.5 h-2.5" /> Expired
@@ -211,6 +211,9 @@ const SubAccountsSection = () => {
                           <Clock className="w-2.5 h-2.5" /> Pending
                         </Badge>
                       )}
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleResend(inv)} disabled={resendingId === inv.id} title="Resend invitation">
+                        {resendingId === inv.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                      </Button>
                     </div>
                   </div>
                 ))}
