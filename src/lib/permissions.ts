@@ -44,9 +44,9 @@ export function can(
   permissions: ModulePermissions | null | undefined,
   module: ModuleKey,
   action: "read" | "write",
-  isSubAccount: boolean,
+  isOrgOwner: boolean,
 ): boolean {
-  if (!isSubAccount) return true; // non-sub-account users have full access
+  if (isOrgOwner) return true; // owners have full access
   if (!permissions) return false;
   return !!permissions[module]?.[action];
 }
