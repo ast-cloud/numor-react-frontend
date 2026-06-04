@@ -56,6 +56,7 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/accept-invitation" element={<AcceptInvitation />} />
             <Route path="/ca-signup" element={<CASignup />} />
             <Route path="/ca-application-success" element={<CAApplicationSuccess />} />
             <Route path="/about" element={<About />} />
