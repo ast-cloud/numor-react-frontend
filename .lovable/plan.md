@@ -1,42 +1,31 @@
-# Support rectangular organization logos
 
-Today `CompanyLogoUpload` forces a 1:1 crop and outputs a 512×512 PNG. The display box in settings is also a fixed square. To safely allow rectangular logos (wide or tall) without breaking any layout, the changes are scoped to the upload flow, the canvas export, and any place the logo is rendered.
+## Goal
+
+The `/api/user/me` response no longer uses a `SUB_ACCOUNT` role to identify invited members. Instead every user now carries `isOrgOwner: boolean` plus a `permissions` object. Owners get full access; non-owners are gated by their per-module read/write flags. The Team & Permissions section must only appear for owners.
 
 ## Changes
 
-### 1. Cropper — allow non-square crops
-File: `src/components/CompanyLogoUpload.tsx`
-- Remove the hardcoded `aspect={1}` on `<Cropper>`. Either:
-  - **Option A (recommended):** Offer 3 preset aspect choices in the crop dialog — `Square (1:1)`, `Wide (16:9 or 3:1)`, `Tall (3:4)` — via a small toggle group. Defaults to the image's natural aspect.
-  - Option B: free-form crop (no aspect lock). Simpler but users can produce awkward shapes.
-- Keep `cropShape="rect"` and grid on.
+### 1. `src/hooks/use-auth.tsx`
+- Add `isOrgOwner: boolean` on `AuthUser` and read it from the `/api/user/me` payload (`data.isOrgOwner ?? false`).
+- Always normalize `permissions` from the payload (not only for sub-accounts), so the `can()` check has data to work with for non-owners.
+- Expose `isOrgOwner` on the context. Keep `isSubAccount` as a backwards-compat alias defined as `!isOrgOwner` so existing consumers (Sidebar, PermissionGuard, SMESettings) continue to behave correctly — non-owners are treated like sub-accounts for gating purposes.
+- Drop the `SUB_ACCOUNT` special cases in `resolveActiveRole` / `setActiveRole`: role switching now keys off `isOrgOwner` (non-owners cannot switch roles).
 
-### 2. Canvas export — preserve aspect ratio
-File: `src/components/CompanyLogoUpload.tsx` (`getCroppedImg`)
-- Replace the fixed 512×512 output with a "fit inside a max box" approach:
-  - Max bounding box e.g. 1024×1024.
-  - Scale `pixelCrop.width × pixelCrop.height` down proportionally so the longest side ≤ 1024.
-  - Set canvas to the scaled width/height (not forced square).
-- Output PNG to keep transparency.
+### 2. `src/lib/permissions.ts`
+- Rename the third arg semantically (still a boolean) and update the rule to: `if (isOrgOwner) return true; else check permissions[module][action]`. Call site in `use-auth` passes `isOrgOwner`.
 
-### 3. Display containers — use `object-contain` in a flexible box
-Anywhere the logo renders, the container must accept any aspect ratio without distorting or clipping.
+### 3. `src/pages/SMESettings.tsx`
+- Gate `<SubAccountsSection />` on `isOrgOwner` instead of `!isSubAccount`.
+- Gate the Company Details card edit/read on `isOrgOwner || can("organizationSettings", ...)` — same effective behavior, just sourced from the new flag.
 
-- `src/components/CompanyLogoUpload.tsx` preview tile (currently `w-24 h-24` with `object-contain` — already safe, keep as is; the logo will letterbox inside the square tile, which is correct).
-- `src/pages/SMESettings.tsx` — no direct `<img>`, uses the component, so nothing to change.
-- `src/templates/invoice.html` — currently renders the text `NUMOR` in `.logo`. When/if the org logo is wired into invoices, render as `<img class="logo" src="{{logo}}" />` with CSS `max-height: 60px; max-width: 200px; width: auto; height: auto; object-fit: contain;` so wide and tall logos both fit the header without breaking layout. (Out of scope unless you want it wired now — flag only.)
+### 4. `src/components/PermissionGuard.tsx` and `src/components/Sidebar.tsx`
+- Replace `isSubAccount` reads with `!isOrgOwner` (or keep using the alias). No UI changes; just renamed source of truth.
 
-### 4. Upload guardrails
-File: `src/components/CompanyLogoUpload.tsx`
-- Keep the 2MB / image-type validation.
-- Add minimum dimension check (e.g. reject < 100px on shortest side) to avoid blurry uploads.
-- Optional: cap maximum aspect ratio at ~8:1 to prevent absurd banners that would still break layouts.
+### 5. `src/lib/authStore.ts`
+- Leave the `SUB_ACCOUNT` union member in place for now (harmless); the runtime no longer emits it. Optionally remove in a follow-up.
 
-## Why this is safe
-- The settings preview tile keeps its square footprint; rectangular logos letterbox inside via `object-contain` (no distortion, no overflow).
-- The exported file preserves aspect ratio, so downstream consumers (invoice PDF, header, etc.) receive a clean rectangular PNG instead of a stretched square.
-- All current call sites of the logo URL continue to work — only the image's intrinsic dimensions change.
+## Result
 
-## Out of scope (flag for follow-up)
-- Wiring `organizationLogo` into the invoice HTML template / PDF renderer (currently hardcoded text).
-- Backend storage — no changes needed; it already accepts arbitrary PNGs.
+- Team & Permissions card hides for non-owners.
+- Expenses/Income/Dashboard/OrganizationSettings routes and write actions respect the `permissions` map for non-owners; owners bypass all checks.
+- No new API calls — single source of truth is the existing `/api/user/me` response.

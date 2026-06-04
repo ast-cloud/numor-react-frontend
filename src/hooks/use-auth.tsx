@@ -11,6 +11,7 @@ export interface AuthUser {
   company?: string;
   roles: UserRole[];
   permissions: ModulePermissions | null;
+  isOrgOwner: boolean;
 }
 
 interface LoginResult {
