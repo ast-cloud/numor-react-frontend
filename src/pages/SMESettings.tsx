@@ -49,7 +49,7 @@ const COUNTRIES = [
 ];
 
 const SMESettings = () => {
-  const { user, isSubAccount, can } = useAuth();
+  const { user, isOrgOwner, can } = useAuth();
   const { toast } = useToast();
   const canReadSettings = can("organizationSettings", "read");
   const canWriteSettings = can("organizationSettings", "write");
