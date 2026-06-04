@@ -288,6 +288,25 @@
   animation-delay: 0.6s;
 }
 
+@keyframes paperplane-fly {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.9);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(180px, -120px) rotate(25deg) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.paperplane-fly {
+  animation: paperplane-fly 1.3s ease-in forwards;
+}
+
 /* Target the scroll container — your table wrapper */
 .table-scroll::-webkit-scrollbar {
   height: 8px; /* scrollbar thickness */
