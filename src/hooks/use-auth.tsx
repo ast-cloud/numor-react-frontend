@@ -25,6 +25,7 @@ interface AuthContextType {
   activeRole: UserRole | null;
   isLoading: boolean;
   isSubAccount: boolean;
+  isOrgOwner: boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => void;
   hasRole: (role: UserRole) => boolean;
