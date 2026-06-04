@@ -34,6 +34,7 @@ const SubAccountsSection = () => {
 
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(true);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
