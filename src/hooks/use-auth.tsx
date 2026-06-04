@@ -143,9 +143,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const hasRole = useCallback((role: UserRole) => user?.roles.includes(role) ?? false, [user]);
 
+  const isOrgOwner = useMemo(() => user?.isOrgOwner ?? false, [user]);
+  const isSubAccount = useMemo(() => !!user && !user.isOrgOwner, [user]);
+
   const setActiveRole = useCallback((role: UserRole) => {
     if (!user) return;
-    if (user.roles.includes("SUB_ACCOUNT")) return; // sub-accounts cannot switch
+    if (!user.isOrgOwner) return; // non-owners cannot switch
 
     const canSwitchToRole =
       user.roles.includes(role) ||
@@ -157,16 +160,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const isSubAccount = useMemo(() => user?.roles.includes("SUB_ACCOUNT") ?? false, [user]);
-
   const can = useCallback(
     (module: ModuleKey, action: "read" | "write") =>
-      canCheck(user?.permissions ?? null, module, action, isSubAccount),
-    [user, isSubAccount],
+      canCheck(user?.permissions ?? null, module, action, isOrgOwner),
+    [user, isOrgOwner],
   );
 
   return (
-    <AuthContext.Provider value={{ user, activeRole, isLoading, isSubAccount, login, logout, hasRole, setActiveRole, refreshUser, can }}>
+    <AuthContext.Provider value={{ user, activeRole, isLoading, isSubAccount, isOrgOwner, login, logout, hasRole, setActiveRole, refreshUser, can }}>
       {children}
     </AuthContext.Provider>
   );
