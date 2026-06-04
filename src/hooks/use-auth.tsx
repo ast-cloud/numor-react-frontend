@@ -11,6 +11,7 @@ export interface AuthUser {
   company?: string;
   roles: UserRole[];
   permissions: ModulePermissions | null;
+  isOrgOwner: boolean;
 }
 
 interface LoginResult {
@@ -24,6 +25,7 @@ interface AuthContextType {
   activeRole: UserRole | null;
   isLoading: boolean;
   isSubAccount: boolean;
+  isOrgOwner: boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => void;
   hasRole: (role: UserRole) => boolean;
@@ -81,15 +83,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await fetchCurrentUser();
       const roles = parseRoles(data);
-      const permissions = roles.includes("SUB_ACCOUNT")
-        ? normalizePermissions(data.permissions)
-        : null;
+      const isOrgOwner = !!data.isOrgOwner;
+      const permissions = isOrgOwner ? null : normalizePermissions(data.permissions);
       const authUser: AuthUser = {
         name: data.name || "",
         email: data.email || "",
         company: data.company || data.organization?.name || "",
         roles,
         permissions,
+        isOrgOwner,
       };
       setUser(authUser);
       const role = resolveActiveRole(roles);
@@ -142,9 +144,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const hasRole = useCallback((role: UserRole) => user?.roles.includes(role) ?? false, [user]);
 
+  const isOrgOwner = useMemo(() => user?.isOrgOwner ?? false, [user]);
+  const isSubAccount = useMemo(() => !!user && !user.isOrgOwner, [user]);
+
   const setActiveRole = useCallback((role: UserRole) => {
     if (!user) return;
-    if (user.roles.includes("SUB_ACCOUNT")) return; // sub-accounts cannot switch
+    if (!user.isOrgOwner) return; // non-owners cannot switch
 
     const canSwitchToRole =
       user.roles.includes(role) ||
@@ -156,16 +161,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const isSubAccount = useMemo(() => user?.roles.includes("SUB_ACCOUNT") ?? false, [user]);
-
   const can = useCallback(
     (module: ModuleKey, action: "read" | "write") =>
-      canCheck(user?.permissions ?? null, module, action, isSubAccount),
-    [user, isSubAccount],
+      canCheck(user?.permissions ?? null, module, action, isOrgOwner),
+    [user, isOrgOwner],
   );
 
   return (
-    <AuthContext.Provider value={{ user, activeRole, isLoading, isSubAccount, login, logout, hasRole, setActiveRole, refreshUser, can }}>
+    <AuthContext.Provider value={{ user, activeRole, isLoading, isSubAccount, isOrgOwner, login, logout, hasRole, setActiveRole, refreshUser, can }}>
       {children}
     </AuthContext.Provider>
   );
