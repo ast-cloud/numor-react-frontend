@@ -171,18 +171,7 @@ const SubAccountsSection = () => {
                 {invitations.map((inv) => (
                   <div key={inv.id} className="p-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm truncate">{inv.email}</p>
-                        {inv.isExpired ? (
-                          <Badge variant="destructive" className="text-[10px] gap-1">
-                            <AlertTriangle className="w-3 h-3" /> Expired
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="text-[10px] gap-1">
-                            <Clock className="w-3 h-3" /> Pending
-                          </Badge>
-                        )}
-                      </div>
+                      <p className="font-medium text-sm truncate">{inv.email}</p>
                       <p className="text-xs text-muted-foreground">
                         Sent {formatDate(inv.createdAt)} · {inv.isExpired ? "Expired" : "Expires"} {formatDate(inv.expiresAt)}
                       </p>
@@ -197,6 +186,17 @@ const SubAccountsSection = () => {
                           );
                         })}
                       </div>
+                    </div>
+                    <div className="shrink-0">
+                      {inv.isExpired ? (
+                        <Badge variant="destructive" className="text-[9px] gap-1 px-1.5 py-0">
+                          <AlertTriangle className="w-2.5 h-2.5" /> Expired
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-[9px] gap-1 px-1.5 py-0">
+                          <Clock className="w-2.5 h-2.5" /> Pending
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 ))}
