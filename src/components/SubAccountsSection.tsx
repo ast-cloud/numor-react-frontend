@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Trash2, Pencil, ShieldCheck, ShieldOff } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Loader2, Trash2, Pencil, ShieldCheck, ShieldOff, Clock, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AddSubAccountDialog from "./AddSubAccountDialog";
 import EditSubAccountPermissionsDialog from "./EditSubAccountPermissionsDialog";
@@ -12,8 +13,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   deleteSubAccount, listSubAccounts, setSubAccountDisabled, type SubAccount,
+  listInvitations, type Invitation,
 } from "@/lib/api/subAccounts";
 import { MODULE_KEYS, MODULE_LABELS } from "@/lib/permissions";
+
+const formatDate = (s: string) => {
+  try {
+    return new Date(s).toLocaleString(undefined, {
+      year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+    });
+  } catch { return s; }
+};
 
 const SubAccountsSection = () => {
   const { toast } = useToast();
@@ -22,20 +32,34 @@ const SubAccountsSection = () => {
   const [editing, setEditing] = useState<SubAccount | null>(null);
   const [deleting, setDeleting] = useState<SubAccount | null>(null);
 
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [loadingInvites, setLoadingInvites] = useState(true);
+
   const load = async () => {
     setLoading(true);
     try {
       const data = await listSubAccounts();
       setItems(data);
-    } catch (e) {
-      // Most likely the backend endpoint doesn't exist yet — keep UI usable.
+    } catch {
       setItems([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  const loadInvites = async () => {
+    setLoadingInvites(true);
+    try {
+      const data = await listInvitations();
+      setInvitations(data);
+    } catch {
+      setInvitations([]);
+    } finally {
+      setLoadingInvites(false);
+    }
+  };
+
+  useEffect(() => { load(); loadInvites(); }, []);
 
   const handleToggleDisabled = async (sa: SubAccount) => {
     try {
@@ -59,6 +83,8 @@ const SubAccountsSection = () => {
     }
   };
 
+  const onCreated = () => { load(); loadInvites(); };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -68,55 +94,116 @@ const SubAccountsSection = () => {
             Invite employees and control what they can access.
           </CardDescription>
         </div>
-        <AddSubAccountDialog onCreated={load} />
+        <AddSubAccountDialog onCreated={onCreated} />
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : items.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-6 text-center">
-            No sub-accounts yet. Click "Add Sub-Account" to create one.
-          </div>
-        ) : (
-          <div className="divide-y border rounded-md">
-            {items.map((sa) => (
-              <div key={sa.id} className="p-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm truncate">{sa.name}</p>
-                    {sa.isDisabled && <Badge variant="outline" className="text-xs">Disabled</Badge>}
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">{sa.email}</p>
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    {MODULE_KEYS.map((m) => {
-                      const p = sa.permissions?.[m];
-                      const label = p?.write ? "RW" : p?.read ? "R" : "—";
-                      return (
-                        <Badge key={m} variant="secondary" className="text-[10px] font-normal">
-                          {MODULE_LABELS[m]}: {label}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEditing(sa)}>
-                    <Pencil className="w-3 h-3 mr-1" /> Permissions
-                  </Button>
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleToggleDisabled(sa)}>
-                    {sa.isDisabled ? <ShieldCheck className="w-3 h-3 mr-1" /> : <ShieldOff className="w-3 h-3 mr-1" />}
-                    {sa.isDisabled ? "Enable" : "Disable"}
-                  </Button>
-                  <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setDeleting(sa)}>
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                </div>
+        <Tabs defaultValue="members">
+          <TabsList>
+            <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="invitations">
+              Invitations
+              {invitations.length > 0 && (
+                <Badge variant="secondary" className="ml-2 text-[10px] h-4 px-1.5">{invitations.length}</Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="members" className="mt-4">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
               </div>
-            ))}
-          </div>
-        )}
+            ) : items.length === 0 ? (
+              <div className="text-sm text-muted-foreground py-6 text-center">
+                No sub-accounts yet. Click "Add Sub-Account" to create one.
+              </div>
+            ) : (
+              <div className="divide-y border rounded-md">
+                {items.map((sa) => (
+                  <div key={sa.id} className="p-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm truncate">{sa.name}</p>
+                        {sa.isDisabled && <Badge variant="outline" className="text-xs">Disabled</Badge>}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">{sa.email}</p>
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {MODULE_KEYS.map((m) => {
+                          const p = sa.permissions?.[m];
+                          const label = p?.write ? "RW" : p?.read ? "R" : "—";
+                          return (
+                            <Badge key={m} variant="secondary" className="text-[10px] font-normal">
+                              {MODULE_LABELS[m]}: {label}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEditing(sa)}>
+                        <Pencil className="w-3 h-3 mr-1" /> Permissions
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleToggleDisabled(sa)}>
+                        {sa.isDisabled ? <ShieldCheck className="w-3 h-3 mr-1" /> : <ShieldOff className="w-3 h-3 mr-1" />}
+                        {sa.isDisabled ? "Enable" : "Disable"}
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setDeleting(sa)}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="invitations" className="mt-4">
+            {loadingInvites ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : invitations.length === 0 ? (
+              <div className="text-sm text-muted-foreground py-6 text-center">
+                No pending invitations.
+              </div>
+            ) : (
+              <div className="divide-y border rounded-md">
+                {invitations.map((inv) => (
+                  <div key={inv.id} className="p-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm truncate">{inv.email}</p>
+                        {inv.isExpired ? (
+                          <Badge variant="destructive" className="text-[10px] gap-1">
+                            <AlertTriangle className="w-3 h-3" /> Expired
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px] gap-1">
+                            <Clock className="w-3 h-3" /> Pending
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Sent {formatDate(inv.createdAt)} · {inv.isExpired ? "Expired" : "Expires"} {formatDate(inv.expiresAt)}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {MODULE_KEYS.map((m) => {
+                          const p = inv.permissions?.[m];
+                          const label = p?.write ? "RW" : p?.read ? "R" : "—";
+                          return (
+                            <Badge key={m} variant="secondary" className="text-[10px] font-normal">
+                              {MODULE_LABELS[m]}: {label}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
 
       <EditSubAccountPermissionsDialog
