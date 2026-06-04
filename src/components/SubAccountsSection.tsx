@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Trash2, Pencil, ShieldCheck, ShieldOff, Clock, AlertTriangle, RefreshCw } from "lucide-react";
+import { Loader2, Pencil, Clock, AlertTriangle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AddSubAccountDialog from "./AddSubAccountDialog";
 import EditSubAccountPermissionsDialog from "./EditSubAccountPermissionsDialog";
