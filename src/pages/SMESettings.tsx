@@ -560,8 +560,8 @@ const SMESettings = () => {
       </Card>
       )}
 
-      {/* Team & Permissions (SME owners only) */}
-      {!isSubAccount && <SubAccountsSection />}
+      {/* Team & Permissions (org owners only) */}
+      {isOrgOwner && <SubAccountsSection />}
 
     </div>
   );
