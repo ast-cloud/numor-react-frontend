@@ -82,15 +82,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await fetchCurrentUser();
       const roles = parseRoles(data);
-      const permissions = roles.includes("SUB_ACCOUNT")
-        ? normalizePermissions(data.permissions)
-        : null;
+      const isOrgOwner = !!data.isOrgOwner;
+      const permissions = isOrgOwner ? null : normalizePermissions(data.permissions);
       const authUser: AuthUser = {
         name: data.name || "",
         email: data.email || "",
         company: data.company || data.organization?.name || "",
         roles,
         permissions,
+        isOrgOwner,
       };
       setUser(authUser);
       const role = resolveActiveRole(roles);
