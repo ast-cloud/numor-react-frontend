@@ -109,3 +109,17 @@ export async function resetSubAccountPassword(
 export async function deleteSubAccount(id: string): Promise<void> {
   await authedFetch(`/api/sub-accounts/${id}`, { method: "DELETE" });
 }
+
+export interface Invitation {
+  id: string;
+  email: string;
+  permissions: ModulePermissions;
+  expiresAt: string;
+  createdAt: string;
+  isExpired: boolean;
+}
+
+export async function listInvitations(): Promise<Invitation[]> {
+  const data = await authedFetch("/api/user/invitations");
+  return Array.isArray(data) ? data : (data?.invitations ?? []);
+}
