@@ -86,6 +86,19 @@ const SubAccountsSection = () => {
 
   const onCreated = () => { load(); loadInvites(); };
 
+  const handleResend = async (inv: Invitation) => {
+    setResendingId(inv.id);
+    try {
+      await createSubAccount({ email: inv.email, permissions: inv.permissions });
+      toast({ title: "Invitation resent", description: `A new invite has been sent to ${inv.email}.` });
+      loadInvites();
+    } catch (e) {
+      toast({ title: "Failed to resend", description: e instanceof Error ? e.message : "", variant: "destructive" });
+    } finally {
+      setResendingId(null);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
