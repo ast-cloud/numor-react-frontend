@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ModulePermissions, ModuleKey } from "@/lib/authStore";
 import { MODULE_KEYS, MODULE_LABELS } from "@/lib/permissions";
@@ -13,19 +12,19 @@ type Props = {
   subAccount: SubAccount | null;
   onClose: () => void;
   onSaved: () => void;
+  onToggleDisabled?: (sa: SubAccount) => void | Promise<void>;
+  onDelete?: (sa: SubAccount) => void;
 };
 
-const EditSubAccountPermissionsDialog = ({ subAccount, onClose, onSaved }: Props) => {
+const EditSubAccountPermissionsDialog = ({ subAccount, onClose, onSaved, onToggleDisabled, onDelete }: Props) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [permissions, setPermissions] = useState<ModulePermissions | null>(
-    subAccount?.permissions ?? null,
-  );
+  const [togglingDisabled, setTogglingDisabled] = useState(false);
+  const [permissions, setPermissions] = useState<ModulePermissions | null>(null);
 
-  // sync when subAccount changes
-  if (subAccount && permissions === null) {
-    setPermissions(subAccount.permissions);
-  }
+  useEffect(() => {
+    setPermissions(subAccount?.permissions ?? null);
+  }, [subAccount]);
 
   const togglePerm = (module: ModuleKey, action: "read" | "write", value: boolean) => {
     setPermissions((prev) => {
@@ -53,11 +52,21 @@ const EditSubAccountPermissionsDialog = ({ subAccount, onClose, onSaved }: Props
     }
   };
 
+  const handleToggleDisabled = async () => {
+    if (!subAccount || !onToggleDisabled) return;
+    setTogglingDisabled(true);
+    try {
+      await onToggleDisabled(subAccount);
+    } finally {
+      setTogglingDisabled(false);
+    }
+  };
+
   return (
     <Dialog open={!!subAccount} onOpenChange={(o) => { if (!o) { setPermissions(null); onClose(); } }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Permissions — {subAccount?.name}</DialogTitle>
+          <DialogTitle>Manage Member — {subAccount?.name}</DialogTitle>
         </DialogHeader>
         {permissions && (
           <div className="border rounded-md overflow-hidden">
@@ -79,12 +88,38 @@ const EditSubAccountPermissionsDialog = ({ subAccount, onClose, onSaved }: Props
             ))}
           </div>
         )}
-        <DialogFooter>
-          <Button variant="outline" onClick={() => { setPermissions(null); onClose(); }} disabled={loading}>Cancel</Button>
-          <Button onClick={handleSave} disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            Save
-          </Button>
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
+          <div className="flex items-center gap-1.5">
+            {onToggleDisabled && subAccount && (
+              <Button size="sm" variant="outline" onClick={handleToggleDisabled} disabled={togglingDisabled}>
+                {togglingDisabled ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                ) : subAccount.isDisabled ? (
+                  <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                ) : (
+                  <ShieldOff className="w-3.5 h-3.5 mr-1" />
+                )}
+                {subAccount.isDisabled ? "Enable" : "Disable"}
+              </Button>
+            )}
+            {onDelete && subAccount && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                onClick={() => onDelete(subAccount)}
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => { setPermissions(null); onClose(); }} disabled={loading}>Cancel</Button>
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Save
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
