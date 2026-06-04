@@ -154,15 +154,8 @@ const SubAccountsSection = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEditing(sa)}>
-                        <Pencil className="w-3 h-3 mr-1" /> Permissions
-                      </Button>
-                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleToggleDisabled(sa)}>
-                        {sa.isDisabled ? <ShieldCheck className="w-3 h-3 mr-1" /> : <ShieldOff className="w-3 h-3 mr-1" />}
-                        {sa.isDisabled ? "Enable" : "Disable"}
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => setDeleting(sa)}>
-                        <Trash2 className="w-3 h-3" />
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditing(sa)} title="Manage member">
+                        <Pencil className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>
