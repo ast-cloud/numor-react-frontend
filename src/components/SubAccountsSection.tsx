@@ -220,6 +220,14 @@ const SubAccountsSection = () => {
         subAccount={editing}
         onClose={() => setEditing(null)}
         onSaved={load}
+        onToggleDisabled={async (sa) => {
+          await handleToggleDisabled(sa);
+          setEditing(null);
+        }}
+        onDelete={(sa) => {
+          setEditing(null);
+          setDeleting(sa);
+        }}
       />
 
       <AlertDialog open={!!deleting} onOpenChange={(o) => { if (!o) setDeleting(null); }}>
