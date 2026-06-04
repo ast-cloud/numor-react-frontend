@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ModulePermissions, ModuleKey } from "@/lib/authStore";
 import { defaultPermissions, MODULE_KEYS, MODULE_LABELS } from "@/lib/permissions";
@@ -18,6 +18,7 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
   const [email, setEmail] = useState("");
   const [permissions, setPermissions] = useState<ModulePermissions>(defaultPermissions());
 
@@ -45,10 +46,14 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
     setLoading(true);
     try {
       await createSubAccount({ email: email.trim(), permissions });
-      toast({ title: "Sub-account created", description: `A link has been sent to ${email} to set their password.` });
-      reset();
-      setOpen(false);
-      onCreated();
+      setSent(true);
+      setTimeout(() => {
+        toast({ title: "Invitation sent", description: `A link has been sent to ${email} to set their password.` });
+        reset();
+        setSent(false);
+        setOpen(false);
+        onCreated();
+      }, 1400);
     } catch (e) {
       toast({ title: "Failed to create", description: e instanceof Error ? e.message : "Try again.", variant: "destructive" });
     } finally {
@@ -57,7 +62,7 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (loading || sent) return; setOpen(o); if (!o) reset(); }}>
       <DialogTrigger asChild>
         <Button size="sm" className="h-8 text-xs">
           <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Sub-Account
@@ -67,6 +72,14 @@ const AddSubAccountDialog = ({ onCreated }: Props) => {
         <DialogHeader>
           <DialogTitle>Add Sub-Account</DialogTitle>
         </DialogHeader>
+        {sent && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm rounded-lg animate-fade-in">
+            <div className="paperplane-fly">
+              <Send className="w-12 h-12 text-primary" strokeWidth={1.75} />
+            </div>
+            <p className="mt-6 text-sm font-medium text-foreground animate-fade-in">Invitation sent!</p>
+          </div>
+        )}
         <div className="space-y-4 pt-2">
           <div className="grid gap-3">
             <div className="space-y-1.5">
