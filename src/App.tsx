@@ -38,6 +38,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RoleGuard from "./components/RoleGuard";
 import PermissionGuard from "./components/PermissionGuard";
 import NoAccess from "./pages/NoAccess";
+import AcceptInvitation from "./pages/AcceptInvitation";
 
 const queryClient = new QueryClient();
 
