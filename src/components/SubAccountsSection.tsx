@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Trash2, Pencil, ShieldCheck, ShieldOff, Clock, AlertTriangle } from "lucide-react";
+import { Loader2, Trash2, Pencil, ShieldCheck, ShieldOff, Clock, AlertTriangle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AddSubAccountDialog from "./AddSubAccountDialog";
 import EditSubAccountPermissionsDialog from "./EditSubAccountPermissionsDialog";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   deleteSubAccount, listSubAccounts, setSubAccountDisabled, type SubAccount,
-  listInvitations, type Invitation,
+  listInvitations, type Invitation, createSubAccount,
 } from "@/lib/api/subAccounts";
 import { MODULE_KEYS, MODULE_LABELS } from "@/lib/permissions";
 
@@ -34,6 +34,7 @@ const SubAccountsSection = () => {
 
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(true);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -84,6 +85,19 @@ const SubAccountsSection = () => {
   };
 
   const onCreated = () => { load(); loadInvites(); };
+
+  const handleResend = async (inv: Invitation) => {
+    setResendingId(inv.id);
+    try {
+      await createSubAccount({ email: inv.email, permissions: inv.permissions });
+      toast({ title: "Invitation resent", description: `A new invite has been sent to ${inv.email}.` });
+      loadInvites();
+    } catch (e) {
+      toast({ title: "Failed to resend", description: e instanceof Error ? e.message : "", variant: "destructive" });
+    } finally {
+      setResendingId(null);
+    }
+  };
 
   return (
     <Card>
@@ -187,7 +201,7 @@ const SubAccountsSection = () => {
                         })}
                       </div>
                     </div>
-                    <div className="shrink-0">
+                    <div className="shrink-0 flex items-center gap-1.5">
                       {inv.isExpired ? (
                         <Badge variant="destructive" className="text-[9px] gap-1 px-1.5 py-0">
                           <AlertTriangle className="w-2.5 h-2.5" /> Expired
@@ -197,6 +211,9 @@ const SubAccountsSection = () => {
                           <Clock className="w-2.5 h-2.5" /> Pending
                         </Badge>
                       )}
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleResend(inv)} disabled={resendingId === inv.id} title="Resend invitation">
+                        {resendingId === inv.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                      </Button>
                     </div>
                   </div>
                 ))}
