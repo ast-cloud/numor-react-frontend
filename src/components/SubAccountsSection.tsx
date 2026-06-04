@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   deleteSubAccount, listSubAccounts, setSubAccountDisabled, type SubAccount,
-  listInvitations, type Invitation,
+  listInvitations, type Invitation, createSubAccount,
 } from "@/lib/api/subAccounts";
 import { MODULE_KEYS, MODULE_LABELS } from "@/lib/permissions";
 
