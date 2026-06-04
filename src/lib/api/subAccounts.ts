@@ -32,8 +32,16 @@ async function authedFetch(path: string, init: RequestInit = {}) {
 }
 
 export async function listSubAccounts(): Promise<SubAccount[]> {
-  const data = await authedFetch("/api/sub-accounts");
-  return Array.isArray(data) ? data : (data?.subAccounts ?? []);
+  const data = await authedFetch("/api/user/subAccounts");
+  const list = Array.isArray(data) ? data : (data?.subAccounts ?? []);
+  return list.map((item: Record<string, unknown>) => ({
+    id: String(item.id),
+    name: (item.name as string) || "",
+    email: (item.email as string) || "",
+    permissions: (item.permissions as ModulePermissions) ?? {} as ModulePermissions,
+    isDisabled: item.isActive === false,
+    createdAt: item.createdAt as string | undefined,
+  }));
 }
 
 export async function createSubAccount(payload: {
