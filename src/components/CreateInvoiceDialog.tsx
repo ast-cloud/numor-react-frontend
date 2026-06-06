@@ -20,6 +20,7 @@ import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user"
 import { fetchClients, type ClientData } from "@/lib/api/clients";
 import { getTaxLabel, getTaxSystem } from "@/lib/taxSystem";
 import AddClientDialog from "@/components/AddClientDialog";
+import { useAuth } from "@/hooks/use-auth";
 import {
   createInvoice,
   updateInvoice,
