@@ -50,6 +50,8 @@ import {
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
 const DashboardHome = () => {
+  const { can } = useAuth();
+  const canEditDashboard = can("dashboard", "write");
   const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("this_month");
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
