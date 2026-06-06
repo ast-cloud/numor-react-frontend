@@ -262,6 +262,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
                 onDelete={() => handleDeleteClient(client.id)}
                 onUpdate={(field, value) => handleUpdateClient(client.id, field, value)}
                 isNew={newClientId === client.id}
+                readOnly={!canWrite}
               />
             ))}
           </div>
