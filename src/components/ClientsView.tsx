@@ -39,6 +39,8 @@ const mapClientData = (c: ClientData): Client => ({
 
 const ClientsView = ({ onBack }: ClientsViewProps) => {
   const { toast } = useToast();
+  const { can } = useAuth();
+  const canWrite = can("income", "write");
   const [clients, setClients] = useState<Client[]>([]);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [newClientId, setNewClientId] = useState<string | null>(null);
