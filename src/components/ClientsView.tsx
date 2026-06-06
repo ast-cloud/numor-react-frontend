@@ -5,6 +5,7 @@ import { Users, Plus, ArrowLeft, Loader2 } from "lucide-react";
 import { fetchClients, createClient, updateClient, deleteClient, type ClientData } from "@/lib/api/clients";
 import { getTaxSystem } from "@/lib/taxSystem";
 import ClientCard from "@/components/clients/ClientCard";
+import { useAuth } from "@/hooks/use-auth";
 
 export interface Client {
   id: string;
@@ -38,6 +39,8 @@ const mapClientData = (c: ClientData): Client => ({
 
 const ClientsView = ({ onBack }: ClientsViewProps) => {
   const { toast } = useToast();
+  const { can } = useAuth();
+  const canWrite = can("income", "write");
   const [clients, setClients] = useState<Client[]>([]);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [newClientId, setNewClientId] = useState<string | null>(null);
@@ -226,10 +229,12 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
           <h1 className="text-3xl font-display font-bold text-foreground">Clients</h1>
           <p className="text-muted-foreground mt-1">Manage your client information for invoices.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleAddClient}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Client
-        </Button>
+        {canWrite && (
+          <Button variant="outline" size="sm" onClick={handleAddClient}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Client
+          </Button>
+        )}
       </div>
 
       <div className="bg-card rounded-lg border border-border p-6">
@@ -257,6 +262,7 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
                 onDelete={() => handleDeleteClient(client.id)}
                 onUpdate={(field, value) => handleUpdateClient(client.id, field, value)}
                 isNew={newClientId === client.id}
+                readOnly={!canWrite}
               />
             ))}
           </div>

@@ -20,6 +20,7 @@ import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user"
 import { fetchClients, type ClientData } from "@/lib/api/clients";
 import { getTaxLabel, getTaxSystem } from "@/lib/taxSystem";
 import AddClientDialog from "@/components/AddClientDialog";
+import { useAuth } from "@/hooks/use-auth";
 import {
   createInvoice,
   updateInvoice,
@@ -317,6 +318,8 @@ const CreateInvoiceDialog = ({
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [addClientOpen, setAddClientOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  const { can } = useAuth();
+  const canAddClient = can("income", "write");
 
   // Fetch organization data and clients when dialog opens
   useEffect(() => {
@@ -1103,9 +1106,11 @@ const CreateInvoiceDialog = ({
                           {client.email ? ` (${client.email})` : ""}
                         </SelectItem>
                       ))}
-                      <SelectItem value="__add_new__" className="text-primary font-medium">
-                        + Add new client
-                      </SelectItem>
+                      {canAddClient && (
+                        <SelectItem value="__add_new__" className="text-primary font-medium">
+                          + Add new client
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
