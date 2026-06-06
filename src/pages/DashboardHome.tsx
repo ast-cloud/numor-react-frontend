@@ -33,6 +33,7 @@ import {
 } from "@/components/dashboard/widgets";
 import { saveUserWidgets } from "@/lib/api/user";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import {
   filterExpenses,
   filterInvoices,
@@ -49,6 +50,8 @@ import {
 type TimeRangePreset = "all" | "today" | "this_week" | "this_month" | "this_quarter" | "custom";
 
 const DashboardHome = () => {
+  const { can } = useAuth();
+  const canEditDashboard = can("dashboard", "write");
   const [timeRangePreset, setTimeRangePreset] = useState<TimeRangePreset>("this_month");
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
@@ -309,6 +312,7 @@ const DashboardHome = () => {
       </div>
 
       {/* Edit Mode Controls */}
+      {canEditDashboard && (
       <div className="flex items-center justify-end gap-2">
         {isEditMode && availableToAdd.length > 0 && (
           <DropdownMenu>
@@ -364,6 +368,7 @@ const DashboardHome = () => {
           )}
         </Button>
       </div>
+      )}
 
       {/* Customizable Widget Grid */}
       <div className={cn(
