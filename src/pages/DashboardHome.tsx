@@ -33,6 +33,7 @@ import {
 } from "@/components/dashboard/widgets";
 import { saveUserWidgets } from "@/lib/api/user";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import {
   filterExpenses,
   filterInvoices,
