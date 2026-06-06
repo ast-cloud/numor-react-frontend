@@ -318,6 +318,8 @@ const CreateInvoiceDialog = ({
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [addClientOpen, setAddClientOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  const { can } = useAuth();
+  const canAddClient = can("income", "write");
 
   // Fetch organization data and clients when dialog opens
   useEffect(() => {
