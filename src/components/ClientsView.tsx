@@ -229,10 +229,12 @@ const ClientsView = ({ onBack }: ClientsViewProps) => {
           <h1 className="text-3xl font-display font-bold text-foreground">Clients</h1>
           <p className="text-muted-foreground mt-1">Manage your client information for invoices.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleAddClient}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Client
-        </Button>
+        {canWrite && (
+          <Button variant="outline" size="sm" onClick={handleAddClient}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Client
+          </Button>
+        )}
       </div>
 
       <div className="bg-card rounded-lg border border-border p-6">
