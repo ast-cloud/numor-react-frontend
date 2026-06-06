@@ -5,6 +5,7 @@ import { Users, Plus, ArrowLeft, Loader2 } from "lucide-react";
 import { fetchClients, createClient, updateClient, deleteClient, type ClientData } from "@/lib/api/clients";
 import { getTaxSystem } from "@/lib/taxSystem";
 import ClientCard from "@/components/clients/ClientCard";
+import { useAuth } from "@/hooks/use-auth";
 
 export interface Client {
   id: string;
