@@ -312,6 +312,7 @@ const DashboardHome = () => {
       </div>
 
       {/* Edit Mode Controls */}
+      {canEditDashboard && (
       <div className="flex items-center justify-end gap-2">
         {isEditMode && availableToAdd.length > 0 && (
           <DropdownMenu>
