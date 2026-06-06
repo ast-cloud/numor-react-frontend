@@ -1106,9 +1106,11 @@ const CreateInvoiceDialog = ({
                           {client.email ? ` (${client.email})` : ""}
                         </SelectItem>
                       ))}
-                      <SelectItem value="__add_new__" className="text-primary font-medium">
-                        + Add new client
-                      </SelectItem>
+                      {canAddClient && (
+                        <SelectItem value="__add_new__" className="text-primary font-medium">
+                          + Add new client
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
