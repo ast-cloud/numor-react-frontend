@@ -368,6 +368,7 @@ const DashboardHome = () => {
           )}
         </Button>
       </div>
+      )}
 
       {/* Customizable Widget Grid */}
       <div className={cn(
