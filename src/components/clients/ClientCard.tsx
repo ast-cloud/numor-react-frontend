@@ -45,7 +45,7 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
             </div>
           </CollapsibleTrigger>
           <div className="flex gap-2 shrink-0 ml-3">
-            {isEditing ? (
+            {!readOnly && (isEditing ? (
               <>
                 <Button
                   size="sm"
@@ -73,8 +73,8 @@ const ClientCard = ({ client, isEditing, onEdit, onSave, onCancel, onDelete, onU
               <Button variant="outline" size="icon" className="h-7 w-7" onClick={onEdit}>
                 <Pencil className="w-3 h-3" />
               </Button>
-            )}
-            {!isNew && (
+            ))}
+            {!readOnly && !isNew && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
