@@ -1759,24 +1759,28 @@ const Expenses = () => {
                     ← Back to Receipts
                   </Button>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleEditReceipt(selectedReceipt)}
-                      className="h-8 w-8"
-                      title="Edit"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setExpenseToDelete(selectedReceipt)}
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    {canWriteExpense && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleEditReceipt(selectedReceipt)}
+                        className="h-8 w-8"
+                        title="Edit"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                    {canWriteExpense && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setExpenseToDelete(selectedReceipt)}
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-1">
