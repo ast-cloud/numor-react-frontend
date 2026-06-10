@@ -89,7 +89,7 @@ export async function updateSubAccountPermissions(
   permissions: ModulePermissions,
 ): Promise<SubAccount> {
   return authedFetch(`/api/user/subAccounts/${id}/permissions`, {
-    method: "POST",
+    method: "PUT",
     body: JSON.stringify({ permissions }),
   });
 }
