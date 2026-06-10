@@ -390,7 +390,9 @@ const DashboardHome = () => {
         ) : activeWidgets.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center h-40 text-muted-foreground">
             <p>No widgets added yet.</p>
-            <p className="text-sm">Click "Add Widget" to get started.</p>
+            {canEditDashboard && (
+              <p className="text-sm">Click "Add Widget" to get started.</p>
+            )}
           </div>
         ) : (
           activeWidgets.map((widgetType) => renderWidget(widgetType))
