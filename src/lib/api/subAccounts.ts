@@ -88,8 +88,8 @@ export async function updateSubAccountPermissions(
   id: string,
   permissions: ModulePermissions,
 ): Promise<SubAccount> {
-  return authedFetch(`/api/sub-accounts/${id}/permissions`, {
-    method: "PATCH",
+  return authedFetch(`/subAccounts/${id}/permissions`, {
+    method: "POST",
     body: JSON.stringify({ permissions }),
   });
 }
