@@ -115,7 +115,7 @@ export async function resetSubAccountPassword(
 }
 
 export async function deleteSubAccount(id: string): Promise<void> {
-  await authedFetch(`/api/sub-accounts/${id}`, { method: "DELETE" });
+  await authedFetch(`/api/user/subAccounts/${id}`, { method: "DELETE" });
 }
 
 export interface Invitation {
