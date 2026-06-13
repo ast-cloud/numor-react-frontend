@@ -78,23 +78,12 @@ const mapApiStatus = (status: string): InvoiceStatus => {
   return "unpaid";
 };
 
-const safeFormatDate = (value?: string | null): string => {
-  if (!value) return "";
-  try {
-    const d = parseISO(value);
-    if (isNaN(d.getTime())) return "";
-    return format(d, "dd/MM/yyyy");
-  } catch {
-    return "";
-  }
-};
-
 const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoice => ({
   id: inv.id,
   invoiceNumber: inv.invoiceNumber,
   clientName: clientsMap.get(inv.clientId) || inv.sellerName,
-  dueDate: safeFormatDate(inv.dueDate),
-  issueDate: safeFormatDate(inv.issueDate),
+  dueDate: format(parseISO(inv.dueDate), "dd/MM/yyyy"),
+  issueDate: inv.issueDate ? format(parseISO(inv.issueDate), "dd/MM/yyyy") : "",
   amount: parseFloat(inv.totalAmount),
   currency: inv.currency || "USD",
   status: mapApiStatus(inv.status),
