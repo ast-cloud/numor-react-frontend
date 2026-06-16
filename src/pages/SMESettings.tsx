@@ -13,6 +13,7 @@ import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import CompanyLogoUpload from "@/components/CompanyLogoUpload";
 import { INDIAN_STATES } from "@/lib/constants";
 import SubAccountsSection from "@/components/SubAccountsSection";
+import InvoiceCustomFieldsSection from "@/components/InvoiceCustomFieldsSection";
 
 const COUNTRIES = [
   "India",
@@ -560,8 +561,12 @@ const SMESettings = () => {
       </Card>
       )}
 
+      {/* Invoices - Custom Fields */}
+      {canReadSettings && <InvoiceCustomFieldsSection />}
+
       {/* Team & Permissions (org owners only) */}
       {isOrgOwner && <SubAccountsSection />}
+
 
     </div>
   );
