@@ -7,7 +7,7 @@ export interface InvoiceCustomField {
   predefinedValues: string[];
 }
 
-const BASE = '/api/organizations/custom-fields';
+const BASE = '/api/organization/custom-fields';
 
 function authHeaders() {
   const token = getToken();
