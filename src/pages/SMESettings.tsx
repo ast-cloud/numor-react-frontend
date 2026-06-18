@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -601,7 +601,13 @@ const SMESettings = () => {
       )}
 
       {/* Invoices - Custom Fields */}
-      {canReadSettings && <InvoiceCustomFieldsSection />}
+      {canReadSettings && (
+        <InvoiceCustomFieldsSection
+          fields={customFields}
+          onRefetch={refetchCustomFields}
+          isLoading={isLoadingOrg}
+        />
+      )}
 
       {/* Team & Permissions (org owners only) */}
       {isOrgOwner && <SubAccountsSection />}
