@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,17 +29,20 @@ import {
   InvoiceCustomField,
   createInvoiceCustomField,
   deleteInvoiceCustomField,
-  fetchInvoiceCustomFields,
   updateInvoiceCustomField,
 } from "@/lib/api/invoiceCustomFields";
 
-const InvoiceCustomFieldsSection = () => {
+interface InvoiceCustomFieldsSectionProps {
+  fields: InvoiceCustomField[];
+  onRefetch: () => Promise<void>;
+  isLoading: boolean;
+}
+
+const InvoiceCustomFieldsSection = ({ fields, onRefetch, isLoading }: InvoiceCustomFieldsSectionProps) => {
   const { toast } = useToast();
   const { isOrgOwner, can } = useAuth();
   const canWrite = isOrgOwner || can("organizationSettings", "write");
 
-  const [fields, setFields] = useState<InvoiceCustomField[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<InvoiceCustomField | null>(null);
   const [name, setName] = useState("");
@@ -47,27 +50,6 @@ const InvoiceCustomFieldsSection = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<InvoiceCustomField | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const load = async () => {
-    setIsLoading(true);
-    try {
-      const data = await fetchInvoiceCustomFields();
-      setFields(data);
-    } catch {
-      toast({
-        title: "Failed to load custom fields",
-        description: "Could not fetch invoice custom fields.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const openCreate = () => {
     setEditing(null);
