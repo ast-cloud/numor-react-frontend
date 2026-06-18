@@ -58,6 +58,11 @@ const SMESettings = () => {
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
+  const [customFields, setCustomFields] = useState<{
+    id: string;
+    name: string;
+    predefinedValues: string[];
+  }[]>([]);
   const [originalCompanyData, setOriginalCompanyData] = useState({
     name: "",
     streetAddress: "",
