@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,11 @@ const SMESettings = () => {
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
+  const [customFields, setCustomFields] = useState<{
+    id: string;
+    name: string;
+    predefinedValues: string[];
+  }[]>([]);
   const [originalCompanyData, setOriginalCompanyData] = useState({
     name: "",
     streetAddress: "",
@@ -136,6 +141,17 @@ const SMESettings = () => {
         };
         setCompanyData(orgData);
         setOriginalCompanyData(orgData);
+        setCustomFields(
+          Array.isArray(org.customFieldDefinitions)
+            ? org.customFieldDefinitions.map((f: any) => ({
+                id: f.id ?? "",
+                name: f.name ?? "",
+                predefinedValues: Array.isArray(f.predefinedValues)
+                  ? f.predefinedValues
+                  : [],
+              }))
+            : []
+        );
         fetchOrganizationLogo().then((url) => {
           if (url) setCompanyLogo(url);
         });
@@ -150,6 +166,29 @@ const SMESettings = () => {
       }
     };
     loadOrganization();
+  }, [toast]);
+
+  const refetchCustomFields = useCallback(async () => {
+    try {
+      const org = await fetchCurrentOrganization();
+      setCustomFields(
+        Array.isArray(org.customFieldDefinitions)
+          ? org.customFieldDefinitions.map((f: any) => ({
+              id: f.id ?? "",
+              name: f.name ?? "",
+              predefinedValues: Array.isArray(f.predefinedValues)
+                ? f.predefinedValues
+                : [],
+            }))
+          : []
+      );
+    } catch {
+      toast({
+        title: "Failed to refresh custom fields",
+        description: "Could not reload custom fields.",
+        variant: "destructive",
+      });
+    }
   }, [toast]);
 
 
@@ -562,7 +601,13 @@ const SMESettings = () => {
       )}
 
       {/* Invoices - Custom Fields */}
-      {canReadSettings && <InvoiceCustomFieldsSection />}
+      {canReadSettings && (
+        <InvoiceCustomFieldsSection
+          fields={customFields}
+          onRefetch={refetchCustomFields}
+          isLoading={isLoadingOrg}
+        />
+      )}
 
       {/* Team & Permissions (org owners only) */}
       {isOrgOwner && <SubAccountsSection />}
