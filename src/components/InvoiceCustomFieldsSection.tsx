@@ -100,7 +100,7 @@ const InvoiceCustomFieldsSection = ({ fields, onRefetch, isLoading }: InvoiceCus
         toast({ title: "Custom field created" });
       }
       setDialogOpen(false);
-      await load();
+      await onRefetch();
     } catch {
       toast({
         title: editing ? "Failed to update" : "Failed to create",
@@ -119,7 +119,7 @@ const InvoiceCustomFieldsSection = ({ fields, onRefetch, isLoading }: InvoiceCus
       await deleteInvoiceCustomField(deleteTarget.id);
       toast({ title: "Custom field deleted" });
       setDeleteTarget(null);
-      await load();
+      await onRefetch();
     } catch {
       toast({
         title: "Failed to delete",
