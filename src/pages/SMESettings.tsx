@@ -141,6 +141,17 @@ const SMESettings = () => {
         };
         setCompanyData(orgData);
         setOriginalCompanyData(orgData);
+        setCustomFields(
+          Array.isArray(org.customFieldDefinitions)
+            ? org.customFieldDefinitions.map((f: any) => ({
+                id: f.id ?? "",
+                name: f.name ?? "",
+                predefinedValues: Array.isArray(f.predefinedValues)
+                  ? f.predefinedValues
+                  : [],
+              }))
+            : []
+        );
         fetchOrganizationLogo().then((url) => {
           if (url) setCompanyLogo(url);
         });
@@ -155,6 +166,29 @@ const SMESettings = () => {
       }
     };
     loadOrganization();
+  }, [toast]);
+
+  const refetchCustomFields = useCallback(async () => {
+    try {
+      const org = await fetchCurrentOrganization();
+      setCustomFields(
+        Array.isArray(org.customFieldDefinitions)
+          ? org.customFieldDefinitions.map((f: any) => ({
+              id: f.id ?? "",
+              name: f.name ?? "",
+              predefinedValues: Array.isArray(f.predefinedValues)
+                ? f.predefinedValues
+                : [],
+            }))
+          : []
+      );
+    } catch {
+      toast({
+        title: "Failed to refresh custom fields",
+        description: "Could not reload custom fields.",
+        variant: "destructive",
+      });
+    }
   }, [toast]);
 
 
