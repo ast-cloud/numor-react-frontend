@@ -29,6 +29,13 @@ import {
   type InvoiceData,
 } from "@/lib/api/invoices";
 import { toast } from "@/hooks/use-toast";
+import type { InvoiceCustomField } from "@/lib/api/invoiceCustomFields";
+
+interface InvoiceCustomFieldValue {
+  definitionId: string;
+  name: string;
+  value: string;
+}
 
 interface CreateInvoiceDialogProps {
   onInvoiceCreated?: () => void;
@@ -82,6 +89,7 @@ interface InvoiceFormData {
   ifscCode: string;
   bankAddress: string;
   notes: string;
+  customFields: InvoiceCustomFieldValue[];
 }
 
 // Country-to-currency/tax defaults mapping
@@ -207,6 +215,7 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
     ifscCode: "",
     bankAddress: "",
     notes: "",
+    customFields: [],
   };
 };
 
@@ -294,6 +303,13 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
     ifscCode: inv.bankDetails?.ifsc || "",
     bankAddress: inv.bankAddress || "",
     notes: inv.notes || "",
+    customFields: Array.isArray((inv as unknown as { customFields?: InvoiceCustomFieldValue[] }).customFields)
+      ? ((inv as unknown as { customFields: InvoiceCustomFieldValue[] }).customFields).map((f) => ({
+          definitionId: String(f.definitionId),
+          name: f.name,
+          value: f.value ?? "",
+        }))
+      : [],
   };
 };
 
@@ -318,6 +334,7 @@ const CreateInvoiceDialog = ({
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [addClientOpen, setAddClientOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  const [orgCustomFieldDefs, setOrgCustomFieldDefs] = useState<InvoiceCustomField[]>([]);
   const { can } = useAuth();
   const canAddClient = can("income", "write");
 
@@ -329,11 +346,24 @@ const CreateInvoiceDialog = ({
     // In edit mode, fetch invoice details
     if (isEditMode && editInvoiceId) {
       setEditLoading(true);
-      Promise.all([fetchInvoice(editInvoiceId), fetchClients(), fetchOrganizationLogo().catch(() => null)])
-        .then(([invoiceData, clientData, logoUrl]) => {
+      Promise.all([
+        fetchInvoice(editInvoiceId),
+        fetchClients(),
+        fetchOrganizationLogo().catch(() => null),
+        fetchCurrentOrganization().catch(() => null),
+      ])
+        .then(([invoiceData, clientData, logoUrl, org]) => {
           if (cancelled) return;
           console.log("Invoice data received:", JSON.stringify(invoiceData));
           setSavedClients(clientData);
+          const defs: InvoiceCustomField[] = Array.isArray(org?.customFieldDefinitions)
+            ? org.customFieldDefinitions.map((f: { id: string | number; name: string; predefinedValues?: string[] }) => ({
+                id: String(f.id),
+                name: f.name,
+                predefinedValues: Array.isArray(f.predefinedValues) ? f.predefinedValues : [],
+              }))
+            : [];
+          setOrgCustomFieldDefs(defs);
           const mapped = mapInvoiceDataToForm(invoiceData, undefined, clientData);
           if (logoUrl) mapped.seller.logo = logoUrl;
           console.log("Mapped form data:", JSON.stringify(mapped));
@@ -363,6 +393,14 @@ const CreateInvoiceDialog = ({
             email: org.email || "",
             phone: org.phone || "",
           };
+          const defs: InvoiceCustomField[] = Array.isArray(org?.customFieldDefinitions)
+            ? org.customFieldDefinitions.map((f: { id: string | number; name: string; predefinedValues?: string[] }) => ({
+                id: String(f.id),
+                name: f.name,
+                predefinedValues: Array.isArray(f.predefinedValues) ? f.predefinedValues : [],
+              }))
+            : [];
+          setOrgCustomFieldDefs(defs);
           setFormData(getInitialFormData(seller));
         })
         .catch(() => {});
@@ -470,6 +508,26 @@ const CreateInvoiceDialog = ({
         lineItems: updatedLineItems,
       };
     });
+  };
+
+  const toggleCustomField = (def: InvoiceCustomField, checked: boolean) => {
+    setFormData((prev) => {
+      if (checked) {
+        if (prev.customFields.some((f) => f.definitionId === def.id)) return prev;
+        return {
+          ...prev,
+          customFields: [...prev.customFields, { definitionId: def.id, name: def.name, value: "" }],
+        };
+      }
+      return { ...prev, customFields: prev.customFields.filter((f) => f.definitionId !== def.id) };
+    });
+  };
+
+  const setCustomFieldValue = (definitionId: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      customFields: prev.customFields.map((f) => (f.definitionId === definitionId ? { ...f, value } : f)),
+    }));
   };
 
   const handleLineItemChange = (id: string, field: keyof LineItem, value: string | number) => {
@@ -637,6 +695,9 @@ const CreateInvoiceDialog = ({
         taxRate: item.taxPercent,
         itemTotal: String(calculateLineTotal(item)),
       })),
+      customFields: formData.customFields
+        .filter((f) => f.value.trim() !== "")
+        .map((f) => ({ definitionId: f.definitionId, name: f.name, value: f.value.trim() })),
     };
   };
 
@@ -1089,6 +1150,58 @@ const CreateInvoiceDialog = ({
                   </div>
                 </Collapsible>
               </div>
+
+              {/* Invoice Custom Fields */}
+              {orgCustomFieldDefs.length > 0 && (
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-medium text-foreground">Custom Fields</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Select fields to include on this invoice. You can pick a predefined value or type your own.
+                    </p>
+                  </div>
+                  <div className="border border-border rounded-lg divide-y divide-border">
+                    {orgCustomFieldDefs.map((def) => {
+                      const selected = formData.customFields.find((f) => f.definitionId === def.id);
+                      const isChecked = !!selected;
+                      const listId = `cf-list-${def.id}`;
+                      return (
+                        <div
+                          key={def.id}
+                          className="p-3 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-3 items-center"
+                        >
+                          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                            <Checkbox
+                              checked={isChecked}
+                              onCheckedChange={(c) => toggleCustomField(def, c === true)}
+                            />
+                            <span className="font-medium">{def.name}</span>
+                          </label>
+                          {isChecked ? (
+                            <>
+                              <Input
+                                list={def.predefinedValues.length ? listId : undefined}
+                                placeholder="Select or type a value"
+                                value={selected?.value ?? ""}
+                                onChange={(e) => setCustomFieldValue(def.id, e.target.value)}
+                              />
+                              {def.predefinedValues.length > 0 && (
+                                <datalist id={listId}>
+                                  {def.predefinedValues.map((v) => (
+                                    <option key={v} value={v} />
+                                  ))}
+                                </datalist>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Not included</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Client Info */}
               <div className="space-y-4">
