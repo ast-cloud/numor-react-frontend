@@ -89,6 +89,7 @@ interface InvoiceFormData {
   ifscCode: string;
   bankAddress: string;
   notes: string;
+  customFields: InvoiceCustomFieldValue[];
 }
 
 // Country-to-currency/tax defaults mapping
