@@ -1152,7 +1152,7 @@ const CreateInvoiceDialog = ({
               </div>
 
               {/* Custom Fields */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <h3 className="font-medium text-foreground">Custom Fields</h3>
                 {orgCustomFieldDefs.length > 0 && (
                   <div className="border border-border rounded-lg divide-y divide-border bg-background">
