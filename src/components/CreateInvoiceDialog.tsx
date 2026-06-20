@@ -346,11 +346,24 @@ const CreateInvoiceDialog = ({
     // In edit mode, fetch invoice details
     if (isEditMode && editInvoiceId) {
       setEditLoading(true);
-      Promise.all([fetchInvoice(editInvoiceId), fetchClients(), fetchOrganizationLogo().catch(() => null)])
-        .then(([invoiceData, clientData, logoUrl]) => {
+      Promise.all([
+        fetchInvoice(editInvoiceId),
+        fetchClients(),
+        fetchOrganizationLogo().catch(() => null),
+        fetchCurrentOrganization().catch(() => null),
+      ])
+        .then(([invoiceData, clientData, logoUrl, org]) => {
           if (cancelled) return;
           console.log("Invoice data received:", JSON.stringify(invoiceData));
           setSavedClients(clientData);
+          const defs: InvoiceCustomField[] = Array.isArray(org?.customFieldDefinitions)
+            ? org.customFieldDefinitions.map((f: { id: string | number; name: string; predefinedValues?: string[] }) => ({
+                id: String(f.id),
+                name: f.name,
+                predefinedValues: Array.isArray(f.predefinedValues) ? f.predefinedValues : [],
+              }))
+            : [];
+          setOrgCustomFieldDefs(defs);
           const mapped = mapInvoiceDataToForm(invoiceData, undefined, clientData);
           if (logoUrl) mapped.seller.logo = logoUrl;
           console.log("Mapped form data:", JSON.stringify(mapped));
@@ -380,6 +393,14 @@ const CreateInvoiceDialog = ({
             email: org.email || "",
             phone: org.phone || "",
           };
+          const defs: InvoiceCustomField[] = Array.isArray(org?.customFieldDefinitions)
+            ? org.customFieldDefinitions.map((f: { id: string | number; name: string; predefinedValues?: string[] }) => ({
+                id: String(f.id),
+                name: f.name,
+                predefinedValues: Array.isArray(f.predefinedValues) ? f.predefinedValues : [],
+              }))
+            : [];
+          setOrgCustomFieldDefs(defs);
           setFormData(getInitialFormData(seller));
         })
         .catch(() => {});
