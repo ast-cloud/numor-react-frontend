@@ -1151,6 +1151,58 @@ const CreateInvoiceDialog = ({
                 </Collapsible>
               </div>
 
+              {/* Invoice Custom Fields */}
+              {orgCustomFieldDefs.length > 0 && (
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-medium text-foreground">Custom Fields</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Select fields to include on this invoice. You can pick a predefined value or type your own.
+                    </p>
+                  </div>
+                  <div className="border border-border rounded-lg divide-y divide-border">
+                    {orgCustomFieldDefs.map((def) => {
+                      const selected = formData.customFields.find((f) => f.definitionId === def.id);
+                      const isChecked = !!selected;
+                      const listId = `cf-list-${def.id}`;
+                      return (
+                        <div
+                          key={def.id}
+                          className="p-3 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-3 items-center"
+                        >
+                          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                            <Checkbox
+                              checked={isChecked}
+                              onCheckedChange={(c) => toggleCustomField(def, c === true)}
+                            />
+                            <span className="font-medium">{def.name}</span>
+                          </label>
+                          {isChecked ? (
+                            <>
+                              <Input
+                                list={def.predefinedValues.length ? listId : undefined}
+                                placeholder="Select or type a value"
+                                value={selected?.value ?? ""}
+                                onChange={(e) => setCustomFieldValue(def.id, e.target.value)}
+                              />
+                              {def.predefinedValues.length > 0 && (
+                                <datalist id={listId}>
+                                  {def.predefinedValues.map((v) => (
+                                    <option key={v} value={v} />
+                                  ))}
+                                </datalist>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Not included</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Client Info */}
               <div className="space-y-4">
                 <h3 className="font-medium text-foreground">Client Information</h3>
