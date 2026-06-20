@@ -215,6 +215,7 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
     ifscCode: "",
     bankAddress: "",
     notes: "",
+    customFields: [],
   };
 };
 
