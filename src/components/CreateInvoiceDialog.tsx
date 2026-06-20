@@ -303,6 +303,13 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
     ifscCode: inv.bankDetails?.ifsc || "",
     bankAddress: inv.bankAddress || "",
     notes: inv.notes || "",
+    customFields: Array.isArray((inv as unknown as { customFields?: InvoiceCustomFieldValue[] }).customFields)
+      ? ((inv as unknown as { customFields: InvoiceCustomFieldValue[] }).customFields).map((f) => ({
+          definitionId: String(f.definitionId),
+          name: f.name,
+          value: f.value ?? "",
+        }))
+      : [],
   };
 };
 
