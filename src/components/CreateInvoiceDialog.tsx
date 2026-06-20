@@ -510,6 +510,26 @@ const CreateInvoiceDialog = ({
     });
   };
 
+  const toggleCustomField = (def: InvoiceCustomField, checked: boolean) => {
+    setFormData((prev) => {
+      if (checked) {
+        if (prev.customFields.some((f) => f.definitionId === def.id)) return prev;
+        return {
+          ...prev,
+          customFields: [...prev.customFields, { definitionId: def.id, name: def.name, value: "" }],
+        };
+      }
+      return { ...prev, customFields: prev.customFields.filter((f) => f.definitionId !== def.id) };
+    });
+  };
+
+  const setCustomFieldValue = (definitionId: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      customFields: prev.customFields.map((f) => (f.definitionId === definitionId ? { ...f, value } : f)),
+    }));
+  };
+
   const handleLineItemChange = (id: string, field: keyof LineItem, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
