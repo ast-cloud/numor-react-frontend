@@ -675,6 +675,9 @@ const CreateInvoiceDialog = ({
         taxRate: item.taxPercent,
         itemTotal: String(calculateLineTotal(item)),
       })),
+      customFields: formData.customFields
+        .filter((f) => f.value.trim() !== "")
+        .map((f) => ({ definitionId: f.definitionId, name: f.name, value: f.value.trim() })),
     };
   };
 
