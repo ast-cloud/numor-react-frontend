@@ -29,6 +29,13 @@ import {
   type InvoiceData,
 } from "@/lib/api/invoices";
 import { toast } from "@/hooks/use-toast";
+import type { InvoiceCustomField } from "@/lib/api/invoiceCustomFields";
+
+interface InvoiceCustomFieldValue {
+  definitionId: string;
+  name: string;
+  value: string;
+}
 
 interface CreateInvoiceDialogProps {
   onInvoiceCreated?: () => void;
