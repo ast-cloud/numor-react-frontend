@@ -334,6 +334,7 @@ const CreateInvoiceDialog = ({
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [addClientOpen, setAddClientOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  const [orgCustomFieldDefs, setOrgCustomFieldDefs] = useState<InvoiceCustomField[]>([]);
   const { can } = useAuth();
   const canAddClient = can("income", "write");
 
