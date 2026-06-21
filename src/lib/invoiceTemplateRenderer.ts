@@ -216,6 +216,9 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
     bankAddress: formData.bankAddress || "",
     paymentTerms: formData.paymentTerms || "Payment due as per terms.",
     notes: formData.notes || "",
+    customFields: (formData.customFields || [])
+      .filter((f) => f.value.trim() !== "")
+      .map((f) => ({ name: f.name, value: f.value.trim() })),
   };
 
   return template(data);
