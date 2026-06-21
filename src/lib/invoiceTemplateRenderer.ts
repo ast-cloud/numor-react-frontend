@@ -25,6 +25,12 @@ interface SellerInfo {
   phone: string;
 }
 
+interface InvoiceCustomFieldValue {
+  definitionId: string;
+  name: string;
+  value: string;
+}
+
 export interface InvoiceFormData {
   invoiceNumber: string;
   invoiceDate: Date | undefined;
@@ -52,6 +58,7 @@ export interface InvoiceFormData {
   notes: string;
   sacCode?: string;
   paymentTerms?: string;
+  customFields?: InvoiceCustomFieldValue[];
 }
 
 const utgstTerritories = [
