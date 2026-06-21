@@ -143,6 +143,31 @@
          .totals table {
          page-break-inside: avoid;
          }
+         /* Custom fields */
+         .custom-fields {
+         margin: 16px 0 20px;
+         }
+         .custom-fields h4 {
+         margin-bottom: 8px;
+         font-size: 13px;
+         color: #111827;
+         }
+         .custom-field-grid {
+         display: flex;
+         flex-wrap: wrap;
+         gap: 6px 16px;
+         }
+         .custom-field-item {
+         flex: 0 0 48%;
+         font-size: 12px;
+         line-height: 1.4;
+         word-break: break-word;
+         page-break-inside: avoid;
+         }
+         .custom-field-label {
+         font-weight: 600;
+         color: #111827;
+         }
       </style>
    </head>
    <body>
@@ -187,6 +212,18 @@
                <p>{{client.companyType}}</p>
             </div>
          </div>
+         {{#if customFields}}
+         <div class="custom-fields">
+            <h4>Custom Fields</h4>
+            <div class="custom-field-grid">
+               {{#each customFields}}
+               <div class="custom-field-item">
+                  <span class="custom-field-label">{{name}}:</span> {{value}}
+               </div>
+               {{/each}}
+            </div>
+         </div>
+         {{/if}}
          <!-- ITEMS -->
          <table>
             <thead>

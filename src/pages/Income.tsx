@@ -318,6 +318,7 @@ const Income = () => {
         notes: detail.notes || "",
         sacCode: detail.sacCode || "",
         paymentTerms: detail.paymentTerms || "",
+        customFields: detail.customFields || [],
       };
       setPreviewFormData(formData);
     } catch {

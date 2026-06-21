@@ -82,6 +82,7 @@ export interface InvoiceData {
     swift: string;
   };
   bankAddress?: string;
+  customFields?: { definitionId: string; name: string; value: string }[];
 }
 
 export async function fetchInvoices(): Promise<InvoiceData[]> {

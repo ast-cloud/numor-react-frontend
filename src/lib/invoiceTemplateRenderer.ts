@@ -25,6 +25,12 @@ interface SellerInfo {
   phone: string;
 }
 
+interface InvoiceCustomFieldValue {
+  definitionId: string;
+  name: string;
+  value: string;
+}
+
 export interface InvoiceFormData {
   invoiceNumber: string;
   invoiceDate: Date | undefined;
@@ -52,6 +58,7 @@ export interface InvoiceFormData {
   notes: string;
   sacCode?: string;
   paymentTerms?: string;
+  customFields?: InvoiceCustomFieldValue[];
 }
 
 const utgstTerritories = [
@@ -209,6 +216,9 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
     bankAddress: formData.bankAddress || "",
     paymentTerms: formData.paymentTerms || "Payment due as per terms.",
     notes: formData.notes || "",
+    customFields: (formData.customFields || [])
+      .filter((f) => f.value.trim() !== "")
+      .map((f) => ({ name: f.name, value: f.value.trim() })),
   };
 
   return template(data);
