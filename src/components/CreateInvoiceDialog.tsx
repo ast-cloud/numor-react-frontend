@@ -1152,10 +1152,13 @@ const CreateInvoiceDialog = ({
               </div>
 
               {/* Custom Fields */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Custom Fields</h3>
+              <div className="p-3 border border-border rounded-lg bg-muted/20 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Settings2 className="w-4 h-4" />
+                  Custom Fields
+                </div>
                 {orgCustomFieldDefs.length > 0 && (
-                  <div className="border border-border rounded-lg divide-y divide-border bg-background">
+                  <div className="space-y-2">
                     {orgCustomFieldDefs.map((def) => {
                       const selected = formData.customFields.find((f) => f.definitionId === def.id);
                       const isChecked = !!selected;
@@ -1163,18 +1166,19 @@ const CreateInvoiceDialog = ({
                       return (
                         <div
                           key={def.id}
-                          className="p-3 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-3 items-center"
+                          className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-2 items-center"
                         >
                           <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                             <Checkbox
                               checked={isChecked}
                               onCheckedChange={(c) => toggleCustomField(def, c === true)}
                             />
-                            <span className="font-medium">{def.name}</span>
+                            <span className="text-sm">{def.name}</span>
                           </label>
                           {isChecked ? (
                             <>
                               <Input
+                                className="h-8 text-sm"
                                 list={def.predefinedValues.length ? listId : undefined}
                                 placeholder="Select or type a value"
                                 value={selected?.value ?? ""}
