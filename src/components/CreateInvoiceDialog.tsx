@@ -1162,36 +1162,48 @@ const CreateInvoiceDialog = ({
                     {orgCustomFieldDefs.map((def) => {
                       const selected = formData.customFields.find((f) => f.definitionId === def.id);
                       const isChecked = !!selected;
-                      const listId = `cf-list-${def.id}`;
                       return (
                         <div
                           key={def.id}
                           className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-2 items-center"
                         >
-                          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                          <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
                             <Checkbox
                               checked={isChecked}
                               onCheckedChange={(c) => toggleCustomField(def, c === true)}
                             />
-                            <span className="text-sm">{def.name}</span>
+                            <span className="text-xs">{def.name}</span>
                           </label>
                           {isChecked ? (
-                            <>
+                            def.predefinedValues.length > 0 ? (
+                              <Select
+                                value={selected?.value ?? ""}
+                                onValueChange={(value) => setCustomFieldValue(def.id, value)}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="Select a value" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {def.predefinedValues.map((v) => (
+                                    <SelectItem key={v} value={v} className="text-xs">
+                                      {v}
+                                    </SelectItem>
+                                  ))}
+                                  {selected?.value && !def.predefinedValues.includes(selected.value) && (
+                                    <SelectItem value={selected.value} className="text-xs">
+                                      {selected.value}
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            ) : (
                               <Input
-                                className="h-8 text-sm"
-                                list={def.predefinedValues.length ? listId : undefined}
-                                placeholder="Select or type a value"
+                                className="h-8 text-xs"
+                                placeholder="Enter a value"
                                 value={selected?.value ?? ""}
                                 onChange={(e) => setCustomFieldValue(def.id, e.target.value)}
                               />
-                              {def.predefinedValues.length > 0 && (
-                                <datalist id={listId}>
-                                  {def.predefinedValues.map((v) => (
-                                    <option key={v} value={v} />
-                                  ))}
-                                </datalist>
-                              )}
-                            </>
+                            )
                           ) : (
                             <span className="text-xs text-muted-foreground">Not included</span>
                           )}
