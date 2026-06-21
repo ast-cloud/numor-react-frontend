@@ -1203,7 +1203,6 @@ const CreateInvoiceDialog = ({
                 </Collapsible>
               </div>
 
-
               {/* Client Info */}
               <div className="space-y-4">
                 <h3 className="font-medium text-foreground">Client Information</h3>
