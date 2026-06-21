@@ -212,6 +212,18 @@
                <p>{{client.companyType}}</p>
             </div>
          </div>
+         {{#if customFields}}
+         <div class="custom-fields">
+            <h4>Custom Fields</h4>
+            <div class="custom-field-grid">
+               {{#each customFields}}
+               <div class="custom-field-item">
+                  <span class="custom-field-label">{{name}}:</span> {{value}}
+               </div>
+               {{/each}}
+            </div>
+         </div>
+         {{/if}}
          <!-- ITEMS -->
          <table>
             <thead>
