@@ -1144,6 +1144,58 @@ const CreateInvoiceDialog = ({
                               </div>
                             </div>
                           </div>
+                          {/* Custom Fields Subgroup */}
+                          <div className="md:col-span-2 p-3 border border-border rounded-lg bg-muted/20 space-y-3">
+                            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                              <Tags className="w-4 h-4" />
+                              Custom Fields
+                            </div>
+                            {orgCustomFieldDefs.length > 0 ? (
+                              <div className="space-y-2">
+                                {orgCustomFieldDefs.map((def) => {
+                                  const selected = formData.customFields.find((f) => f.definitionId === def.id);
+                                  const isChecked = !!selected;
+                                  const listId = `cf-list-${def.id}`;
+                                  return (
+                                    <div
+                                      key={def.id}
+                                      className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-2 items-center"
+                                    >
+                                      <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                                        <Checkbox
+                                          checked={isChecked}
+                                          onCheckedChange={(c) => toggleCustomField(def, c === true)}
+                                        />
+                                        <span className="font-medium">{def.name}</span>
+                                      </label>
+                                      {isChecked ? (
+                                        <>
+                                          <Input
+                                            list={def.predefinedValues.length ? listId : undefined}
+                                            placeholder="Select or type"
+                                            className="h-8"
+                                            value={selected?.value ?? ""}
+                                            onChange={(e) => setCustomFieldValue(def.id, e.target.value)}
+                                          />
+                                          {def.predefinedValues.length > 0 && (
+                                            <datalist id={listId}>
+                                              {def.predefinedValues.map((v) => (
+                                                <option key={v} value={v} />
+                                              ))}
+                                            </datalist>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <span className="text-xs text-muted-foreground">Not included</span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">No custom fields configured.</p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </CollapsibleContent>
