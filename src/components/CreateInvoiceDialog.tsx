@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import InvoicePreview from "@/components/InvoicePreview";
+import InvoicePreviewWrapper from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
@@ -806,7 +806,7 @@ const CreateInvoiceDialog = ({
             </DialogHeader>
             <div className="flex-1 min-h-0 overflow-y-auto">
               <div className="w-full px-4 py-6 bg-muted/30">
-                <InvoicePreview formData={formData} />
+                <InvoicePreviewWrapper formData={formData} />
               </div>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-6 border-t flex-shrink-0">
