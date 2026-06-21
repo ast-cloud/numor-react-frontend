@@ -1,3 +1,11 @@
+import { useMemo, useRef, useState, useEffect } from "react";
+import { renderInvoiceHtml, type InvoiceFormData } from "@/lib/invoiceTemplateRenderer";
+
+interface InvoicePreviewProps {
+  formData: InvoiceFormData;
+}
+
+const InvoicePreviewWrapper = ({ formData }: InvoicePreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
