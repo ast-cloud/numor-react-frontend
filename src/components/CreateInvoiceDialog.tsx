@@ -703,7 +703,7 @@ const CreateInvoiceDialog = ({
         quantity: item.quantity,
         unitType: item.unit,
         unitPrice: item.rate,
-        taxRate: item.taxPercent,
+        taxRate: isCrossBorder ? 0 : item.taxPercent,
         itemTotal: String(calculateLineTotal(item)),
       })),
       customFields: formData.customFields
