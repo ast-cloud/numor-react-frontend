@@ -564,9 +564,12 @@ const CreateInvoiceDialog = ({
     }
   };
 
+  const isCrossBorderInvoice = () =>
+    !!(formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry);
+
   const calculateLineTotal = (item: LineItem) => {
     const subtotal = item.quantity * item.rate;
-    const tax = subtotal * (item.taxPercent / 100);
+    const tax = isCrossBorderInvoice() ? 0 : subtotal * (item.taxPercent / 100);
     return subtotal + tax;
   };
 
@@ -575,6 +578,7 @@ const CreateInvoiceDialog = ({
   };
 
   const calculateTotalTax = () => {
+    if (isCrossBorderInvoice()) return 0;
     return formData.lineItems.reduce((sum, item) => {
       const subtotal = item.quantity * item.rate;
       return sum + subtotal * (item.taxPercent / 100);
