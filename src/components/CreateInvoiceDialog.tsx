@@ -426,17 +426,24 @@ const CreateInvoiceDialog = ({
     const client = savedClients.find((c) => c.id === clientId);
     if (!client) return;
     setSelectedClientId(clientId);
-    setFormData((prev) => ({
-      ...prev,
-      clientName: client.name || "",
-      clientEmail: client.email || "",
-      clientStreetAddress: client.streetAddress || "",
-      clientCity: client.city || "",
-      clientState: client.state || "",
-      clientZip: client.zipCode || "",
-      clientCountry: client.country || "",
-      clientTaxId: client.taxId || "",
-    }));
+    setFormData((prev) => {
+      const newClientCountry = client.country || "";
+      const isCrossBorder = !!(prev.seller.country && newClientCountry && prev.seller.country !== newClientCountry);
+      return {
+        ...prev,
+        clientName: client.name || "",
+        clientEmail: client.email || "",
+        clientStreetAddress: client.streetAddress || "",
+        clientCity: client.city || "",
+        clientState: client.state || "",
+        clientZip: client.zipCode || "",
+        clientCountry: newClientCountry,
+        clientTaxId: client.taxId || "",
+        lineItems: isCrossBorder
+          ? prev.lineItems.map((item) => ({ ...item, taxPercent: 0 }))
+          : prev.lineItems,
+      };
+    });
     setClientExpanded(false);
   };
 
@@ -557,9 +564,12 @@ const CreateInvoiceDialog = ({
     }
   };
 
+  const isCrossBorderInvoice = () =>
+    !!(formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry);
+
   const calculateLineTotal = (item: LineItem) => {
     const subtotal = item.quantity * item.rate;
-    const tax = subtotal * (item.taxPercent / 100);
+    const tax = isCrossBorderInvoice() ? 0 : subtotal * (item.taxPercent / 100);
     return subtotal + tax;
   };
 
@@ -568,6 +578,7 @@ const CreateInvoiceDialog = ({
   };
 
   const calculateTotalTax = () => {
+    if (isCrossBorderInvoice()) return 0;
     return formData.lineItems.reduce((sum, item) => {
       const subtotal = item.quantity * item.rate;
       return sum + subtotal * (item.taxPercent / 100);
