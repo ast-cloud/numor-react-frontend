@@ -697,7 +697,7 @@ const CreateInvoiceDialog = ({
       })),
       customFields: formData.customFields
         .filter((f) => f.value.trim() !== "")
-        .map((f) => ({ definitionId: f.definitionId, name: f.name, value: f.value.trim() })),
+        .map((f) => ({ name: f.name, value: f.value.trim() })),
     };
   };
 
