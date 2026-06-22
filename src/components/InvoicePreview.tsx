@@ -28,7 +28,7 @@ const InvoicePreviewWrapper = ({ formData }: InvoicePreviewProps) => {
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full overflow-hidden" style={{ maxWidth: "100%" }}>
+    <div ref={containerRef} className="w-full min-w-0 overflow-hidden" style={{ maxWidth: "100%" }}>
       <div
         style={{
           width: "100%",
