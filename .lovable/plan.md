@@ -1,16 +1,15 @@
-Plan: Remove the "Custom Fields" heading from the invoice
+Change the invoice creation payload so that `customFields` only contains `name` and `value`, matching the requested shape:
 
-Context
-- The invoice template already renders selected custom fields in a two-column grid between the seller/buyer block and the line-items table.
-- The user wants to keep this position, but remove the literal "Custom Fields" section heading.
+```json
+"customFields": [
+  { "name": "PO Number", "value": "PO-9876" },
+  { "name": "Project Code", "value": "PROJ-42" }
+]
+```
 
-Changes
-1. Update src/templates/invoice.html
-   - Remove the <h4>Custom Fields</h4> element inside the .custom-fields block.
-   - Keep the .custom-fields container and .custom-field-grid so the field list remains in the same position with the same layout.
-   - Optionally tighten the top margin of .custom-fields slightly since the heading is gone (e.g., from margin-top 16px to 8px) so the spacing still looks balanced.
+### What will change
+- In `src/components/CreateInvoiceDialog.tsx`, update the `buildPayload` function's `customFields` mapping to drop `definitionId` from the outgoing JSON.
+- Internal state will still keep `definitionId` so that checkbox selection and value updates continue to work correctly.
 
-2. Verify
-   - Confirm that the custom fields still render when present and that the PDF/preview layout is unaffected except for the missing heading.
-
-No other files need to change. The custom field selector UI in CreateInvoiceDialog.tsx remains unchanged.
+### Out of scope
+- No changes to the custom field UI, definitions API, or the preview template, which already receives only `name` and `value`.
