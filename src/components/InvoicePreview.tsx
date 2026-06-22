@@ -28,9 +28,10 @@ const InvoicePreviewWrapper = ({ formData }: InvoicePreviewProps) => {
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full overflow-hidden" style={{ maxWidth: "100%" }}>
+    <div ref={containerRef} className="w-full min-w-0 overflow-hidden" style={{ maxWidth: "100%" }}>
       <div
         style={{
+          position: "relative",
           width: "100%",
           height: scale > 0 ? `${PAGE_HEIGHT * scale}px` : `${PAGE_HEIGHT}px`,
           overflow: "hidden",
@@ -39,6 +40,9 @@ const InvoicePreviewWrapper = ({ formData }: InvoicePreviewProps) => {
       >
         <div
           style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
             width: `${PAGE_WIDTH}px`,
             height: `${PAGE_HEIGHT}px`,
             transform: `scale(${scale || 1})`,

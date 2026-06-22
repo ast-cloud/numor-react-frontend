@@ -788,14 +788,17 @@ const CreateInvoiceDialog = ({
         </DialogTrigger>
       )}
       <DialogContent
-        className={cn("max-h-[95vh] overflow-hidden p-0 w-[95vw]", showPreview ? "max-w-[900px]" : "max-w-4xl")}
+        className={cn(
+          "p-0 w-[95vw]",
+          showPreview ? "max-w-4xl h-[85vh] flex flex-col overflow-hidden" : "max-w-4xl max-h-[95vh] overflow-hidden",
+        )}
       >
         {editLoading ? (
           <div className="flex items-center justify-center h-64">
             <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : showPreview ? (
-          <div className="flex flex-col max-h-[95vh]">
+          <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
             <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
               <DialogTitle className="text-xl font-semibold flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBackToForm}>
@@ -804,8 +807,8 @@ const CreateInvoiceDialog = ({
                 Invoice Preview
               </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <div className="w-full px-4 py-6 bg-muted/30">
+            <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden">
+              <div className="w-full min-w-0 overflow-hidden px-4 py-6 bg-muted/30">
                 <InvoicePreviewWrapper formData={formData} />
               </div>
             </div>
