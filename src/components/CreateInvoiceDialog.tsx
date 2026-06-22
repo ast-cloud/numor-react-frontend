@@ -807,8 +807,11 @@ const CreateInvoiceDialog = ({
                 Invoice Preview
               </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden">
-              <div className="w-full min-w-0 overflow-hidden px-4 py-6 bg-muted/30">
+            <div
+              className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden bg-muted/30"
+              style={{ scrollbarGutter: "stable both-edges" }}
+            >
+              <div className="w-full min-w-0 overflow-hidden px-4 py-6">
                 <InvoicePreviewWrapper formData={formData} />
               </div>
             </div>
