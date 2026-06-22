@@ -426,17 +426,24 @@ const CreateInvoiceDialog = ({
     const client = savedClients.find((c) => c.id === clientId);
     if (!client) return;
     setSelectedClientId(clientId);
-    setFormData((prev) => ({
-      ...prev,
-      clientName: client.name || "",
-      clientEmail: client.email || "",
-      clientStreetAddress: client.streetAddress || "",
-      clientCity: client.city || "",
-      clientState: client.state || "",
-      clientZip: client.zipCode || "",
-      clientCountry: client.country || "",
-      clientTaxId: client.taxId || "",
-    }));
+    setFormData((prev) => {
+      const newClientCountry = client.country || "";
+      const isCrossBorder = !!(prev.seller.country && newClientCountry && prev.seller.country !== newClientCountry);
+      return {
+        ...prev,
+        clientName: client.name || "",
+        clientEmail: client.email || "",
+        clientStreetAddress: client.streetAddress || "",
+        clientCity: client.city || "",
+        clientState: client.state || "",
+        clientZip: client.zipCode || "",
+        clientCountry: newClientCountry,
+        clientTaxId: client.taxId || "",
+        lineItems: isCrossBorder
+          ? prev.lineItems.map((item) => ({ ...item, taxPercent: 0 }))
+          : prev.lineItems,
+      };
+    });
     setClientExpanded(false);
   };
 
