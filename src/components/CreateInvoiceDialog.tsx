@@ -1720,14 +1720,27 @@ const CreateInvoiceDialog = ({
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 pb-6 border-t">
-                <Button variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
-                  {savingDraft ? "Saving..." : "Save as Draft"}
-                </Button>
-                <Button onClick={handlePreview}>Create Invoice</Button>
+              <div className="flex flex-col items-end gap-2 pt-4 pb-6 border-t">
+                {!isFormValid && (
+                  <div className="text-xs text-destructive text-right space-y-0.5">
+                    {!hasClientSelected && <p>Please select a client before creating the invoice.</p>}
+                    {!hasAtLeastOneItem && <p>Add at least one item.</p>}
+                    {hasAtLeastOneItem && !allItemsHaveDescription && (
+                      <p>Description is required for all items.</p>
+                    )}
+                  </div>
+                )}
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
+                    {savingDraft ? "Saving..." : "Save as Draft"}
+                  </Button>
+                  <Button onClick={handlePreview} disabled={!isFormValid}>
+                    Create Invoice
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
