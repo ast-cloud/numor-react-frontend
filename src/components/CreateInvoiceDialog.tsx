@@ -1481,7 +1481,7 @@ const CreateInvoiceDialog = ({
                           value={item.description}
                           onChange={(e) => handleLineItemChange(item.id, "description", e.target.value)}
                         />
-                        {attemptedSubmit && !item.description.trim() && (
+                        {attemptedSubmit && submittedItemIds.includes(item.id) && !item.description.trim() && (
                           <p className="text-xs text-destructive mt-1">Description is required.</p>
                         )}
                       </div>
