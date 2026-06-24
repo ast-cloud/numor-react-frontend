@@ -1716,7 +1716,18 @@ const CreateInvoiceDialog = ({
                 <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
                   {savingDraft ? "Saving..." : "Save as Draft"}
                 </Button>
-                <Button onClick={handlePreview} disabled={!selectedClientId}>Create Invoice</Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0}>
+                        <Button onClick={handlePreview} disabled={!selectedClientId}>Create Invoice</Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!selectedClientId && (
+                      <TooltipContent>Please select a client first</TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
