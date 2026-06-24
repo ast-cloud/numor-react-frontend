@@ -561,6 +561,7 @@ const CreateInvoiceDialog = ({
         ...prev,
         lineItems: prev.lineItems.filter((item) => item.id !== id),
       }));
+      setSubmittedItemIds((prev) => prev.filter((x) => x !== id));
     }
   };
 
