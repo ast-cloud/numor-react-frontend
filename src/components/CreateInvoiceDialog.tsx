@@ -802,6 +802,7 @@ const CreateInvoiceDialog = ({
       setSelectedClientId(null);
       setSendEmail(false);
       setAttemptedSubmit(false);
+      setSubmittedItemIds([]);
     }
   };
 
