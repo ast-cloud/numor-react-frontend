@@ -596,12 +596,13 @@ const CreateInvoiceDialog = ({
   const isFormValid = hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription;
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [submittedItemIds, setSubmittedItemIds] = useState<string[]>([]);
-
+  const [jiggleKey, setJiggleKey] = useState(0);
 
   const handlePreview = () => {
     if (!isFormValid) {
       setAttemptedSubmit(true);
       setSubmittedItemIds(formData.lineItems.map((i) => i.id));
+      setJiggleKey((k) => k + 1);
       return;
     }
     setAttemptedSubmit(false);
@@ -1758,7 +1759,7 @@ const CreateInvoiceDialog = ({
                   <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
                     {savingDraft ? "Saving..." : "Save as Draft"}
                   </Button>
-                  <Button onClick={handlePreview}>
+                  <Button key={jiggleKey} onClick={handlePreview} className={jiggleKey > 0 && attemptedSubmit && !isFormValid ? "animate-jiggle" : ""}>
                     Create Invoice
                   </Button>
                 </div>
