@@ -30,6 +30,7 @@ import {
 } from "@/lib/api/invoices";
 import { toast } from "@/hooks/use-toast";
 import type { InvoiceCustomField } from "@/lib/api/invoiceCustomFields";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface InvoiceCustomFieldValue {
   definitionId: string;
