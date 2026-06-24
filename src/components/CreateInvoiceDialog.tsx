@@ -1715,7 +1715,7 @@ const CreateInvoiceDialog = ({
                 <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
                   {savingDraft ? "Saving..." : "Save as Draft"}
                 </Button>
-                <Button onClick={handlePreview}>Create Invoice</Button>
+                <Button onClick={handlePreview} disabled={!selectedClientId}>Create Invoice</Button>
               </div>
             </div>
           </div>
