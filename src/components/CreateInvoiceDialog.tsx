@@ -553,6 +553,7 @@ const CreateInvoiceDialog = ({
         { id: newId, description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 },
       ],
     }));
+    setAttemptedSubmit(false);
   };
 
   const removeLineItem = (id: string) => {
