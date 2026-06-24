@@ -1726,7 +1726,7 @@ const CreateInvoiceDialog = ({
 
               {/* Actions */}
               <div className="flex flex-col items-end gap-2 pt-4 pb-6 border-t">
-                {!isFormValid && (
+                {attemptedSubmit && !isFormValid && (
                   <div className="text-xs text-destructive text-right space-y-0.5">
                     {!hasClientSelected && <p>Please select a client before creating the invoice.</p>}
                     {!hasAtLeastOneItem && <p>Add at least one item.</p>}
@@ -1742,7 +1742,7 @@ const CreateInvoiceDialog = ({
                   <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
                     {savingDraft ? "Saving..." : "Save as Draft"}
                   </Button>
-                  <Button onClick={handlePreview} disabled={!isFormValid}>
+                  <Button onClick={handlePreview}>
                     Create Invoice
                   </Button>
                 </div>
