@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -597,12 +597,17 @@ const CreateInvoiceDialog = ({
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [submittedItemIds, setSubmittedItemIds] = useState<string[]>([]);
   const [jiggleKey, setJiggleKey] = useState(0);
+  const formScrollRef = useRef<HTMLDivElement | null>(null);
 
   const handlePreview = () => {
     if (!isFormValid) {
       setAttemptedSubmit(true);
       setSubmittedItemIds(formData.lineItems.map((i) => i.id));
       setJiggleKey((k) => k + 1);
+      requestAnimationFrame(() => {
+        const el = formScrollRef.current;
+        if (el) el.scrollTop = el.scrollHeight;
+      });
       return;
     }
     setAttemptedSubmit(false);
@@ -868,7 +873,7 @@ const CreateInvoiceDialog = ({
             </div>
           </div>
         ) : (
-          <div className="max-h-[95vh] overflow-y-auto px-6">
+          <div ref={formScrollRef} className="max-h-[95vh] overflow-y-auto px-6">
             <DialogHeader className="py-6">
               <DialogTitle className="text-xl font-semibold">
                 {isEditMode ? "Edit Draft Invoice" : "Create New Invoice"}
@@ -1734,6 +1739,17 @@ const CreateInvoiceDialog = ({
 
               {/* Actions */}
               <div className="flex flex-col items-end gap-2 pt-4 pb-6 border-t">
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
+                    {savingDraft ? "Saving..." : "Save as Draft"}
+                  </Button>
+                  <Button key={`jiggle-${jiggleKey}`} onClick={handlePreview} className={jiggleKey > 0 ? "animate-jiggle" : ""}>
+                    Create Invoice
+                  </Button>
+                </div>
                 {(() => {
                   if (!attemptedSubmit) return null;
                   const flaggedMissingDesc = formData.lineItems.some(
@@ -1752,18 +1768,8 @@ const CreateInvoiceDialog = ({
                     </div>
                   );
                 })()}
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => setOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
-                    {savingDraft ? "Saving..." : "Save as Draft"}
-                  </Button>
-                  <Button key={`jiggle-${jiggleKey}`} onClick={handlePreview} className={jiggleKey > 0 ? "animate-jiggle" : ""}>
-                    Create Invoice
-                  </Button>
-                </div>
               </div>
+
             </div>
           </div>
         )}
