@@ -594,13 +594,17 @@ const CreateInvoiceDialog = ({
   const allItemsHaveDescription = formData.lineItems.every((i) => i.description.trim() !== "");
   const isFormValid = hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription;
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [submittedItemIds, setSubmittedItemIds] = useState<string[]>([]);
+  const submittedClientAttempt = attemptedSubmit && !hasClientSelected;
 
   const handlePreview = () => {
     if (!isFormValid) {
       setAttemptedSubmit(true);
+      setSubmittedItemIds(formData.lineItems.map((i) => i.id));
       return;
     }
     setAttemptedSubmit(false);
+    setSubmittedItemIds([]);
     setShowPreview(true);
   };
 
