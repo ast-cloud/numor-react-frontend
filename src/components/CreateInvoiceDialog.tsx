@@ -597,7 +597,7 @@ const CreateInvoiceDialog = ({
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [submittedItemIds, setSubmittedItemIds] = useState<string[]>([]);
   const [jiggleKey, setJiggleKey] = useState(0);
-  const formScrollRef = React.useRef<HTMLDivElement | null>(null);
+  const formScrollRef = useRef<HTMLDivElement | null>(null);
 
   const handlePreview = () => {
     if (!isFormValid) {
