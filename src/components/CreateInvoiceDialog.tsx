@@ -30,7 +30,6 @@ import {
 } from "@/lib/api/invoices";
 import { toast } from "@/hooks/use-toast";
 import type { InvoiceCustomField } from "@/lib/api/invoiceCustomFields";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface InvoiceCustomFieldValue {
   definitionId: string;
@@ -1716,18 +1715,7 @@ const CreateInvoiceDialog = ({
                 <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
                   {savingDraft ? "Saving..." : "Save as Draft"}
                 </Button>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span tabIndex={0}>
-                        <Button onClick={handlePreview} disabled={!selectedClientId}>Create Invoice</Button>
-                      </span>
-                    </TooltipTrigger>
-                    {!selectedClientId && (
-                      <TooltipContent>Please select a client first</TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
+                <Button onClick={handlePreview}>Create Invoice</Button>
               </div>
             </div>
           </div>

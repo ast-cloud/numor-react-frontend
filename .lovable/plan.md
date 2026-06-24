@@ -1,15 +1,15 @@
-## Goal
-Disable the "Create Invoice" button in the new invoice creation dialog until a client is selected.
+Change the invoice creation payload so that `customFields` only contains `name` and `value`, matching the requested shape:
 
-## Change
-In `src/components/CreateInvoiceDialog.tsx` (line 1718), update the Create Invoice button:
-
-```tsx
-<Button onClick={handlePreview} disabled={!selectedClientId}>Create Invoice</Button>
+```json
+"customFields": [
+  { "name": "PO Number", "value": "PO-9876" },
+  { "name": "Project Code", "value": "PROJ-42" }
+]
 ```
 
-`selectedClientId` is already tracked in state and set by `handleClientSelect` / `handleClientCreated`, so it's the correct signal that a saved client has been chosen (also covers the "add new client" flow, which sets it after creation).
+### What will change
+- In `src/components/CreateInvoiceDialog.tsx`, update the `buildPayload` function's `customFields` mapping to drop `definitionId` from the outgoing JSON.
+- Internal state will still keep `definitionId` so that checkbox selection and value updates continue to work correctly.
 
-## Notes
-- "Save as Draft" button is left unchanged (drafts can be saved without a client).
-- No other logic changes.
+### Out of scope
+- No changes to the custom field UI, definitions API, or the preview template, which already receives only `name` and `value`.
