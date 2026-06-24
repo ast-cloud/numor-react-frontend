@@ -589,7 +589,13 @@ const CreateInvoiceDialog = ({
     return calculateSubtotal() + calculateTotalTax();
   };
 
+  const hasClientSelected = !!(selectedClientId || formData.clientName.trim());
+  const hasAtLeastOneItem = formData.lineItems.length > 0;
+  const allItemsHaveDescription = formData.lineItems.every((i) => i.description.trim() !== "");
+  const isFormValid = hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription;
+
   const handlePreview = () => {
+    if (!isFormValid) return;
     setShowPreview(true);
   };
 
