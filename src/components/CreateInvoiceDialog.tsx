@@ -553,7 +553,6 @@ const CreateInvoiceDialog = ({
         { id: newId, description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 },
       ],
     }));
-    setAttemptedSubmit(false);
   };
 
   const removeLineItem = (id: string) => {
@@ -562,6 +561,7 @@ const CreateInvoiceDialog = ({
         ...prev,
         lineItems: prev.lineItems.filter((item) => item.id !== id),
       }));
+      setSubmittedItemIds((prev) => prev.filter((x) => x !== id));
     }
   };
 
@@ -595,13 +595,17 @@ const CreateInvoiceDialog = ({
   const allItemsHaveDescription = formData.lineItems.every((i) => i.description.trim() !== "");
   const isFormValid = hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription;
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [submittedItemIds, setSubmittedItemIds] = useState<string[]>([]);
+
 
   const handlePreview = () => {
     if (!isFormValid) {
       setAttemptedSubmit(true);
+      setSubmittedItemIds(formData.lineItems.map((i) => i.id));
       return;
     }
     setAttemptedSubmit(false);
+    setSubmittedItemIds([]);
     setShowPreview(true);
   };
 
@@ -799,6 +803,7 @@ const CreateInvoiceDialog = ({
       setSelectedClientId(null);
       setSendEmail(false);
       setAttemptedSubmit(false);
+      setSubmittedItemIds([]);
     }
   };
 
@@ -1478,7 +1483,7 @@ const CreateInvoiceDialog = ({
                           value={item.description}
                           onChange={(e) => handleLineItemChange(item.id, "description", e.target.value)}
                         />
-                        {attemptedSubmit && !item.description.trim() && (
+                        {attemptedSubmit && submittedItemIds.includes(item.id) && !item.description.trim() && (
                           <p className="text-xs text-destructive mt-1">Description is required.</p>
                         )}
                       </div>
@@ -1728,15 +1733,24 @@ const CreateInvoiceDialog = ({
 
               {/* Actions */}
               <div className="flex flex-col items-end gap-2 pt-4 pb-6 border-t">
-                {attemptedSubmit && !isFormValid && (
-                  <div className="text-xs text-destructive text-right space-y-0.5">
-                    {!hasClientSelected && <p>Please select a client before creating the invoice.</p>}
-                    {!hasAtLeastOneItem && <p>Add at least one item.</p>}
-                    {hasAtLeastOneItem && !allItemsHaveDescription && (
-                      <p>Description is required for all items.</p>
-                    )}
-                  </div>
-                )}
+                {(() => {
+                  if (!attemptedSubmit) return null;
+                  const flaggedMissingDesc = formData.lineItems.some(
+                    (i) => submittedItemIds.includes(i.id) && !i.description.trim()
+                  );
+                  const showClient = !hasClientSelected;
+                  const showNoItems = !hasAtLeastOneItem;
+                  if (!showClient && !showNoItems && !flaggedMissingDesc) return null;
+                  return (
+                    <div className="text-xs text-destructive text-right space-y-0.5">
+                      {showClient && <p>Please select a client before creating the invoice.</p>}
+                      {showNoItems && <p>Add at least one item.</p>}
+                      {!showNoItems && flaggedMissingDesc && (
+                        <p>Description is required for all items.</p>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="flex justify-end gap-3">
                   <Button variant="outline" onClick={() => setOpen(false)}>
                     Cancel
