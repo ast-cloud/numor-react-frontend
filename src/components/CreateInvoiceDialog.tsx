@@ -1268,7 +1268,7 @@ const CreateInvoiceDialog = ({
                       )}
                     </SelectContent>
                   </Select>
-                  {!hasClientSelected && (
+                  {attemptedSubmit && !hasClientSelected && (
                     <p className="text-xs text-destructive">Please select a client.</p>
                   )}
                 </div>
