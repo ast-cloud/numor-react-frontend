@@ -873,7 +873,7 @@ const CreateInvoiceDialog = ({
             </div>
           </div>
         ) : (
-          <div className="max-h-[95vh] overflow-y-auto px-6">
+          <div ref={formScrollRef} className="max-h-[95vh] overflow-y-auto px-6">
             <DialogHeader className="py-6">
               <DialogTitle className="text-xl font-semibold">
                 {isEditMode ? "Edit Draft Invoice" : "Create New Invoice"}
