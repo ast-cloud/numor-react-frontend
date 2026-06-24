@@ -1739,6 +1739,17 @@ const CreateInvoiceDialog = ({
 
               {/* Actions */}
               <div className="flex flex-col items-end gap-2 pt-4 pb-6 border-t">
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
+                    {savingDraft ? "Saving..." : "Save as Draft"}
+                  </Button>
+                  <Button key={`jiggle-${jiggleKey}`} onClick={handlePreview} className={jiggleKey > 0 ? "animate-jiggle" : ""}>
+                    Create Invoice
+                  </Button>
+                </div>
                 {(() => {
                   if (!attemptedSubmit) return null;
                   const flaggedMissingDesc = formData.lineItems.some(
@@ -1757,18 +1768,8 @@ const CreateInvoiceDialog = ({
                     </div>
                   );
                 })()}
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => setOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
-                    {savingDraft ? "Saving..." : "Save as Draft"}
-                  </Button>
-                  <Button key={`jiggle-${jiggleKey}`} onClick={handlePreview} className={jiggleKey > 0 ? "animate-jiggle" : ""}>
-                    Create Invoice
-                  </Button>
-                </div>
               </div>
+
             </div>
           </div>
         )}
