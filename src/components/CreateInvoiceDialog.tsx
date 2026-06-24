@@ -1759,7 +1759,7 @@ const CreateInvoiceDialog = ({
                   <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
                     {savingDraft ? "Saving..." : "Save as Draft"}
                   </Button>
-                  <Button key={jiggleKey} onClick={handlePreview} className={jiggleKey > 0 && attemptedSubmit && !isFormValid ? "animate-jiggle" : ""}>
+                  <Button key={`jiggle-${jiggleKey}`} onClick={handlePreview} className={jiggleKey > 0 ? "animate-jiggle" : ""}>
                     Create Invoice
                   </Button>
                 </div>
