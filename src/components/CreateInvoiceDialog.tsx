@@ -595,7 +595,7 @@ const CreateInvoiceDialog = ({
   const isFormValid = hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription;
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [submittedItemIds, setSubmittedItemIds] = useState<string[]>([]);
-  const submittedClientAttempt = attemptedSubmit && !hasClientSelected;
+
 
   const handlePreview = () => {
     if (!isFormValid) {
