@@ -1263,6 +1263,9 @@ const CreateInvoiceDialog = ({
                       )}
                     </SelectContent>
                   </Select>
+                  {!hasClientSelected && (
+                    <p className="text-xs text-destructive">Please select a client.</p>
+                  )}
                 </div>
                 <Collapsible open={clientExpanded} onOpenChange={setClientExpanded}>
                   <div className="border border-border rounded-lg overflow-hidden">
