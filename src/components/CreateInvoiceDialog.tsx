@@ -797,6 +797,7 @@ const CreateInvoiceDialog = ({
       setShowPreview(false);
       setSelectedClientId(null);
       setSendEmail(false);
+      setAttemptedSubmit(false);
     }
   };
 
