@@ -1731,15 +1731,24 @@ const CreateInvoiceDialog = ({
 
               {/* Actions */}
               <div className="flex flex-col items-end gap-2 pt-4 pb-6 border-t">
-                {attemptedSubmit && !isFormValid && (
-                  <div className="text-xs text-destructive text-right space-y-0.5">
-                    {!hasClientSelected && <p>Please select a client before creating the invoice.</p>}
-                    {!hasAtLeastOneItem && <p>Add at least one item.</p>}
-                    {hasAtLeastOneItem && !allItemsHaveDescription && (
-                      <p>Description is required for all items.</p>
-                    )}
-                  </div>
-                )}
+                {(() => {
+                  if (!attemptedSubmit) return null;
+                  const flaggedMissingDesc = formData.lineItems.some(
+                    (i) => submittedItemIds.includes(i.id) && !i.description.trim()
+                  );
+                  const showClient = !hasClientSelected;
+                  const showNoItems = !hasAtLeastOneItem;
+                  if (!showClient && !showNoItems && !flaggedMissingDesc) return null;
+                  return (
+                    <div className="text-xs text-destructive text-right space-y-0.5">
+                      {showClient && <p>Please select a client before creating the invoice.</p>}
+                      {showNoItems && <p>Add at least one item.</p>}
+                      {!showNoItems && flaggedMissingDesc && (
+                        <p>Description is required for all items.</p>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="flex justify-end gap-3">
                   <Button variant="outline" onClick={() => setOpen(false)}>
                     Cancel
