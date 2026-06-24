@@ -24,14 +24,18 @@ function getCroppedImg(image: HTMLImageElement, crop: PixelCrop): string {
   const srcX = Math.round(crop.x * scaleX);
   const srcY = Math.round(crop.y * scaleY);
 
-  const size = 512;
+  const MAX = 1024;
+  const scale = Math.min(1, MAX / Math.max(srcW, srcH));
+  const outW = Math.max(1, Math.round(srcW * scale));
+  const outH = Math.max(1, Math.round(srcH * scale));
+
   const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = outW;
+  canvas.height = outH;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get canvas context");
 
-  ctx.drawImage(image, srcX, srcY, srcW, srcH, 0, 0, size, size);
+  ctx.drawImage(image, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
 
   return canvas.toDataURL("image/jpeg", 0.9);
 }
