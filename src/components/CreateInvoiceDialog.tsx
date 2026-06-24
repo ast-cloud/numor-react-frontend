@@ -593,9 +593,14 @@ const CreateInvoiceDialog = ({
   const hasAtLeastOneItem = formData.lineItems.length > 0;
   const allItemsHaveDescription = formData.lineItems.every((i) => i.description.trim() !== "");
   const isFormValid = hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription;
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const handlePreview = () => {
-    if (!isFormValid) return;
+    if (!isFormValid) {
+      setAttemptedSubmit(true);
+      return;
+    }
+    setAttemptedSubmit(false);
     setShowPreview(true);
   };
 
@@ -1263,7 +1268,7 @@ const CreateInvoiceDialog = ({
                       )}
                     </SelectContent>
                   </Select>
-                  {!hasClientSelected && (
+                  {attemptedSubmit && !hasClientSelected && (
                     <p className="text-xs text-destructive">Please select a client.</p>
                   )}
                 </div>
@@ -1471,7 +1476,7 @@ const CreateInvoiceDialog = ({
                           value={item.description}
                           onChange={(e) => handleLineItemChange(item.id, "description", e.target.value)}
                         />
-                        {!item.description.trim() && (
+                        {attemptedSubmit && !item.description.trim() && (
                           <p className="text-xs text-destructive mt-1">Description is required.</p>
                         )}
                       </div>
@@ -1721,7 +1726,7 @@ const CreateInvoiceDialog = ({
 
               {/* Actions */}
               <div className="flex flex-col items-end gap-2 pt-4 pb-6 border-t">
-                {!isFormValid && (
+                {attemptedSubmit && !isFormValid && (
                   <div className="text-xs text-destructive text-right space-y-0.5">
                     {!hasClientSelected && <p>Please select a client before creating the invoice.</p>}
                     {!hasAtLeastOneItem && <p>Add at least one item.</p>}
@@ -1737,7 +1742,7 @@ const CreateInvoiceDialog = ({
                   <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
                     {savingDraft ? "Saving..." : "Save as Draft"}
                   </Button>
-                  <Button onClick={handlePreview} disabled={!isFormValid}>
+                  <Button onClick={handlePreview}>
                     Create Invoice
                   </Button>
                 </div>
