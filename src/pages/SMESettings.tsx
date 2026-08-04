@@ -14,6 +14,8 @@ import CompanyLogoUpload from "@/components/CompanyLogoUpload";
 import { INDIAN_STATES } from "@/lib/constants";
 import SubAccountsSection from "@/components/SubAccountsSection";
 import InvoiceCustomFieldsSection from "@/components/InvoiceCustomFieldsSection";
+import InvoiceUnitsSection from "@/components/InvoiceUnitsSection";
+import { fetchInvoiceUnits, InvoiceUnits } from "@/lib/api/invoiceUnits";
 
 const COUNTRIES = [
   "India",
@@ -63,6 +65,12 @@ const SMESettings = () => {
     name: string;
     predefinedValues: string[];
   }[]>([]);
+  const [invoiceUnits, setInvoiceUnits] = useState<InvoiceUnits>({
+    systemUnits: [],
+    customUnits: [],
+    activeUnits: [],
+  });
+  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
   const [originalCompanyData, setOriginalCompanyData] = useState({
     name: "",
     streetAddress: "",
@@ -186,6 +194,37 @@ const SMESettings = () => {
       toast({
         title: "Failed to refresh custom fields",
         description: "Could not reload custom fields.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    const loadInvoiceUnits = async () => {
+      try {
+        const data = await fetchInvoiceUnits();
+        setInvoiceUnits(data);
+      } catch {
+        toast({
+          title: "Failed to load invoice units",
+          description: "Could not fetch your invoice item units.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingUnits(false);
+      }
+    };
+    loadInvoiceUnits();
+  }, [toast]);
+
+  const refetchInvoiceUnits = useCallback(async () => {
+    try {
+      const data = await fetchInvoiceUnits();
+      setInvoiceUnits(data);
+    } catch {
+      toast({
+        title: "Failed to refresh invoice units",
+        description: "Could not reload invoice item units.",
         variant: "destructive",
       });
     }
@@ -606,6 +645,15 @@ const SMESettings = () => {
           fields={customFields}
           onRefetch={refetchCustomFields}
           isLoading={isLoadingOrg}
+        />
+      )}
+
+      {/* Invoices - Item Units */}
+      {canReadSettings && (
+        <InvoiceUnitsSection
+          units={invoiceUnits}
+          onRefetch={refetchInvoiceUnits}
+          isLoading={isLoadingUnits}
         />
       )}
 

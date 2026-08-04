@@ -18,6 +18,7 @@ import InvoicePreviewWrapper from "@/components/InvoicePreview";
 import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
+import { fetchInvoiceUnits } from "@/lib/api/invoiceUnits";
 import { getTaxLabel, getTaxSystem } from "@/lib/taxSystem";
 import AddClientDialog from "@/components/AddClientDialog";
 import { useAuth } from "@/hooks/use-auth";
@@ -36,6 +37,12 @@ interface InvoiceCustomFieldValue {
   name: string;
   value: string;
 }
+
+// Fallback used until the organization's active units load (or if that fetch fails).
+const DEFAULT_UNIT_OPTIONS = [
+  "Units", "Hours", "Days", "Weeks", "Months", "Kg", "Grams", "Liters",
+  "Meters", "Sq. Meters", "Feet", "Sq. Feet", "Boxes", "Cartons",
+];
 
 interface CreateInvoiceDialogProps {
   onInvoiceCreated?: () => void;
@@ -335,6 +342,7 @@ const CreateInvoiceDialog = ({
   const [addClientOpen, setAddClientOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [orgCustomFieldDefs, setOrgCustomFieldDefs] = useState<InvoiceCustomField[]>([]);
+  const [unitOptions, setUnitOptions] = useState<string[]>(DEFAULT_UNIT_OPTIONS);
   const { can } = useAuth();
   const canAddClient = can("income", "write");
 
@@ -342,6 +350,17 @@ const CreateInvoiceDialog = ({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
+
+    fetchInvoiceUnits()
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data.activeUnits) && data.activeUnits.length > 0) {
+          setUnitOptions(data.activeUnits);
+        }
+      })
+      .catch(() => {
+        // Keep DEFAULT_UNIT_OPTIONS fallback so invoice creation never breaks.
+      });
 
     // In edit mode, fetch invoice details
     if (isEditMode && editInvoiceId) {
@@ -1511,20 +1530,9 @@ const CreateInvoiceDialog = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Units">Units</SelectItem>
-                            <SelectItem value="Hours">Hours</SelectItem>
-                            <SelectItem value="Days">Days</SelectItem>
-                            <SelectItem value="Weeks">Weeks</SelectItem>
-                            <SelectItem value="Months">Months</SelectItem>
-                            <SelectItem value="Kg">Kg</SelectItem>
-                            <SelectItem value="Grams">Grams</SelectItem>
-                            <SelectItem value="Liters">Liters</SelectItem>
-                            <SelectItem value="Meters">Meters</SelectItem>
-                            <SelectItem value="Sq. Meters">Sq. Meters</SelectItem>
-                            <SelectItem value="Feet">Feet</SelectItem>
-                            <SelectItem value="Sq. Feet">Sq. Feet</SelectItem>
-                            <SelectItem value="Boxes">Boxes</SelectItem>
-                            <SelectItem value="Cartons">Cartons</SelectItem>
+                            {(unitOptions.includes(item.unit) ? unitOptions : [item.unit, ...unitOptions]).map((unit) => (
+                              <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
