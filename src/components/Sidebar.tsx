@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useFeatureFlags } from "@/hooks/use-feature-flags";
 import { Button } from "@/components/ui/button";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 
@@ -37,12 +38,14 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, activeRole, logout, isSubAccount, can } = useAuth();
+  const { flags } = useFeatureFlags();
   const { collapsed, toggle, setHovered, effectiveCollapsed: sidebarEffectiveCollapsed } = useSidebarState();
 
   const inMobileSheet = typeof onMobileClose === "function";
   const effectiveCollapsed = inMobileSheet ? false : sidebarEffectiveCollapsed;
 
-  const baseItems = activeRole === "CA_USER" ? caNavItems : regularNavItems;
+  const baseItems = (activeRole === "CA_USER" ? caNavItems : regularNavItems)
+    .filter((item) => flags.FF_CA_CORE || item.url !== "/sme/ca-connect");
   const navItems = isSubAccount
     ? baseItems.filter((it) => it.module !== null && can(it.module, "read"))
     : baseItems;

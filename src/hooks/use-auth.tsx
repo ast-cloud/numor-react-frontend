@@ -4,6 +4,7 @@ import { fetchCurrentUser } from "@/lib/api/user";
 import { login as apiLogin } from "@/lib/api/auth";
 import type { UserRole, ModulePermissions, ModuleKey } from "@/lib/authStore";
 import { can as canCheck, normalizePermissions } from "@/lib/permissions";
+import { useFeatureFlags } from "@/hooks/use-feature-flags";
 
 export interface AuthUser {
   name: string;
@@ -60,17 +61,20 @@ const parseRoles = (data: Record<string, unknown>): UserRole[] => {
   return ["SME_USER"];
 };
 
-const resolveActiveRole = (roles: UserRole[]): UserRole => {
+const resolveActiveRole = (roles: UserRole[], caCoreEnabled: boolean): UserRole => {
   if (roles.includes("SUB_ACCOUNT")) return "SUB_ACCOUNT";
+
+  // CA_USER is not a valid active role while the CA feature is disabled.
+  const eligibleRoles = caCoreEnabled ? roles : roles.filter((r) => r !== "CA_USER");
 
   const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as UserRole | null;
   const canRestoreSavedRole =
     !!saved &&
-    (roles.includes(saved) || (saved === "SME_USER" && roles.includes("CA_USER")));
+    (eligibleRoles.includes(saved) || (saved === "SME_USER" && eligibleRoles.includes("CA_USER")));
 
   if (canRestoreSavedRole && saved) return saved;
-  if (roles.includes("ADMIN")) return "ADMIN";
-  if (roles.includes("CA_USER")) return "CA_USER";
+  if (eligibleRoles.includes("ADMIN")) return "ADMIN";
+  if (eligibleRoles.includes("CA_USER")) return "CA_USER";
   return "SME_USER";
 };
 
@@ -78,6 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [activeRole, setActiveRoleState] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { flags } = useFeatureFlags();
 
   const fetchAndSetUser = useCallback(async (): Promise<{ user: AuthUser | null; role: UserRole | null }> => {
     try {
@@ -94,7 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isOrgOwner,
       };
       setUser(authUser);
-      const role = resolveActiveRole(roles);
+      const role = resolveActiveRole(roles, flags.FF_CA_CORE);
       setActiveRoleState(role);
       localStorage.setItem(ACTIVE_ROLE_KEY, role);
       return { user: authUser, role };
@@ -104,7 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       clearToken();
       return { user: null, role: null };
     }
-  }, []);
+  }, [flags.FF_CA_CORE]);
 
   const refreshUser = useCallback(async () => {
     const token = getToken();
@@ -150,6 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const setActiveRole = useCallback((role: UserRole) => {
     if (!user) return;
     if (!user.isOrgOwner) return; // non-owners cannot switch
+    if (role === "CA_USER" && !flags.FF_CA_CORE) return;
 
     const canSwitchToRole =
       user.roles.includes(role) ||
@@ -159,7 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setActiveRoleState(role);
       localStorage.setItem(ACTIVE_ROLE_KEY, role);
     }
-  }, [user]);
+  }, [user, flags.FF_CA_CORE]);
 
   const can = useCallback(
     (module: ModuleKey, action: "read" | "write") =>

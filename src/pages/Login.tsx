@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useFeatureFlags } from "@/hooks/use-feature-flags";
 import { useToast } from "@/hooks/use-toast";
 import { config } from "@/lib/config";
 import Navbar from "@/components/Navbar";
@@ -13,6 +14,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login } = useAuth();
+  const { flags } = useFeatureFlags();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,7 +32,7 @@ const Login = () => {
       });
       if (result.activeRole === "ADMIN") {
         navigate("/admin");
-      } else if (result.activeRole === "CA_USER") {
+      } else if (result.activeRole === "CA_USER" && flags.FF_CA_CORE) {
         navigate("/ca/dashboard");
       } else {
         navigate("/sme/dashboard");

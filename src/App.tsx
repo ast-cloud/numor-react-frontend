@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/use-auth";
+import { FeatureFlagsProvider } from "@/hooks/use-feature-flags";
+import FeatureFlagGuard from "@/components/FeatureFlagGuard";
 import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -48,6 +50,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <FeatureFlagsProvider>
         <AuthProvider>
           <ScrollToTop />
           <Routes>
@@ -57,8 +60,8 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/accept-invitation" element={<AcceptInvitation />} />
-            <Route path="/ca-signup" element={<CASignup />} />
-            <Route path="/ca-application-success" element={<CAApplicationSuccess />} />
+            <Route path="/ca-signup" element={<FeatureFlagGuard flag="FF_CA_CORE"><CASignup /></FeatureFlagGuard>} />
+            <Route path="/ca-application-success" element={<FeatureFlagGuard flag="FF_CA_CORE"><CAApplicationSuccess /></FeatureFlagGuard>} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -74,12 +77,12 @@ const App = () => (
               <Route path="expenses" element={<PermissionGuard module="expense"><Expenses /></PermissionGuard>} />
               <Route path="income" element={<PermissionGuard module="income"><Income /></PermissionGuard>} />
               <Route path="income/clients" element={<PermissionGuard module="income"><Clients /></PermissionGuard>} />
-              <Route path="ca-connect" element={<RoleGuard role="SME_USER"><CAConnect /></RoleGuard>} />
+              <Route path="ca-connect" element={<RoleGuard role="SME_USER"><FeatureFlagGuard flag="FF_CA_CORE"><CAConnect /></FeatureFlagGuard></RoleGuard>} />
               <Route path="settings" element={<SMESettings />} />
               <Route path="no-access" element={<NoAccess />} />
             </Route>
             {/* CA Routes */}
-            <Route path="/ca" element={<ProtectedRoute><RoleGuard role="CA_USER"><DashboardLayout /></RoleGuard></ProtectedRoute>}>
+            <Route path="/ca" element={<ProtectedRoute><RoleGuard role="CA_USER"><FeatureFlagGuard flag="FF_CA_CORE"><DashboardLayout /></FeatureFlagGuard></RoleGuard></ProtectedRoute>}>
               <Route path="dashboard" element={<CADashboardHome />} />
               <Route path="availability" element={<CAAvailability />} />
               <Route path="bookings" element={<CABookings />} />
@@ -90,6 +93,7 @@ const App = () => (
           </Routes>
           
         </AuthProvider>
+        </FeatureFlagsProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

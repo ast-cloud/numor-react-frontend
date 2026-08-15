@@ -3,15 +3,17 @@ import { Menu, X, ChevronDown, User } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
+import { useFeatureFlags } from "@/hooks/use-feature-flags";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, activeRole } = useAuth();
+  const { flags } = useFeatureFlags();
 
   const getDashboardPath = () => {
     if (!user) return "/sme/dashboard";
     if (user.roles.includes("ADMIN")) return "/admin";
-    if (user.roles.includes("CA_USER")) return "/ca/dashboard";
+    if (user.roles.includes("CA_USER") && flags.FF_CA_CORE) return "/ca/dashboard";
     return "/sme/dashboard";
   };
   const dashboardPath = getDashboardPath();
@@ -50,22 +52,24 @@ const Navbar = () => {
               </Link>
               
               {/* Dropdown Menu */}
-              <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <div className="bg-background border border-border rounded-lg shadow-lg py-2 min-w-[160px] z-50">
-                  <Link 
-                    to="/login" 
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  >
-                    CA Dashboard
-                  </Link>
-                  <Link 
-                    to="/ca-signup" 
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  >
-                    Register as CA
-                  </Link>
+              {flags.FF_CA_CORE && (
+                <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="bg-background border border-border rounded-lg shadow-lg py-2 min-w-[160px] z-50">
+                    <Link
+                      to="/login"
+                      className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    >
+                      CA Dashboard
+                    </Link>
+                    <Link
+                      to="/ca-signup"
+                      className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    >
+                      Register as CA
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -115,12 +119,16 @@ const Navbar = () => {
               <Link to="/ca" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5">
                 For Financial Experts
               </Link>
-              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
-                → CA Dashboard
-              </Link>
-              <Link to="/ca-signup" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
-                → Register as CA
-              </Link>
+              {flags.FF_CA_CORE && (
+                <>
+                  <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
+                    → CA Dashboard
+                  </Link>
+                  <Link to="/ca-signup" className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 pl-4">
+                    → Register as CA
+                  </Link>
+                </>
+              )}
               <div className="flex flex-col gap-2 pt-3">
                 {user ? (
                   <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>

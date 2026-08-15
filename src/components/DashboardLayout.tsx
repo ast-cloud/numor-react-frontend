@@ -6,6 +6,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Sun, Moon, Menu } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
+import { useFeatureFlags } from "@/hooks/use-feature-flags";
 import { SidebarStateProvider, useSidebarState } from "@/hooks/use-sidebar-state";
 import { CAProfileProvider } from "@/hooks/use-ca-profile";
 import ChatBot from "@/components/ChatBot";
@@ -14,7 +15,8 @@ const DashboardContent = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { hasRole, activeRole, setActiveRole } = useAuth();
-  const isCA = hasRole("CA_USER");
+  const { flags } = useFeatureFlags();
+  const isCA = flags.FF_CA_CORE && hasRole("CA_USER");
   const { effectiveCollapsed: collapsed } = useSidebarState();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -100,7 +102,7 @@ const DashboardContent = () => {
         </Button>
       </div>
 
-      <ChatBot />
+      {flags.FF_AI_CHATBOT && <ChatBot />}
     </div>
   );
 };
