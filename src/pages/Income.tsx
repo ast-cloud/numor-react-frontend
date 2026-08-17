@@ -583,15 +583,18 @@ const Income = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 gap-6">
+        <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 gap-4 sm:gap-6 md:gap-8 overflow-x-auto flex-nowrap">
           {tabs.map((tab) => (
             <TabsTrigger
               key={tab.value}
               value={tab.value}
               className="group bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-0 text-muted-foreground data-[state=active]:text-foreground font-medium transition-colors duration-200 hover:text-foreground relative"
             >
-              <span className="inline-block transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-data-[state=active]:translate-y-0">
+              <span className="inline-flex items-center gap-1.5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-data-[state=active]:translate-y-0">
                 {tab.label}
+                <span className="text-[10px] font-normal text-muted-foreground bg-muted rounded-full px-1 leading-4 min-w-[1rem] text-center">
+                  {filterInvoices(tab.value).length}
+                </span>
               </span>
               <span className="absolute left-0 right-0 -bottom-0.5 h-0.5 bg-primary/60 origin-center scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100 group-data-[state=active]:scale-x-0 pointer-events-none" />
             </TabsTrigger>
