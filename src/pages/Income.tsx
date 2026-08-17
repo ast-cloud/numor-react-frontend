@@ -144,22 +144,22 @@ const InvoiceRow = ({
 
   return (
     <div
-      className="flex items-center justify-between py-4 px-4 border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
+      className="flex items-center justify-between gap-3 py-4 px-4 border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
       onClick={onClick}
     >
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <p className="truncate">
           <span className="font-medium text-foreground">{invoice.invoiceNumber}</span>
-          <span className="text-muted-foreground">,</span>
-          <span className="text-foreground truncate">{invoice.clientName}</span>
-        </div>
+          <span className="text-muted-foreground">, </span>
+          <span className="text-foreground">{invoice.clientName}</span>
+        </p>
         <p className="text-sm text-muted-foreground mt-0.5">{invoice.dueDate}</p>
       </div>
-      <div className="flex items-center gap-4">
-        <Badge variant={variant} className="min-w-[70px] justify-center">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        <Badge variant={variant} className="min-w-[56px] sm:min-w-[70px] justify-center">
           {label}
         </Badge>
-        <span className="font-semibold text-foreground min-w-[100px] text-right">{formatCurrencyVal(invoice.amount, invoice.currency)}</span>
+        <span className="font-semibold text-foreground min-w-[60px] sm:min-w-[100px] text-right">{formatCurrencyVal(invoice.amount, invoice.currency)}</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-1 hover:bg-muted rounded-md transition-colors" onClick={(e) => e.stopPropagation()}>
@@ -609,7 +609,7 @@ const Income = () => {
           <>
             {/* Summary Card */}
             <div className="rounded-lg border border-border bg-muted/20 p-4 mt-4 mb-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
+              <div className="flex flex-col md:flex-row md:items-center gap-3 text-sm">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-start gap-1.5">
                     <span className="text-muted-foreground">Total Income:</span>
@@ -631,7 +631,7 @@ const Income = () => {
                   </div>
                 </div>
                 
-                <div className="flex flex-1 justify-center">
+                <div className="flex md:flex-1 md:justify-center">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5">
                       <span className="text-muted-foreground">Outstanding:</span>
