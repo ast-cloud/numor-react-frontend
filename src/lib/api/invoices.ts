@@ -36,6 +36,9 @@ export interface InvoiceData {
   pdfKey: string | null;
   pdfStatus: string;
   emailStatus?: string;
+  emailRequested?: boolean;
+  emailSentAt?: string | null;
+  emailError?: string | null;
   sellerName: string;
   sellerEmail: string;
   sellerPhone?: string;
@@ -222,6 +225,9 @@ export interface InvoiceProgress {
   pdfStatus: 'NOT_STARTED' | 'QUEUED' | 'PROCESSING' | 'READY' | 'FAILED';
   emailStatus: 'NOT_REQUESTED' | 'PENDING' | 'SENT' | 'FAILED';
   emailError: string | null;
+  emailSentAt: string | null;
+  /** Whether an email was asked for. NOT_REQUESTED is only terminal when this is false. */
+  emailRequested: boolean;
   pdfUrl: string | null;
   /** Both lifecycles have finished - stop polling this row. */
   settled: boolean;

@@ -18,6 +18,7 @@ interface Props {
   /** From the invoice list, so the first paint is correct. */
   pdfStatus?: string;
   emailStatus?: string;
+  emailRequested?: boolean;
   /** Fires when payment status changes (DRAFT -> UNPAID once issued). */
   onStatusChange?: (status: string) => void;
 }
@@ -35,6 +36,7 @@ export function InvoiceProgressBadge({
   invoiceId,
   pdfStatus = "NOT_STARTED",
   emailStatus = "NOT_REQUESTED",
+  emailRequested = false,
   onStatusChange,
 }: Props) {
   const [progress, setProgress] = useState<InvoiceProgress | null>(null);
@@ -50,8 +52,13 @@ export function InvoiceProgressBadge({
   // completed invoice would flash "All done" on each page load. A row that
   // finishes while we are watching still shows it, because then this was false.
   // FAILED is excluded on purpose: that one needs its retry button on every load.
+  // FAILED is excluded on both branches: it is terminal but actionable, so the
+  // row must keep offering its retry on every page load.
   const finishedBeforeMount = useRef(
-    pdfStatus === "READY" && ["SENT", "NOT_REQUESTED"].includes(emailStatus)
+    pdfStatus === "READY" &&
+      (emailRequested
+        ? emailStatus === "SENT"
+        : ["SENT", "NOT_REQUESTED"].includes(emailStatus))
   );
 
   const current = progress ?? { pdfStatus, emailStatus };

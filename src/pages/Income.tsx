@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2, Trash2, Copy } from "lucide-react";
 import { InvoiceProgressBadge } from "@/components/InvoiceProgressBadge";
+import { InvoiceEmailStatus } from "@/components/InvoiceEmailStatus";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,6 +74,10 @@ interface Invoice {
   // Drives the progress badge; `status` is payment state.
   pdfStatus: string;
   emailStatus: string;
+  // NOT_REQUESTED only means "done" when this is false.
+  emailRequested: boolean;
+  emailSentAt: string | null;
+  emailError: string | null;
 }
 
 const mapApiStatus = (status: string): InvoiceStatus => {
@@ -95,6 +100,9 @@ const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoi
   pdfUrl: inv.pdfKey || "",
   pdfStatus: inv.pdfStatus || "NOT_STARTED",
   emailStatus: inv.emailStatus || "NOT_REQUESTED",
+  emailSentAt: inv.emailSentAt ?? null,
+  emailRequested: inv.emailRequested ?? false,
+  emailError: inv.emailError ?? null,
 });
 
 const statusStyles: Record<
@@ -177,6 +185,7 @@ const InvoiceRow = ({
           invoiceId={invoice.id}
           pdfStatus={invoice.pdfStatus}
           emailStatus={invoice.emailStatus}
+          emailRequested={invoice.emailRequested}
           onStatusChange={(status) => onProgressStatusChange(invoice.id, status)}
         />
         <Badge variant={variant} className="min-w-[56px] sm:min-w-[70px] justify-center">
@@ -852,9 +861,21 @@ const Income = () => {
         <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <div className="flex items-center justify-between pr-8">
-              <DialogTitle>
-                {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
-              </DialogTitle>
+              <div>
+                <DialogTitle>
+                  {selectedInvoice?.invoiceNumber} - {selectedInvoice?.clientName}
+                </DialogTitle>
+                {selectedInvoice && selectedInvoice.status !== "draft" && (
+                  <InvoiceEmailStatus
+                    invoiceId={selectedInvoice.id}
+                    emailStatus={selectedInvoice.emailStatus}
+                    emailRequested={selectedInvoice.emailRequested}
+                    emailSentAt={selectedInvoice.emailSentAt}
+                    emailError={selectedInvoice.emailError}
+                    pdfReady={selectedInvoice.pdfStatus === "READY"}
+                  />
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 {selectedInvoice?.status !== "draft" && (
                   <Select
