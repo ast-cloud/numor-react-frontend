@@ -270,8 +270,12 @@ export const processTopClients = (invoices: InvoiceData[], clients: ClientData[]
   const revenueByClient: Record<string, number> = {};
 
   invoices.forEach((inv) => {
-    const clientId = inv.clientId || inv.customerId;
-    const name = clientMap.get(clientId) || "Unknown Client";
+    // No fallback to createdByUserId here: that is a User id, and clientMap is
+    // keyed by Client id. The two are independent autoincrement sequences, so
+    // falling back silently attributed client-less invoices to whichever
+    // unrelated client happened to share the number.
+    if (!inv.clientId) return;
+    const name = clientMap.get(inv.clientId) || "Unknown Client";
     revenueByClient[name] = (revenueByClient[name] || 0) + parseFloat(inv.totalAmount || "0");
   });
 

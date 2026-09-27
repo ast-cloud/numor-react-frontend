@@ -25,10 +25,12 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   createInvoice,
   updateInvoice,
-  fetchInvoicePdfStatus,
+  finalizeInvoice,
   fetchInvoice,
   type InvoiceData,
 } from "@/lib/api/invoices";
+import { z } from "zod";
+import { formatMoney } from "@/lib/amountInWords";
 import { toast } from "@/hooks/use-toast";
 import type { InvoiceCustomField } from "@/lib/api/invoiceCustomFields";
 
@@ -226,7 +228,12 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
   };
 };
 
-const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?: ClientData[]): InvoiceFormData => {
+const mapInvoiceDataToForm = (
+  inv: InvoiceData,
+  orgSeller?: SellerInfo,
+  clients?: ClientData[],
+  customFieldDefs?: InvoiceCustomField[],
+): InvoiceFormData => {
   // Build seller from nested object OR flat fields
   const seller: SellerInfo = inv.seller
     ? {
@@ -310,13 +317,18 @@ const mapInvoiceDataToForm = (inv: InvoiceData, orgSeller?: SellerInfo, clients?
     ifscCode: inv.bankDetails?.ifsc || "",
     bankAddress: inv.bankAddress || "",
     notes: inv.notes || "",
-    customFields: Array.isArray((inv as unknown as { customFields?: InvoiceCustomFieldValue[] }).customFields)
-      ? ((inv as unknown as { customFields: InvoiceCustomFieldValue[] }).customFields).map((f) => ({
-          definitionId: String(f.definitionId),
-          name: f.name,
-          value: f.value ?? "",
-        }))
-      : [],
+    // The invoice carries the field's name and value, but the checkboxes below
+    // are keyed by definition id. Fall back to matching on name when the API
+    // does not send an id - without a real id the field renders unticked, the
+    // user ticks it again, and the invoice ends up holding it twice.
+    customFields: (inv.customFields ?? []).map((f) => ({
+      definitionId:
+        f.definitionId != null
+          ? String(f.definitionId)
+          : String(customFieldDefs?.find((d) => d.name === f.name)?.id ?? ""),
+      name: f.name,
+      value: f.value ?? "",
+    })),
   };
 };
 
@@ -383,7 +395,7 @@ const CreateInvoiceDialog = ({
               }))
             : [];
           setOrgCustomFieldDefs(defs);
-          const mapped = mapInvoiceDataToForm(invoiceData, undefined, clientData);
+          const mapped = mapInvoiceDataToForm(invoiceData, undefined, clientData, defs);
           if (logoUrl) mapped.seller.logo = logoUrl;
           console.log("Mapped form data:", JSON.stringify(mapped));
           setFormData(mapped);
@@ -612,7 +624,14 @@ const CreateInvoiceDialog = ({
   const hasClientSelected = !!(selectedClientId || formData.clientName.trim());
   const hasAtLeastOneItem = formData.lineItems.length > 0;
   const allItemsHaveDescription = formData.lineItems.every((i) => i.description.trim() !== "");
-  const isFormValid = hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription;
+  // Same rule the API applies (sellerSchema in invoice.validator.js), so a bad
+  // address is caught here instead of coming back as a toast after submit.
+  // Blank is allowed - the seller email is optional.
+  const sellerEmailValid =
+    formData.seller.email.trim() === "" ||
+    z.string().email().safeParse(formData.seller.email.trim()).success;
+  const isFormValid =
+    hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription && sellerEmailValid;
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [submittedItemIds, setSubmittedItemIds] = useState<string[]>([]);
   const [jiggleKey, setJiggleKey] = useState(0);
@@ -639,6 +658,13 @@ const CreateInvoiceDialog = ({
   };
 
   const [confirmingInvoice, setConfirmingInvoice] = useState(false);
+  // Set on the first successful save; later attempts update it rather than
+  // creating another copy.
+  const [createdInvoiceId, setCreatedInvoiceId] = useState<string | null>(null);
+
+  // One key per dialog, reused on every retry. Covers what createdInvoiceId
+  // cannot: a lost create response means we never learn the id.
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
 
   // Union territories where UTGST applies instead of SGST
   const utgstTerritories = [
@@ -703,7 +729,8 @@ const CreateInvoiceDialog = ({
     return undefined;
   };
 
-  const buildPayload = (status: string | undefined): Record<string, unknown> => {
+  // No status field - the server owns the payment lifecycle.
+  const buildPayload = (): Record<string, unknown> => {
     const isCrossBorder =
       formData.seller.country && formData.clientCountry && formData.seller.country !== formData.clientCountry;
     const taxSummary = buildTaxSummary();
@@ -713,13 +740,14 @@ const CreateInvoiceDialog = ({
       issueDate: formData.invoiceDate ? formData.invoiceDate.toISOString() : undefined,
       dueDate: formData.dueDate ? formData.dueDate.toISOString() : undefined,
       currency: formData.currency,
-      status,
       taxType: formData.taxType,
       reverseCharge: !!isCrossBorder,
       ...(taxSummary ? { taxSummary } : {}),
       seller: {
         name: formData.seller.name,
-        email: formData.seller.email,
+        // Trimmed because that is the value validated above: sending "  " raw
+        // would pass here and be rejected by the API as a malformed address.
+        email: formData.seller.email.trim(),
         phone: formData.seller.phone,
         streetAddress: formData.seller.streetAddress,
         city: formData.seller.city,
@@ -753,43 +781,48 @@ const CreateInvoiceDialog = ({
     };
   };
 
-  const pollPdfStatus = async (invoiceId: string): Promise<void> => {
-    const maxAttempts = 30;
-    for (let i = 0; i < maxAttempts; i++) {
-      await new Promise((r) => setTimeout(r, 2000));
-      const res = await fetchInvoicePdfStatus(invoiceId);
-      if (res.status === "READY") return;
-      if (res.status === "FAILED" || res.status === "NOT_GENERATED") {
-        throw new Error(res.message || "PDF generation failed");
-      }
-      // PROCESSING or QUEUED — continue polling
+  // A fresh key makes the next invoice a new request, not a retry of this one.
+  const resetAfterSubmit = () => {
+    setOpen(false);
+    setFormData(getInitialFormData());
+    setShowPreview(false);
+    setSelectedClientId(null);
+    setCreatedInvoiceId(null);
+    setIdempotencyKey(crypto.randomUUID());
+    onInvoiceCreated?.();
+  };
+
+  /** Creates the invoice, or saves this attempt's edits onto it. Returns the id. */
+  const saveInvoice = async (): Promise<string> => {
+    const payload = buildPayload();
+    const existingId = (isEditMode && editInvoiceId) || createdInvoiceId;
+
+    if (existingId) {
+      await updateInvoice(existingId, payload);
+      return existingId;
     }
-    throw new Error("PDF generation timed out");
+
+    const created = await createInvoice(payload, { idempotencyKey });
+    // Recorded immediately: if anything below fails, the next attempt must edit
+    // this invoice rather than create another.
+    setCreatedInvoiceId(created.id);
+    return created.id;
   };
 
   const handleConfirmInvoice = async () => {
     setConfirmingInvoice(true);
     try {
-      const payload = buildPayload(undefined);
-      const finalPayload = isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
-      const data = await createInvoice(finalPayload, { sendEmail });
-      if (data?.pdfStatus === "NOT_STARTED") {
-        toast({
-          title: "Saved as draft",
-          description: "PDF generation failed. Invoice has been saved as a draft.",
-        });
-      } else {
-        await pollPdfStatus(data.id);
-        toast({
-          title: "Invoice created",
-          description: "Invoice has been created and PDF is ready.",
-        });
-      }
-      setOpen(false);
-      setFormData(getInitialFormData());
-      setShowPreview(false);
-      setSelectedClientId(null);
-      onInvoiceCreated?.();
+      const invoiceId = await saveInvoice();
+
+      // Issued only once the id is in hand, so every later failure is retryable.
+      await finalizeInvoice(invoiceId, { sendEmail });
+
+      // Nothing left to edit - progress moves to the row badge.
+      toast({
+        title: "Invoice created",
+        description: "Generating the PDF - progress is shown on the invoice row.",
+      });
+      resetAfterSubmit();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to create invoice.";
       toast({ title: "Error", description: message, variant: "destructive" });
@@ -804,17 +837,13 @@ const CreateInvoiceDialog = ({
   const handleSaveAsDraft = async () => {
     setSavingDraft(true);
     try {
-      const payload = buildPayload("DRAFT");
-      const finalPayload = isEditMode && editInvoiceId ? { ...payload, id: editInvoiceId } : payload;
-      await createInvoice(finalPayload);
+      // No finalize call, so the invoice stays a draft: no PDF, no email.
+      await saveInvoice();
       toast({ title: "Draft saved", description: "Invoice has been saved as a draft." });
-      setOpen(false);
-      setFormData(getInitialFormData());
-      setShowPreview(false);
-      setSelectedClientId(null);
-      onInvoiceCreated?.();
-    } catch {
-      toast({ title: "Error", description: "Failed to save draft. Please try again.", variant: "destructive" });
+      resetAfterSubmit();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save draft. Please try again.";
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setSavingDraft(false);
     }
@@ -826,6 +855,8 @@ const CreateInvoiceDialog = ({
       setFormData(getInitialFormData());
       setShowPreview(false);
       setSelectedClientId(null);
+      setCreatedInvoiceId(null);
+      setIdempotencyKey(crypto.randomUUID());
       setSendEmail(false);
       setAttemptedSubmit(false);
       setSubmittedItemIds([]);
@@ -1086,6 +1117,11 @@ const CreateInvoiceDialog = ({
                                 value={formData.seller.email}
                                 onChange={(e) => handleSellerChange("email", e.target.value)}
                               />
+                              {attemptedSubmit && !sellerEmailValid && (
+                                <p className="text-xs text-destructive">
+                                  Enter a valid email address, or leave it blank.
+                                </p>
+                              )}
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="sellerPhone">Phone Number</Label>
@@ -1240,7 +1276,7 @@ const CreateInvoiceDialog = ({
                                 value={selected?.value ?? ""}
                                 onValueChange={(value) => setCustomFieldValue(def.id, value)}
                               >
-                                <SelectTrigger className="h-8 text-xs">
+                                <SelectTrigger className="h-8 text-xs data-[placeholder]:text-muted-foreground/70 data-[placeholder]:font-normal">
                                   <SelectValue placeholder="Select a value" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1283,7 +1319,7 @@ const CreateInvoiceDialog = ({
                 <div className="space-y-2">
                   <Label>Select Saved Client</Label>
                   <Select value={selectedClientId || ""} onValueChange={handleClientSelect}>
-                    <SelectTrigger>
+                    <SelectTrigger className="data-[placeholder]:text-muted-foreground/70 data-[placeholder]:font-normal">
                       <SelectValue placeholder="Choose from saved clients..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -1516,7 +1552,9 @@ const CreateInvoiceDialog = ({
                         <Input
                           type="number"
                           min="0"
-                          step="0.01"
+                          // "any" rather than "1": the spinner arrows step by whole
+                          // units, but a typed fractional quantity stays valid.
+                          step="any"
                           value={item.quantity}
                           onChange={(e) => handleLineItemChange(item.id, "quantity", parseFloat(e.target.value) || 0)}
                         />
@@ -1590,7 +1628,7 @@ const CreateInvoiceDialog = ({
                           );
                         })()}
                       </div>
-                      <div className="col-span-1 text-right font-medium">{calculateLineTotal(item).toFixed(2)}</div>
+                      <div className="col-span-1 text-right font-medium">{formatMoney(calculateLineTotal(item), formData.currency)}</div>
                       <div className="col-span-1 flex justify-end">
                         <Button
                           type="button"
@@ -1611,7 +1649,7 @@ const CreateInvoiceDialog = ({
                     <div className="flex justify-end gap-8 text-sm">
                       <span className="text-muted-foreground">Subtotal:</span>
                       <span className="font-medium w-24 text-right">
-                        {formData.currency} {calculateSubtotal().toFixed(2)}
+                        {formData.currency} {formatMoney(calculateSubtotal(), formData.currency)}
                       </span>
                     </div>
                     {(() => {
@@ -1623,7 +1661,7 @@ const CreateInvoiceDialog = ({
                               {label} ({rate}%):
                             </span>
                             <span className="font-medium w-24 text-right">
-                              {formData.currency} {amount.toFixed(2)}
+                              {formData.currency} {formatMoney(amount, formData.currency)}
                             </span>
                           </div>
                         ));
@@ -1641,7 +1679,7 @@ const CreateInvoiceDialog = ({
                             {isCrossBorder ? " (0%)" : ""}:
                           </span>
                           <span className="font-medium w-24 text-right">
-                            {formData.currency} {isCrossBorder ? "0.00" : calculateTotalTax().toFixed(2)}
+                            {formData.currency} {isCrossBorder ? formatMoney(0, formData.currency) : formatMoney(calculateTotalTax(), formData.currency)}
                           </span>
                         </div>
                       );
@@ -1649,7 +1687,7 @@ const CreateInvoiceDialog = ({
                     <div className="flex justify-end gap-8 text-base font-semibold">
                       <span>Total:</span>
                       <span className="w-24 text-right">
-                        {formData.currency} {calculateTotal().toFixed(2)}
+                        {formData.currency} {formatMoney(calculateTotal(), formData.currency)}
                       </span>
                     </div>
                   </div>

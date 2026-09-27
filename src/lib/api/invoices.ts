@@ -16,8 +16,8 @@ export interface InvoiceItem {
 export interface InvoiceData {
   id: string;
   orgId: string;
-  clientId: string;
-  customerId: string;
+  clientId: string | null;
+  createdByUserId: string;
   invoiceNumber: string;
   invoiceType: string;
   issueDate: string;
@@ -35,6 +35,7 @@ export interface InvoiceData {
   category: string;
   pdfKey: string | null;
   pdfStatus: string;
+  emailStatus?: string;
   sellerName: string;
   sellerEmail: string;
   sellerPhone?: string;
@@ -82,7 +83,8 @@ export interface InvoiceData {
     swift: string;
   };
   bankAddress?: string;
-  customFields?: { definitionId: string; name: string; value: string }[];
+  // definitionId is not always sent; the dialog resolves it by name when absent.
+  customFields?: { definitionId?: string; name: string; value: string }[];
 }
 
 export async function fetchInvoices(): Promise<InvoiceData[]> {
@@ -119,12 +121,13 @@ export async function fetchInvoice(invoiceId: string): Promise<InvoiceData> {
   return json.data ?? json;
 }
 
+/** Saves edits to an existing invoice. Cannot change status - see the two below. */
 export async function updateInvoice(invoiceId: string, payload: Record<string, unknown>): Promise<InvoiceData> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
 
-  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/updateInvoice`, {
-    method: 'POST',
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}`, {
+    method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -137,12 +140,13 @@ export async function updateInvoice(invoiceId: string, payload: Record<string, u
   return json.data;
 }
 
+/** Marks an invoice PAID / UNPAID / OVERDUE / DRAFT. */
 export async function updateInvoiceStatus(invoiceId: string, status: string): Promise<InvoiceData> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
 
-  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/updateInvoice`, {
-    method: 'POST',
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/payment-status`, {
+    method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -155,24 +159,127 @@ export async function updateInvoiceStatus(invoiceId: string, status: string): Pr
   return json.data;
 }
 
+/**
+ * Creates a new invoice. Always a draft - issuing it is a separate call to
+ * finalizeInvoice(), so the id is in hand before any PDF work starts.
+ *
+ * Pass the same idempotencyKey on every retry of one attempt. It is what lets a
+ * retry resolve to the invoice already created when the first response never
+ * arrived, instead of creating a second one.
+ */
 export async function createInvoice(
   payload: Record<string, unknown>,
+  options?: { idempotencyKey?: string },
+): Promise<InvoiceData> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ ...payload, idempotencyKey: options?.idempotencyKey }),
+  });
+
+  if (!res.ok) throw new Error('Failed to create invoice');
+  const json = await res.json();
+  return json.data;
+}
+
+/**
+ * Copies an invoice's contents into a new draft. Pass the same idempotencyKey on
+ * a retry, or a lost response would leave two copies behind.
+ */
+export async function cloneInvoiceAsDraft(
+  invoiceId: string,
+  idempotencyKey: string,
+): Promise<InvoiceData> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/clone`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ idempotencyKey }),
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new Error(json?.message || 'Failed to clone the invoice');
+  }
+  const json = await res.json();
+  return json.data;
+}
+
+export interface InvoiceProgress {
+  id: string;
+  status: string;
+  pdfStatus: 'NOT_STARTED' | 'QUEUED' | 'PROCESSING' | 'READY' | 'FAILED';
+  emailStatus: 'NOT_REQUESTED' | 'PENDING' | 'SENT' | 'FAILED';
+  emailError: string | null;
+  pdfUrl: string | null;
+  /** Both lifecycles have finished - stop polling this row. */
+  settled: boolean;
+}
+
+/** Lightweight poll for the row progress badge. */
+export async function fetchInvoiceStatus(invoiceId: string): Promise<InvoiceProgress> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/status`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+
+  if (!res.ok) throw new Error('Failed to fetch invoice status');
+  const json = await res.json();
+  return json.data;
+}
+
+/** Re-sends the invoice email after a failed send. */
+export async function resendInvoiceEmail(invoiceId: string): Promise<InvoiceData> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/resend-email`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new Error(json?.message || 'Failed to resend the invoice email');
+  }
+  const json = await res.json();
+  return json.data;
+}
+
+/**
+ * Issues an existing draft and ensures a PDF job is running. Idempotent, so it
+ * doubles as the retry after PDF generation fails.
+ */
+export async function finalizeInvoice(
+  invoiceId: string,
   options?: { sendEmail?: boolean },
 ): Promise<InvoiceData> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
 
   const query = options?.sendEmail ? '?sendEmail=true' : '';
-  const res = await fetch(`${config.backendHost}/api/invoices/createInvoice${query}`, {
+  const res = await fetch(`${config.backendHost}/api/invoices/${invoiceId}/finalize${query}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
   });
 
-  if (!res.ok) throw new Error('Failed to create invoice');
+  if (!res.ok) throw new Error('Failed to finalize invoice');
   const json = await res.json();
   return json.data;
 }

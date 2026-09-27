@@ -19,7 +19,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2, Trash2 } from "lucide-react";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2, Trash2, Copy } from "lucide-react";
+import { InvoiceProgressBadge } from "@/components/InvoiceProgressBadge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,9 +46,10 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
-import { fetchInvoices, fetchInvoice, updateInvoiceStatus, fetchInvoicePdfStatus, deleteInvoice, type InvoiceData } from "@/lib/api/invoices";
+import { fetchInvoices, fetchInvoice, updateInvoiceStatus, fetchInvoicePdfStatus, deleteInvoice, cloneInvoiceAsDraft, type InvoiceData } from "@/lib/api/invoices";
 import InvoicePreviewWrapper from "@/components/InvoicePreview";
 import type { InvoiceFormData } from "@/lib/invoiceTemplateRenderer";
+import { moneyLocale } from "@/lib/amountInWords";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
 import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user";
 import { useAuth } from "@/hooks/use-auth";
@@ -68,6 +70,9 @@ interface Invoice {
   currency: string;
   status: InvoiceStatus;
   pdfUrl: string;
+  // Drives the progress badge; `status` is payment state.
+  pdfStatus: string;
+  emailStatus: string;
 }
 
 const mapApiStatus = (status: string): InvoiceStatus => {
@@ -88,6 +93,8 @@ const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoi
   currency: inv.currency || "USD",
   status: mapApiStatus(inv.status),
   pdfUrl: inv.pdfKey || "",
+  pdfStatus: inv.pdfStatus || "NOT_STARTED",
+  emailStatus: inv.emailStatus || "NOT_REQUESTED",
 });
 
 const statusStyles: Record<
@@ -108,7 +115,9 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 
 const formatCurrencyVal = (amount: number, currency = "USD") => {
   try {
-    return new Intl.NumberFormat(undefined, {
+    // The currency decides the grouping, not the browser: an en-US visitor
+    // should still see an INR invoice as 7,35,000.
+    return new Intl.NumberFormat(moneyLocale(currency), {
       style: "currency",
       currency,
       minimumFractionDigits: 0,
@@ -131,20 +140,28 @@ const InvoiceRow = ({
   invoice,
   onClick,
   onStatusChange,
+  onProgressStatusChange,
   onDownload,
+  onClone,
   onDelete,
 }: {
   invoice: Invoice;
   onClick: () => void;
   onStatusChange: (invoiceId: string, status: InvoiceStatus) => void;
+  /** The badge reports DRAFT -> UNPAID as it happens. */
+  onProgressStatusChange: (invoiceId: string, status: string) => void;
   onDownload: (invoice: Invoice) => void;
+  onClone: (invoice: Invoice) => void;
   onDelete: (invoice: Invoice) => void;
 }) => {
   const { variant, label } = statusStyles[invoice.status];
+  // A draft being rendered cannot be opened for editing - see handleInvoiceClick.
+  const isGenerating = ["QUEUED", "PROCESSING"].includes(invoice.pdfStatus);
+  const showsAsClickable = invoice.status !== "draft" || !isGenerating;
 
   return (
     <div
-      className="flex items-center justify-between gap-3 py-4 px-4 border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
+      className={`flex items-center justify-between gap-3 py-4 px-4 border-b border-border hover:bg-muted/50 transition-colors ${showsAsClickable ? "cursor-pointer" : "cursor-default"}`}
       onClick={onClick}
     >
       <div className="flex-1 min-w-0">
@@ -156,6 +173,12 @@ const InvoiceRow = ({
         <p className="text-sm text-muted-foreground mt-0.5">{invoice.dueDate}</p>
       </div>
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        <InvoiceProgressBadge
+          invoiceId={invoice.id}
+          pdfStatus={invoice.pdfStatus}
+          emailStatus={invoice.emailStatus}
+          onStatusChange={(status) => onProgressStatusChange(invoice.id, status)}
+        />
         <Badge variant={variant} className="min-w-[56px] sm:min-w-[70px] justify-center">
           {label}
         </Badge>
@@ -187,6 +210,10 @@ const InvoiceRow = ({
                   <Download className="mr-2 h-4 w-4" />
                   Download PDF
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onClone(invoice)}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Clone as Draft
+                </DropdownMenuItem>
               </>
             )}
             <DropdownMenuSeparator />
@@ -216,9 +243,22 @@ const Income = () => {
   const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
   const [previewFormData, setPreviewFormData] = useState<InvoiceFormData | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+
+  // The badge polls, so it sees the invoice become issued before any refresh.
+  const handleProgressStatusChange = (invoiceId: string, status: string) => {
+    setInvoices((prev) =>
+      prev.map((inv) =>
+        inv.id === invoiceId ? { ...inv, status: mapApiStatus(status) } : inv
+      )
+    );
+  };
   const [rawInvoices, setRawInvoices] = useState<InvoiceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
+  // The key is minted when the dialog opens, not per click, so confirming twice
+  // after a failed first attempt resolves to one copy rather than two.
+  const [cloneTarget, setCloneTarget] = useState<{ invoice: Invoice; idempotencyKey: string } | null>(null);
+  const [cloning, setCloning] = useState(false);
   const [editDraftId, setEditDraftId] = useState<string | null>(null);
   const [editDraftOpen, setEditDraftOpen] = useState(false);
   const [clientsData, setClientsData] = useState<ClientData[]>([]);
@@ -260,6 +300,17 @@ const Income = () => {
 
   const handleInvoiceClick = async (invoice: Invoice) => {
     if (invoice.status === "draft") {
+      // A worker is rendering this invoice right now. Editing would make it
+      // discard that PDF and start again, which looks like a random restart, so
+      // the server refuses it too.
+      if (["QUEUED", "PROCESSING"].includes(invoice.pdfStatus)) {
+        toast({
+          title: "Still generating",
+          description: "This invoice can be edited once its PDF finishes.",
+        });
+        return;
+      }
+
       setEditDraftId(invoice.id);
       setEditDraftOpen(true);
       return;
@@ -355,6 +406,7 @@ const Income = () => {
     const oldStatus = invoice.status;
     // Optimistic update
     setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: newStatus } : inv)));
+
     if (selectedInvoice?.id === invoiceId) {
       setSelectedInvoice({ ...selectedInvoice, status: newStatus });
     }
@@ -372,6 +424,28 @@ const Income = () => {
         setSelectedInvoice({ ...selectedInvoice, status: oldStatus });
       }
       toast({ title: "Error", description: "Failed to update invoice status", variant: "destructive" });
+    }
+  };
+
+  const handleCloneInvoice = async () => {
+    if (!cloneTarget) return;
+    setCloning(true);
+    try {
+      await cloneInvoiceAsDraft(cloneTarget.invoice.id, cloneTarget.idempotencyKey);
+      toast({
+        title: "Copied as draft",
+        description: `A draft copy of ${cloneTarget.invoice.invoiceNumber} has been created.`,
+      });
+      setCloneTarget(null);
+      loadInvoices();
+    } catch (err) {
+      toast({
+        title: "Could not copy invoice",
+        description: err instanceof Error ? err.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCloning(false);
     }
   };
 
@@ -469,7 +543,21 @@ const Income = () => {
   };
 
   const filterInvoices = (status: string) => {
-    let filtered = status === "all" ? invoices : invoices.filter((inv) => inv.status === status);
+    // "all" means all *active* invoices. Untouched drafts live on their own tab,
+    // but a draft that has been issued is still mid-flight - its PDF is
+    // generating or needs a retry - so it belongs here until it becomes UNPAID.
+    // pdfStatus tells them apart: NOT_STARTED means nobody has issued it yet.
+    // Tab counts and the list both read from here, so they stay in step.
+    // The Draft tab is the exact complement: only drafts nobody has issued yet.
+    const isUntouchedDraft = (inv: Invoice) =>
+      inv.status === "draft" && inv.pdfStatus === "NOT_STARTED";
+
+    let filtered =
+      status === "all"
+        ? invoices.filter((inv) => !isUntouchedDraft(inv))
+        : status === "draft"
+          ? invoices.filter(isUntouchedDraft)
+          : invoices.filter((inv) => inv.status === status);
 
     const dateRange = getDateRange();
     if (dateRange) {
@@ -547,12 +635,13 @@ const Income = () => {
     setCustomDateRange(undefined);
   };
 
+  // Draft sits last: it is the only tab that is not real income.
   const tabs = [
-    { value: "all", label: "All" },
-    { value: "draft", label: "Draft" },
-    { value: "paid", label: "Paid" },
+    { value: "all", label: "All active" },
     { value: "unpaid", label: "Unpaid" },
+    { value: "paid", label: "Paid" },
     { value: "overdue", label: "Overdue" },
+    { value: "draft", label: "Draft" },
   ];
 
   return (
@@ -656,14 +745,14 @@ const Income = () => {
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="due_date_desc">Due Date (Newest)</SelectItem>
+                    <SelectItem value="due_date_desc">Due Date (Latest)</SelectItem>
                     <SelectItem value="due_date_asc">Due Date (Oldest)</SelectItem>
-                    <SelectItem value="issue_date_desc">Issue Date (Newest)</SelectItem>
+                    <SelectItem value="issue_date_desc">Issue Date (Latest)</SelectItem>
                     <SelectItem value="issue_date_asc">Issue Date (Oldest)</SelectItem>
-                    <SelectItem value="amount_desc">Amount (High-Low)</SelectItem>
-                    <SelectItem value="amount_asc">Amount (Low-High)</SelectItem>
-                    <SelectItem value="client_asc">Client (A-Z)</SelectItem>
-                    <SelectItem value="client_desc">Client (Z-A)</SelectItem>
+                    <SelectItem value="amount_desc">Amount (High to Low)</SelectItem>
+                    <SelectItem value="amount_asc">Amount (Low to High)</SelectItem>
+                    <SelectItem value="client_asc">Client (A to Z)</SelectItem>
+                    <SelectItem value="client_desc">Client (Z to A)</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -737,7 +826,11 @@ const Income = () => {
                           invoice={invoice}
                           onClick={() => handleInvoiceClick(invoice)}
                           onStatusChange={handleStatusChange}
+                          onProgressStatusChange={handleProgressStatusChange}
                           onDownload={handleDownloadPdf}
+                          onClone={(inv) =>
+                            setCloneTarget({ invoice: inv, idempotencyKey: crypto.randomUUID() })
+                          }
                           onDelete={(inv) => setDeleteTarget(inv)}
                         />
                       ))
@@ -802,6 +895,31 @@ const Income = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!cloneTarget} onOpenChange={(open) => !open && setCloneTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clone as Draft</AlertDialogTitle>
+            <AlertDialogDescription>
+              Do you want to make a copy of invoice {cloneTarget?.invoice.invoiceNumber} as a Draft?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cloning}>No</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={cloning}
+              onClick={(e) => {
+                // Kept open until the request settles, so a failure can be retried
+                // with the same key instead of silently closing.
+                e.preventDefault();
+                handleCloneInvoice();
+              }}
+            >
+              {cloning ? "Copying..." : "Yes"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

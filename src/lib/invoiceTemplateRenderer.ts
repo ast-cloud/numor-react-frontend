@@ -2,6 +2,7 @@ import Handlebars from "handlebars";
 import invoiceTemplateHtml from "@/templates/invoice.html?raw";
 import { format } from "date-fns";
 import { getTaxLabel } from "@/lib/taxSystem";
+import { amountInWords, formatMoney } from "@/lib/amountInWords";
 
 interface LineItem {
   id: string;
@@ -26,7 +27,8 @@ interface SellerInfo {
 }
 
 interface InvoiceCustomFieldValue {
-  definitionId: string;
+  // Only the dialog needs this, to key its checkboxes. Rendering uses name/value.
+  definitionId?: string;
   name: string;
   value: string;
 }
@@ -138,8 +140,8 @@ function calculateEffectiveTax(lineItems: LineItem[], isCrossBorder: boolean) {
   return Math.round((totalTax * 100 / subtotal) * 100) / 100;
 }
 
-function formatAmount(n: number) {
-  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function formatAmount(n: number, currency = "USD") {
+  return formatMoney(n, currency);
 }
 
 export function renderInvoiceHtml(formData: InvoiceFormData): string {
@@ -186,25 +188,27 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
       serialNo: index + 1,
       itemName: item.description || "-",
       quantity: item.quantity,
-      unitPrice: formatAmount(item.rate),
+      unitPrice: formatAmount(item.rate, formData.currency),
       unitType: item.unit,
       taxRate: isCrossBorder ? 0 : item.taxPercent,
       totalPrice: formatAmount(
-        item.quantity * item.rate + (isCrossBorder ? 0 : item.quantity * item.rate * (item.taxPercent / 100))
+        item.quantity * item.rate + (isCrossBorder ? 0 : item.quantity * item.rate * (item.taxPercent / 100)),
+        formData.currency
       ),
     })),
-    subtotal: formatAmount(subtotal),
+    subtotal: formatAmount(subtotal, formData.currency),
     taxSummary: taxSummary
       ? Object.fromEntries(
           Object.entries(taxSummary).map(([key, val]) => [
             key,
-            { rate: val.rate, amount: formatAmount(val.amount) },
+            { rate: val.rate, amount: formatAmount(val.amount, formData.currency) },
           ])
         )
       : undefined,
     effectiveTax,
-    taxAmount: formatAmount(taxAmount),
-    totalAmount: formatAmount(totalAmount),
+    taxAmount: formatAmount(taxAmount, formData.currency),
+    totalAmount: formatAmount(totalAmount, formData.currency),
+    amountInWords: amountInWords(totalAmount, formData.currency),
     reverseCharge: isCrossBorder,
     bankDetails: {
       bankName: formData.bankName || "",
