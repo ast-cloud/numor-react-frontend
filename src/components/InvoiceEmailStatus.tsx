@@ -35,7 +35,7 @@ export function InvoiceEmailStatus({
   // opening this dialog while the PDF is still generating would pin it to false
   // forever - the poll below would update the email fields but never this, and
   // the component would stay hidden until a full page reload.
-  const [state, setState] = useState({ emailStatus, emailSentAt, emailError, pdfReady });
+  const [state, setState] = useState({ emailStatus, emailSentAt, emailError, pdfReady, emailRequested });
   const [sending, setSending] = useState(false);
 
   // Re-sync when the dialog is opened on a different invoice.
@@ -43,9 +43,9 @@ export function InvoiceEmailStatus({
   useEffect(() => {
     if (idRef.current !== invoiceId) {
       idRef.current = invoiceId;
-      setState({ emailStatus, emailSentAt, emailError, pdfReady });
+      setState({ emailStatus, emailSentAt, emailError, pdfReady, emailRequested });
     }
-  }, [invoiceId, emailStatus, emailSentAt, emailError, pdfReady]);
+  }, [invoiceId, emailStatus, emailSentAt, emailError, pdfReady, emailRequested]);
 
   // Poll until both the PDF and any requested send have resolved.
   //
@@ -58,7 +58,7 @@ export function InvoiceEmailStatus({
     const awaitingPdf = !state.pdfReady;
     const awaitingSend =
       state.emailStatus === "PENDING" ||
-      (emailRequested && state.emailStatus === "NOT_REQUESTED");
+      (state.emailRequested && state.emailStatus === "NOT_REQUESTED");
 
     if (!awaitingPdf && !awaitingSend) return;
 
@@ -71,6 +71,7 @@ export function InvoiceEmailStatus({
           emailStatus: next.emailStatus,
           emailSentAt: next.emailSentAt,
           emailError: next.emailError,
+          emailRequested: next.emailRequested,
           pdfReady: next.pdfStatus === "READY",
         });
 
@@ -87,14 +88,20 @@ export function InvoiceEmailStatus({
       cancelled = true;
       clearInterval(timer);
     };
-  }, [invoiceId, state.pdfReady, state.emailStatus, emailRequested]);
+  }, [invoiceId, state.pdfReady, state.emailStatus, state.emailRequested]);
 
   const send = async () => {
     setSending(true);
     try {
-      await resendInvoiceEmail(invoiceId);
-      // PENDING starts the poll above, which picks up the real outcome.
-      setState((s) => ({ ...s, emailStatus: "PENDING", emailError: null }));
+      const next = await resendInvoiceEmail(invoiceId);
+      // The request takes the claim, so this comes back already PENDING - no
+      // optimistic guess, and the poll above starts from the real state.
+      setState((s) => ({
+        ...s,
+        emailStatus: next.emailStatus ?? "PENDING",
+        emailRequested: true,
+        emailError: null,
+      }));
     } catch (err) {
       toast({
         title: "Could not send the email",
@@ -137,7 +144,7 @@ export function InvoiceEmailStatus({
     <p className="flex items-center gap-1.5 text-xs mt-1">
       {failed && <MailWarning className="h-3.5 w-3.5 text-destructive" />}
       <span className={failed ? "text-destructive" : "text-muted-foreground"} title={state.emailError ?? undefined}>
-        {failed ? "Email sending failed" : "Not shared by email"}
+        {failed ? "Email sending failed" : "Not shared with client yet"}
       </span>
       <Button
         variant="ghost"
