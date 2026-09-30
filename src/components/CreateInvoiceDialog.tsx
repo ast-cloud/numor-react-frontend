@@ -57,9 +57,18 @@ const DEFAULT_UNIT_OPTIONS = [
 
 interface CreateInvoiceDialogProps {
   onInvoiceCreated?: () => void;
+  /** Edits this draft in place. The invoice keeps its id and its number. */
   editInvoiceId?: string | null;
   editOpen?: boolean;
   onEditOpenChange?: (open: boolean) => void;
+  /**
+   * Loads this invoice into the form but saves a NEW one, for re-issuing an
+   * invoice that has already gone out. The original is left untouched - it is
+   * the record of what the client actually received.
+   */
+  prefillFromInvoiceId?: string | null;
+  prefillOpen?: boolean;
+  onPrefillOpenChange?: (open: boolean) => void;
 }
 
 interface LineItem {
@@ -347,11 +356,28 @@ const CreateInvoiceDialog = ({
   editInvoiceId,
   editOpen,
   onEditOpenChange,
+  prefillFromInvoiceId,
+  prefillOpen,
+  onPrefillOpenChange,
 }: CreateInvoiceDialogProps) => {
   const isEditMode = !!editInvoiceId;
+  // Same form, loaded from an existing invoice, but saved as a new one:
+  // createdInvoiceId stays null and isEditMode stays false, so saveInvoice()
+  // takes the create path and the server issues a fresh invoice number.
+  const isPrefillMode = !isEditMode && !!prefillFromInvoiceId;
+  const sourceInvoiceId = editInvoiceId ?? prefillFromInvoiceId ?? null;
+
   const [internalOpen, setInternalOpen] = useState(false);
-  const open = isEditMode ? (editOpen ?? false) : internalOpen;
-  const setOpen = isEditMode ? (v: boolean) => onEditOpenChange?.(v) : setInternalOpen;
+  const open = isEditMode
+    ? (editOpen ?? false)
+    : isPrefillMode
+      ? (prefillOpen ?? false)
+      : internalOpen;
+  const setOpen = isEditMode
+    ? (v: boolean) => onEditOpenChange?.(v)
+    : isPrefillMode
+      ? (v: boolean) => onPrefillOpenChange?.(v)
+      : setInternalOpen;
 
   const [formData, setFormData] = useState<InvoiceFormData>(getInitialFormData());
   const [showPreview, setShowPreview] = useState(false);
@@ -398,10 +424,10 @@ const CreateInvoiceDialog = ({
       });
 
     // In edit mode, fetch invoice details
-    if (isEditMode && editInvoiceId) {
+    if (sourceInvoiceId) {
       setEditLoading(true);
       Promise.all([
-        fetchInvoice(editInvoiceId),
+        fetchInvoice(sourceInvoiceId),
         fetchClients(),
         fetchOrganizationLogo().catch(() => null),
         fetchCurrentOrganization().catch(() => null),
@@ -420,7 +446,25 @@ const CreateInvoiceDialog = ({
           setOrgCustomFieldDefs(defs);
           const mapped = mapInvoiceDataToForm(invoiceData, undefined, clientData, defs);
           if (logoUrl) mapped.seller.logo = logoUrl;
-          console.log("Mapped form data:", JSON.stringify(mapped));
+
+          if (isPrefillMode) {
+            // This is a new invoice issued now, so it cannot inherit the
+            // original's issue date. The gap between the two dates is kept,
+            // because that is what encodes the payment terms - "14 days" stays
+            // 14 days rather than becoming a due date already in the past.
+            const issuedOn = mapped.invoiceDate;
+            const dueOn = mapped.dueDate;
+            mapped.invoiceDate = new Date();
+
+            if (issuedOn && dueOn) {
+              mapped.dueDate = new Date(Date.now() + (dueOn.getTime() - issuedOn.getTime()));
+            }
+
+            // The server issues a fresh one; carrying the old number over would
+            // be the one thing that must not be copied.
+            mapped.invoiceNumber = "";
+          }
+
           setFormData(mapped);
           // Nothing is selected when the set has since been renamed or deleted;
           // the values on the invoice are unaffected either way.
@@ -473,7 +517,7 @@ const CreateInvoiceDialog = ({
     return () => {
       cancelled = true;
     };
-  }, [open, editInvoiceId, isEditMode]);
+  }, [open, sourceInvoiceId, isPrefillMode]);
 
   // Resolves only while the set still exists. A nickname that no longer matches
   // one leaves the fields unlocked, holding whatever the invoice was issued with.
@@ -964,7 +1008,7 @@ const CreateInvoiceDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      {!isEditMode && (
+      {!isEditMode && !isPrefillMode && (
         <DialogTrigger asChild>
           <Button size="icon" className="h-9 w-9 rounded-lg">
             <Plus className="h-5 w-5" />
@@ -1025,7 +1069,11 @@ const CreateInvoiceDialog = ({
           <div ref={formScrollRef} className="max-h-[95vh] overflow-y-auto px-6">
             <DialogHeader className="py-6">
               <DialogTitle className="text-xl font-semibold">
-                {isEditMode ? "Edit Draft Invoice" : "Create New Invoice"}
+                {isEditMode
+                  ? "Edit Draft Invoice"
+                  : isPrefillMode
+                    ? "Edit & Re-share Invoice"
+                    : "Create New Invoice"}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-6 pb-6">

@@ -19,7 +19,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2, Trash2, Copy } from "lucide-react";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2, Trash2, Copy, PenSquare } from "lucide-react";
 import { InvoiceProgressBadge } from "@/components/InvoiceProgressBadge";
 import { InvoiceEmailStatus } from "@/components/InvoiceEmailStatus";
 import {
@@ -154,6 +154,7 @@ const InvoiceRow = ({
   onProgressStatusChange,
   onDownload,
   onClone,
+  onEditReshare,
   onDelete,
 }: {
   invoice: Invoice;
@@ -163,6 +164,7 @@ const InvoiceRow = ({
   onProgressStatusChange: (invoiceId: string, status: string) => void;
   onDownload: (invoice: Invoice) => void;
   onClone: (invoice: Invoice) => void;
+  onEditReshare: (invoice: Invoice) => void;
   onDelete: (invoice: Invoice) => void;
 }) => {
   const { variant, label } = statusStyles[invoice.status];
@@ -222,6 +224,10 @@ const InvoiceRow = ({
                   <Download className="mr-2 h-4 w-4" />
                   Download PDF
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEditReshare(invoice)}>
+                  <PenSquare className="mr-2 h-4 w-4" />
+                  Edit &amp; Re-share
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onClone(invoice)}>
                   <Copy className="mr-2 h-4 w-4" />
                   Clone as Draft
@@ -272,6 +278,10 @@ const Income = () => {
   const [cloneTarget, setCloneTarget] = useState<{ invoice: Invoice; idempotencyKey: string } | null>(null);
   const [cloning, setCloning] = useState(false);
   const [editDraftId, setEditDraftId] = useState<string | null>(null);
+  // Re-issuing an invoice that already went out. Held separately from
+  // editDraftId because this one must not edit the invoice it was opened from.
+  const [reshareSourceId, setReshareSourceId] = useState<string | null>(null);
+  const [reshareOpen, setReshareOpen] = useState(false);
   const [editDraftOpen, setEditDraftOpen] = useState(false);
   const [clientsData, setClientsData] = useState<ClientData[]>([]);
   const [orgCountry, setOrgCountry] = useState<string>("US");
@@ -682,6 +692,19 @@ const Income = () => {
               onInvoiceCreated={loadInvoices}
             />
           )}
+          {canWriteIncome && reshareSourceId && (
+            <CreateInvoiceDialog
+              prefillFromInvoiceId={reshareSourceId}
+              prefillOpen={reshareOpen}
+              onPrefillOpenChange={(open) => {
+                setReshareOpen(open);
+                // Cleared on close so the next one remounts and refetches,
+                // rather than reopening with the previous invoice in the form.
+                if (!open) setReshareSourceId(null);
+              }}
+              onInvoiceCreated={loadInvoices}
+            />
+          )}
         </div>
       </div>
 
@@ -845,6 +868,10 @@ const Income = () => {
                           onClone={(inv) =>
                             setCloneTarget({ invoice: inv, idempotencyKey: crypto.randomUUID() })
                           }
+                          onEditReshare={(inv) => {
+                            setReshareSourceId(inv.id);
+                            setReshareOpen(true);
+                          }}
                           onDelete={(inv) => setDeleteTarget(inv)}
                         />
                       ))
