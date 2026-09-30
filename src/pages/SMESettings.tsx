@@ -16,6 +16,8 @@ import SubAccountsSection from "@/components/SubAccountsSection";
 import InvoiceCustomFieldsSection from "@/components/InvoiceCustomFieldsSection";
 import InvoiceUnitsSection from "@/components/InvoiceUnitsSection";
 import { fetchInvoiceUnits, InvoiceUnits } from "@/lib/api/invoiceUnits";
+import PaymentAccountsSection from "@/components/PaymentAccountsSection";
+import { fetchPaymentAccounts, PaymentAccount } from "@/lib/api/paymentAccounts";
 
 const COUNTRIES = [
   "India",
@@ -71,6 +73,8 @@ const SMESettings = () => {
     activeUnits: [],
   });
   const [isLoadingUnits, setIsLoadingUnits] = useState(true);
+  const [paymentAccounts, setPaymentAccounts] = useState<PaymentAccount[]>([]);
+  const [isLoadingPaymentAccounts, setIsLoadingPaymentAccounts] = useState(true);
   const [originalCompanyData, setOriginalCompanyData] = useState({
     name: "",
     streetAddress: "",
@@ -228,6 +232,35 @@ const SMESettings = () => {
         variant: "destructive",
       });
     }
+  }, [toast]);
+
+  const refetchPaymentAccounts = useCallback(async () => {
+    try {
+      setPaymentAccounts(await fetchPaymentAccounts());
+    } catch {
+      toast({
+        title: "Failed to refresh payment details",
+        description: "Could not reload your saved payment details.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    const loadPaymentAccounts = async () => {
+      try {
+        setPaymentAccounts(await fetchPaymentAccounts());
+      } catch {
+        toast({
+          title: "Failed to load payment details",
+          description: "Could not fetch your saved payment details.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingPaymentAccounts(false);
+      }
+    };
+    loadPaymentAccounts();
   }, [toast]);
 
 
@@ -654,6 +687,15 @@ const SMESettings = () => {
           units={invoiceUnits}
           onRefetch={refetchInvoiceUnits}
           isLoading={isLoadingUnits}
+        />
+      )}
+
+      {/* Invoices - Saved Payment / Bank Details */}
+      {canReadSettings && (
+        <PaymentAccountsSection
+          accounts={paymentAccounts}
+          onRefetch={refetchPaymentAccounts}
+          isLoading={isLoadingPaymentAccounts}
         />
       )}
 

@@ -15,8 +15,8 @@ export interface ClientData {
   country: string | null;
   companyType: string | null;
   taxId: string | null;
-  taxSystem: string | null;
-  isActive: boolean;
+  taxSystem: string | null;  // Deleted clients are filtered out server side, so anything listed here is live.
+  deletedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

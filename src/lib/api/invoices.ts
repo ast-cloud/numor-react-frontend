@@ -48,6 +48,17 @@ export interface InvoiceData {
   sellerZipCode?: string;
   sellerCountry?: string;
   sellerTaxId?: string;
+  // The billed party as stored on the invoice itself. Survives the client being
+  // edited or deleted, unlike clientId and the client relation.
+  clientName?: string | null;
+  clientEmail?: string | null;
+  clientPhone?: string | null;
+  clientStreetAddress?: string | null;
+  clientCity?: string | null;
+  clientState?: string | null;
+  clientZipCode?: string | null;
+  clientCountry?: string | null;
+  clientTaxId?: string | null;
   notes: string;
   createdAt: string;
   updatedAt: string;
@@ -79,6 +90,9 @@ export interface InvoiceData {
     country?: string;
   };
   bankDetails?: {
+    // Which saved payment set these came from, copied at issue time. Absent on
+    // invoices whose details were typed by hand.
+    nickname?: string | null;
     bankName: string;
     accountName: string;
     accountNumber: string;

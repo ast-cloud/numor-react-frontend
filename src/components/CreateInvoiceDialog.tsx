@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, CalendarIcon, Trash2, Upload, ArrowLeft, MapPin, ChevronDown, Settings2 } from "lucide-react";
+import { Plus, CalendarIcon, Trash2, Upload, ArrowLeft, MapPin, ChevronDown, Settings2, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -19,8 +19,10 @@ import { INDIAN_STATES } from "@/lib/constants";
 import { fetchCurrentOrganization, fetchOrganizationLogo } from "@/lib/api/user";
 import { fetchClients, type ClientData } from "@/lib/api/clients";
 import { fetchInvoiceUnits } from "@/lib/api/invoiceUnits";
+import { fetchPaymentAccounts, type PaymentAccount } from "@/lib/api/paymentAccounts";
 import { getTaxLabel, getTaxSystem } from "@/lib/taxSystem";
 import AddClientDialog from "@/components/AddClientDialog";
+import PaymentAccountFormDialog from "@/components/PaymentAccountFormDialog";
 import { useAuth } from "@/hooks/use-auth";
 import {
   createInvoice,
@@ -39,6 +41,13 @@ interface InvoiceCustomFieldValue {
   name: string;
   value: string;
 }
+
+/** Last four digits only - a card in the picker should not print a full account. */
+const maskAccountNumber = (value?: string | null) => {
+  const trimmed = (value ?? "").replace(/s+/g, "");
+  if (!trimmed) return "";
+  return trimmed.length <= 4 ? trimmed : `•••• ${trimmed.slice(-4)}`;
+};
 
 // Fallback used until the organization's active units load (or if that fetch fails).
 const DEFAULT_UNIT_OPTIONS = [
@@ -216,7 +225,8 @@ const getInitialFormData = (seller?: SellerInfo): InvoiceFormData => {
     clientZip: "",
     clientCountry: "",
     clientTaxId: "",
-    lineItems: [{ id: "1", description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 }],
+    // No rows to begin with: the table offers a single button to add the first.
+    lineItems: [],
     bankName: "",
     accountName: "",
     iban: "",
@@ -309,7 +319,7 @@ const mapInvoiceDataToForm = (
           rate: parseFloat(item.unitPrice) || 0,
           taxPercent: parseFloat(item.taxRate) || 0,
         }))
-      : [{ id: "1", description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 }],
+      : [],
     bankName: inv.bankDetails?.bankName || "",
     accountName: inv.bankDetails?.accountName || "",
     iban: inv.bankDetails?.accountNumber || "",
@@ -348,13 +358,17 @@ const CreateInvoiceDialog = ({
   const [invoiceDateOpen, setInvoiceDateOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
   const [sellerExpanded, setSellerExpanded] = useState(false);
-  const [clientExpanded, setClientExpanded] = useState(false);
   const [savedClients, setSavedClients] = useState<ClientData[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [addClientOpen, setAddClientOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [orgCustomFieldDefs, setOrgCustomFieldDefs] = useState<InvoiceCustomField[]>([]);
   const [unitOptions, setUnitOptions] = useState<string[]>(DEFAULT_UNIT_OPTIONS);
+  const [paymentAccounts, setPaymentAccounts] = useState<PaymentAccount[]>([]);
+  // The selection is held as a nickname rather than an id because that is what
+  // the invoice stores, so reopening one preselects without a second lookup.
+  const [selectedPaymentNickname, setSelectedPaymentNickname] = useState<string | null>(null);
+  const [paymentAccountDialogOpen, setPaymentAccountDialogOpen] = useState(false);
   const { can } = useAuth();
   const canAddClient = can("income", "write");
 
@@ -372,6 +386,15 @@ const CreateInvoiceDialog = ({
       })
       .catch(() => {
         // Keep DEFAULT_UNIT_OPTIONS fallback so invoice creation never breaks.
+      });
+
+    fetchPaymentAccounts()
+      .then((accounts) => {
+        if (cancelled) return;
+        setPaymentAccounts(accounts);
+      })
+      .catch(() => {
+        // No saved sets on offer, so the bank fields stay typed by hand.
       });
 
     // In edit mode, fetch invoice details
@@ -399,6 +422,9 @@ const CreateInvoiceDialog = ({
           if (logoUrl) mapped.seller.logo = logoUrl;
           console.log("Mapped form data:", JSON.stringify(mapped));
           setFormData(mapped);
+          // Nothing is selected when the set has since been renamed or deleted;
+          // the values on the invoice are unaffected either way.
+          setSelectedPaymentNickname(invoiceData.bankDetails?.nickname ?? null);
           if (invoiceData.clientId) {
             setSelectedClientId(invoiceData.clientId);
           }
@@ -449,17 +475,63 @@ const CreateInvoiceDialog = ({
     };
   }, [open, editInvoiceId, isEditMode]);
 
-  const handleClientSelect = (clientId: string) => {
-    if (clientId === "__add_new__") {
-      setAddClientOpen(true);
-      return;
-    }
-    const client = savedClients.find((c) => c.id === clientId);
-    if (!client) return;
-    setSelectedClientId(clientId);
+  // Resolves only while the set still exists. A nickname that no longer matches
+  // one leaves the fields unlocked, holding whatever the invoice was issued with.
+  const selectedPaymentAccount =
+    paymentAccounts.find((a) => a.nickname === selectedPaymentNickname) ?? null;
+
+  // Details an invoice was issued with that match no saved set - from before this
+  // picker existed, or from a set since renamed. Shown rather than dropped: they
+  // are still what the PDF prints.
+  const legacyBankSummary = selectedPaymentAccount
+    ? ""
+    : [formData.bankName, maskAccountNumber(formData.iban), formData.accountName]
+        .filter(Boolean)
+        .join(" - ");
+
+  /** Copies a saved set onto the invoice. The values travel, not a reference. */
+  const applyPaymentAccount = (account: PaymentAccount) => {
+    setSelectedPaymentNickname(account.nickname);
+    setFormData((prev) => ({
+      ...prev,
+      bankName: account.bankName ?? "",
+      accountName: account.accountName ?? "",
+      iban: account.accountNumber ?? "",
+      ifscCode: account.ifsc ?? "",
+      swiftBic: account.swift ?? "",
+      bankAddress: account.bankAddress ?? "",
+    }));
+  };
+
+  const handlePaymentAccountSelect = (accountId: string) => {
+    const account = paymentAccounts.find((a) => a.id === accountId);
+    if (account) applyPaymentAccount(account);
+  };
+
+  // Saved from the Add New card: list it and select it, so the click that created
+  // it also does what the user came for.
+  const handlePaymentAccountCreated = (account: PaymentAccount) => {
+    setPaymentAccounts((prev) => [...prev.filter((a) => a.id !== account.id), account]);
+    applyPaymentAccount(account);
+  };
+
+
+  /**
+   * Copies a saved client onto the invoice. The values travel, not a reference,
+   * so editing the client later never rewrites an issued invoice.
+   *
+   * Shared by selecting a card and by creating one: they used to copy the fields
+   * separately, and only the select path zeroed item tax for a foreign client.
+   */
+  const applyClient = (client: ClientData) => {
+    setSelectedClientId(client.id);
     setFormData((prev) => {
       const newClientCountry = client.country || "";
-      const isCrossBorder = !!(prev.seller.country && newClientCountry && prev.seller.country !== newClientCountry);
+      const isCrossBorder = !!(
+        prev.seller.country &&
+        newClientCountry &&
+        prev.seller.country !== newClientCountry
+      );
       return {
         ...prev,
         clientName: client.name || "",
@@ -475,24 +547,18 @@ const CreateInvoiceDialog = ({
           : prev.lineItems,
       };
     });
-    setClientExpanded(false);
   };
 
+  const handleClientSelect = (clientId: string) => {
+    const client = savedClients.find((c) => c.id === clientId);
+    if (client) applyClient(client);
+  };
+
+  // Saved from the Add New card: list it and select it, so the click that created
+  // it also does what the user came for.
   const handleClientCreated = (client: ClientData) => {
-    setSavedClients((prev) => [client, ...prev]);
-    setSelectedClientId(client.id);
-    setFormData((prev) => ({
-      ...prev,
-      clientName: client.name || "",
-      clientEmail: client.email || "",
-      clientStreetAddress: client.streetAddress || "",
-      clientCity: client.city || "",
-      clientState: client.state || "",
-      clientZip: client.zipCode || "",
-      clientCountry: client.country || "",
-      clientTaxId: client.taxId || "",
-    }));
-    setClientExpanded(false);
+    setSavedClients((prev) => [client, ...prev.filter((c) => c.id !== client.id)]);
+    applyClient(client);
   };
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | Date | undefined) => {
@@ -576,24 +642,24 @@ const CreateInvoiceDialog = ({
   };
 
   const addLineItem = () => {
-    const newId = String(formData.lineItems.length + 1);
     setFormData((prev) => ({
       ...prev,
       lineItems: [
         ...prev.lineItems,
-        { id: newId, description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 },
+        // Numbering by length collides once a row is removed - deleting row 1 of
+        // two and adding another would reuse the id still held by the survivor.
+        { id: crypto.randomUUID(), description: "", quantity: 1, unit: "Units", rate: 0, taxPercent: 5 },
       ],
     }));
   };
 
+  // Every row is removable, the last one included: a draft is allowed to have none.
   const removeLineItem = (id: string) => {
-    if (formData.lineItems.length > 1) {
-      setFormData((prev) => ({
-        ...prev,
-        lineItems: prev.lineItems.filter((item) => item.id !== id),
-      }));
-      setSubmittedItemIds((prev) => prev.filter((x) => x !== id));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      lineItems: prev.lineItems.filter((item) => item.id !== id),
+    }));
+    setSubmittedItemIds((prev) => prev.filter((x) => x !== id));
   };
 
   const isCrossBorderInvoice = () =>
@@ -630,26 +696,43 @@ const CreateInvoiceDialog = ({
   const sellerEmailValid =
     formData.seller.email.trim() === "" ||
     z.string().email().safeParse(formData.seller.email.trim()).success;
-  const isFormValid =
-    hasClientSelected && hasAtLeastOneItem && allItemsHaveDescription && sellerEmailValid;
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  // Two rules, because the buttons promise different things. A draft is a
+  // work in progress: it may have no items yet, but a row that exists must be
+  // described, or it would reach the API as a nameless item and be rejected.
+  // Issuing is the real document, so it needs something to bill for.
+  const isDraftValid = hasClientSelected && allItemsHaveDescription && sellerEmailValid;
+  const isFormValid = isDraftValid && hasAtLeastOneItem;
+
+  // Which button was pressed, so the summary below only raises rules that
+  // actually applied to it - null until one is.
+  const [attemptedAction, setAttemptedAction] = useState<"create" | "draft" | null>(null);
+  const attemptedSubmit = attemptedAction !== null;
   const [submittedItemIds, setSubmittedItemIds] = useState<string[]>([]);
   const [jiggleKey, setJiggleKey] = useState(0);
   const formScrollRef = useRef<HTMLDivElement | null>(null);
 
+  /** Flags the offending fields and scrolls them into view. */
+  const reportInvalid = (action: "create" | "draft") => {
+    setAttemptedAction(action);
+    setSubmittedItemIds(formData.lineItems.map((i) => i.id));
+    setJiggleKey((k) => k + 1);
+    requestAnimationFrame(() => {
+      const el = formScrollRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+  };
+
+  const clearValidation = () => {
+    setAttemptedAction(null);
+    setSubmittedItemIds([]);
+  };
+
   const handlePreview = () => {
     if (!isFormValid) {
-      setAttemptedSubmit(true);
-      setSubmittedItemIds(formData.lineItems.map((i) => i.id));
-      setJiggleKey((k) => k + 1);
-      requestAnimationFrame(() => {
-        const el = formScrollRef.current;
-        if (el) el.scrollTop = el.scrollHeight;
-      });
+      reportInvalid("create");
       return;
     }
-    setAttemptedSubmit(false);
-    setSubmittedItemIds([]);
+    clearValidation();
     setShowPreview(true);
   };
 
@@ -758,6 +841,9 @@ const CreateInvoiceDialog = ({
         taxSystem: getTaxLabel(formData.seller.country),
       },
       bankDetails: {
+        // A copy of the nickname, not a reference: the invoice keeps these
+        // numbers even if the saved set is later edited or deleted.
+        nickname: selectedPaymentAccount?.nickname ?? null,
         bankName: formData.bankName,
         accountName: formData.accountName,
         accountNumber: formData.iban,
@@ -788,6 +874,8 @@ const CreateInvoiceDialog = ({
     setShowPreview(false);
     setSelectedClientId(null);
     setCreatedInvoiceId(null);
+    setSelectedPaymentNickname(null);
+    setPaymentAccountDialogOpen(false);
     setIdempotencyKey(crypto.randomUUID());
     onInvoiceCreated?.();
   };
@@ -835,10 +923,19 @@ const CreateInvoiceDialog = ({
   const [sendEmail, setSendEmail] = useState(false);
 
   const handleSaveAsDraft = async () => {
+    // This used to save unconditionally, so a draft could be stored with no
+    // client, and a described-less item reached the API only to come back as
+    // "Invalid input".
+    if (!isDraftValid) {
+      reportInvalid("draft");
+      return;
+    }
+
     setSavingDraft(true);
     try {
       // No finalize call, so the invoice stays a draft: no PDF, no email.
       await saveInvoice();
+      clearValidation();
       toast({ title: "Draft saved", description: "Invoice has been saved as a draft." });
       resetAfterSubmit();
     } catch (err: unknown) {
@@ -856,9 +953,11 @@ const CreateInvoiceDialog = ({
       setShowPreview(false);
       setSelectedClientId(null);
       setCreatedInvoiceId(null);
+      setSelectedPaymentNickname(null);
+      setPaymentAccountDialogOpen(false);
       setIdempotencyKey(crypto.randomUUID());
       setSendEmail(false);
-      setAttemptedSubmit(false);
+      setAttemptedAction(null);
       setSubmittedItemIds([]);
     }
   };
@@ -1314,205 +1413,101 @@ const CreateInvoiceDialog = ({
               </div>
 
               {/* Client Info */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Client Information</h3>
-                <div className="space-y-2">
-                  <Label>Select Saved Client</Label>
-                  <Select value={selectedClientId || ""} onValueChange={handleClientSelect}>
-                    <SelectTrigger className="data-[placeholder]:text-muted-foreground/70 data-[placeholder]:font-normal">
-                      <SelectValue placeholder="Choose from saved clients..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {savedClients.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.name}
-                          {client.email ? ` (${client.email})` : ""}
-                        </SelectItem>
-                      ))}
-                      {canAddClient && (
-                        <SelectItem value="__add_new__" className="text-primary font-medium">
-                          + Add new client
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {attemptedSubmit && !hasClientSelected && (
-                    <p className="text-xs text-destructive">Please select a client.</p>
-                  )}
-                </div>
-                <Collapsible open={clientExpanded} onOpenChange={setClientExpanded}>
-                  <div className="border border-border rounded-lg overflow-hidden">
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="text-left">
-                          <p className="font-medium text-foreground text-sm">
-                            {formData.clientName || "No client selected"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{formData.clientEmail || "No email set"}</p>
-                        </div>
-                        <ChevronDown
+              <div className="space-y-3">
+                <h3 className="font-medium text-foreground">Select Client</h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {/* Only the saved cards are choices; Add New is an action, so it
+                      sits outside the group. "contents" keeps the cards as direct
+                      grid items rather than boxing them into one cell. */}
+                  <div role="radiogroup" aria-label="Saved clients" className="contents">
+                    {savedClients.map((client) => {
+                      const selected = selectedClientId === client.id;
+                      const place = [client.city, client.state, client.country]
+                        .filter(Boolean)
+                        .join(", ");
+                      const taxId = client.taxId || client.gstin;
+
+                      return (
+                        <button
+                          key={client.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => handleClientSelect(client.id)}
                           className={cn(
-                            "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                            clientExpanded && "rotate-180",
+                            "text-left rounded-lg border-2 p-3 transition-colors h-full",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            selected
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/40 hover:bg-muted/40",
                           )}
-                        />
-                      </button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                      <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
-                        <div className="grid gap-4 md:grid-cols-2 pt-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="clientName">Client Name</Label>
-                            <Input
-                              id="clientName"
-                              placeholder="e.g. Design Smith Interior Works LLC"
-                              value={formData.clientName}
-                              onChange={(e) => handleInputChange("clientName", e.target.value)}
-                              disabled={!!selectedClientId}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="clientEmail">Email</Label>
-                            <Input
-                              id="clientEmail"
-                              type="email"
-                              placeholder="e.g. client@example.com"
-                              value={formData.clientEmail}
-                              onChange={(e) => handleInputChange("clientEmail", e.target.value)}
-                              disabled={!!selectedClientId}
-                            />
-                          </div>
-                        </div>
-                        {/* Client Address Subgroup */}
-                        <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/20">
-                          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                            <MapPin className="w-4 h-4" />
-                            Client Address
-                          </div>
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-2 md:col-span-2">
-                              <Label htmlFor="clientStreetAddress">Street Address</Label>
-                              <Input
-                                id="clientStreetAddress"
-                                placeholder="e.g. 123 Business Street, Suite 100"
-                                value={formData.clientStreetAddress}
-                                onChange={(e) => handleInputChange("clientStreetAddress", e.target.value)}
-                                disabled={!!selectedClientId}
+                        >
+                          <div className="flex items-start gap-2">
+                            {selected ? (
+                              <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+                            ) : (
+                              <span
+                                aria-hidden="true"
+                                className="h-4 w-4 shrink-0 mt-0.5 rounded-full border-2 border-muted-foreground/40"
                               />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="clientCity">City</Label>
-                              <Input
-                                id="clientCity"
-                                placeholder="e.g. Dubai"
-                                value={formData.clientCity}
-                                onChange={(e) => handleInputChange("clientCity", e.target.value)}
-                                disabled={!!selectedClientId}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="clientState">State / Province</Label>
-                              {formData.clientCountry === "India" ? (
-                                <Select
-                                  value={formData.clientState}
-                                  onValueChange={(value) => handleInputChange("clientState", value)}
-                                  disabled={!!selectedClientId}
-                                >
-                                  <SelectTrigger id="clientState">
-                                    <SelectValue placeholder="Select state" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {INDIAN_STATES.map((state) => (
-                                      <SelectItem key={state} value={state}>
-                                        {state}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                <Input
-                                  id="clientState"
-                                  placeholder="e.g. Dubai"
-                                  value={formData.clientState}
-                                  onChange={(e) => handleInputChange("clientState", e.target.value)}
-                                  disabled={!!selectedClientId}
-                                />
+                            )}
+                            <div className="min-w-0 space-y-0.5">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {client.name}
+                              </p>
+                              {client.email && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {client.email}
+                                </p>
+                              )}
+                              {place && (
+                                <p className="text-xs text-muted-foreground truncate">{place}</p>
+                              )}
+                              {taxId && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  GSTIN: {taxId}
+                                </p>
                               )}
                             </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="clientZip">ZIP / Postal Code</Label>
-                              <Input
-                                id="clientZip"
-                                placeholder="e.g. 00000"
-                                value={formData.clientZip}
-                                onChange={(e) => handleInputChange("clientZip", e.target.value)}
-                                disabled={!!selectedClientId}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="clientCountry">Country</Label>
-                              <Select
-                                value={formData.clientCountry}
-                                onValueChange={handleClientCountryChange}
-                                disabled={!!selectedClientId}
-                              >
-                                <SelectTrigger id="clientCountry">
-                                  <SelectValue placeholder="Select country" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="India">India</SelectItem>
-                                  <SelectItem value="UAE">UAE</SelectItem>
-                                  <SelectItem value="US">United States</SelectItem>
-                                  <SelectItem value="UK">United Kingdom</SelectItem>
-                                  <SelectItem value="Austria">Austria</SelectItem>
-                                  <SelectItem value="Belgium">Belgium</SelectItem>
-                                  <SelectItem value="Bulgaria">Bulgaria</SelectItem>
-                                  <SelectItem value="Croatia">Croatia</SelectItem>
-                                  <SelectItem value="Cyprus">Cyprus</SelectItem>
-                                  <SelectItem value="Czech Republic">Czech Republic</SelectItem>
-                                  <SelectItem value="Denmark">Denmark</SelectItem>
-                                  <SelectItem value="Estonia">Estonia</SelectItem>
-                                  <SelectItem value="Finland">Finland</SelectItem>
-                                  <SelectItem value="France">France</SelectItem>
-                                  <SelectItem value="Germany">Germany</SelectItem>
-                                  <SelectItem value="Greece">Greece</SelectItem>
-                                  <SelectItem value="Hungary">Hungary</SelectItem>
-                                  <SelectItem value="Ireland">Ireland</SelectItem>
-                                  <SelectItem value="Italy">Italy</SelectItem>
-                                  <SelectItem value="Latvia">Latvia</SelectItem>
-                                  <SelectItem value="Lithuania">Lithuania</SelectItem>
-                                  <SelectItem value="Luxembourg">Luxembourg</SelectItem>
-                                  <SelectItem value="Malta">Malta</SelectItem>
-                                  <SelectItem value="Netherlands">Netherlands</SelectItem>
-                                  <SelectItem value="Poland">Poland</SelectItem>
-                                  <SelectItem value="Portugal">Portugal</SelectItem>
-                                  <SelectItem value="Romania">Romania</SelectItem>
-                                  <SelectItem value="Slovakia">Slovakia</SelectItem>
-                                  <SelectItem value="Slovenia">Slovenia</SelectItem>
-                                  <SelectItem value="Spain">Spain</SelectItem>
-                                  <SelectItem value="Sweden">Sweden</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2 md:col-span-2">
-                              <Label htmlFor="clientTaxId">{getTaxLabel(formData.clientCountry)}</Label>
-                              <Input
-                                id="clientTaxId"
-                                placeholder="e.g. 22AAAAA0000A1Z5"
-                                value={formData.clientTaxId}
-                                onChange={(e) => handleInputChange("clientTaxId", e.target.value)}
-                                disabled={!!selectedClientId}
-                              />
-                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </CollapsibleContent>
+                        </button>
+                      );
+                    })}
                   </div>
-                </Collapsible>
+
+                  {canAddClient && (
+                    <button
+                      type="button"
+                      onClick={() => setAddClientOpen(true)}
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border p-3 h-full min-h-[92px] transition-colors",
+                        "hover:border-primary/40 hover:bg-muted/40",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      )}
+                    >
+                      <Plus className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground">Add New</span>
+                    </button>
+                  )}
+                </div>
+
+                {/*
+                  An invoice whose client has since been deleted still bills someone.
+                  There is no form here, so without this the name would vanish from
+                  the dialog while still printing on the PDF.
+                */}
+                {!selectedClientId && formData.clientName.trim() && (
+                  <p className="text-xs text-muted-foreground">
+                    This invoice is billed to {formData.clientName.trim()}
+                    {formData.clientEmail.trim() ? ` (${formData.clientEmail.trim()})` : ""}, who is
+                    no longer in your saved clients. Choosing one above replaces them.
+                  </p>
+                )}
+
+                {attemptedSubmit && !hasClientSelected && (
+                  <p className="text-xs text-destructive">Please select a client.</p>
+                )}
               </div>
 
               {/* Line Items */}
@@ -1636,13 +1631,27 @@ const CreateInvoiceDialog = ({
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-destructive"
                           onClick={() => removeLineItem(item.id)}
-                          disabled={formData.lineItems.length === 1}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   ))}
+
+                  {formData.lineItems.length === 0 && (
+                    <div className="border-t p-8 flex justify-center">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={addLineItem}
+                        aria-label="Add the first item"
+                        className="h-10 w-10 rounded-full border-2 border-dashed border-border"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  )}
 
                   {/* Totals */}
                   <div className="border-t bg-muted/50 p-3 space-y-2">
@@ -1695,80 +1704,99 @@ const CreateInvoiceDialog = ({
               </div>
 
               {/* Bank Details */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <h3 className="font-medium text-foreground">Bank / Payment Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="bankName">Bank Name</Label>
-                    <Input
-                      id="bankName"
-                      placeholder="e.g. WIO Bank"
-                      value={formData.bankName}
-                      onChange={(e) => handleInputChange("bankName", e.target.value)}
-                    />
+                <p className="text-sm text-muted-foreground">
+                  Select from saved accounts or add a new one:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {/* Only the saved cards are choices; Add New is an action, so it
+                      sits outside the group. "contents" keeps the cards as direct
+                      grid items rather than boxing them into one cell. */}
+                  <div role="radiogroup" aria-label="Saved payment details" className="contents">
+                    {paymentAccounts.map((account) => {
+                      const selected = selectedPaymentAccount?.id === account.id;
+                      const masked = maskAccountNumber(account.accountNumber);
+                      const code = account.ifsc
+                        ? `IFSC Code: ${account.ifsc}`
+                        : account.swift
+                          ? `SWIFT/BIC: ${account.swift}`
+                          : "";
+
+                      return (
+                        <button
+                          key={account.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => handlePaymentAccountSelect(account.id)}
+                          className={cn(
+                            "text-left rounded-lg border-2 p-3 transition-colors h-full",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            selected
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/40 hover:bg-muted/40",
+                          )}
+                        >
+                          <div className="flex items-start gap-2">
+                            {selected ? (
+                              <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+                            ) : (
+                              <span
+                                aria-hidden="true"
+                                className="h-4 w-4 shrink-0 mt-0.5 rounded-full border-2 border-muted-foreground/40"
+                              />
+                            )}
+                            <div className="min-w-0 space-y-0.5">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {account.nickname}
+                              </p>
+                              {(account.bankName || masked) && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {[account.bankName, masked].filter(Boolean).join(" - ")}
+                                </p>
+                              )}
+                              {account.accountName && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {account.accountName}
+                                </p>
+                              )}
+                              {code && (
+                                <p className="text-xs text-muted-foreground truncate">{code}</p>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="accountName">Account Name</Label>
-                    <Input
-                      id="accountName"
-                      placeholder="e.g. Numor Technologies Pvt Ltd"
-                      value={formData.accountName}
-                      onChange={(e) => handleInputChange("accountName", e.target.value)}
-                    />
-                  </div>
-                  {formData.seller.country === "India" ? (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="iban">Account Number</Label>
-                        <Input
-                          id="iban"
-                          placeholder="e.g. 1234567890"
-                          value={formData.iban}
-                          onChange={(e) => handleInputChange("iban", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ifscCode">IFSC Code</Label>
-                        <Input
-                          id="ifscCode"
-                          placeholder="e.g. HDFC0000123"
-                          value={formData.ifscCode}
-                          onChange={(e) => handleInputChange("ifscCode", e.target.value)}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="iban">IBAN</Label>
-                        <Input
-                          id="iban"
-                          placeholder="e.g. AE730860000096565699265"
-                          value={formData.iban}
-                          onChange={(e) => handleInputChange("iban", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="swiftBic">SWIFT/BIC</Label>
-                        <Input
-                          id="swiftBic"
-                          placeholder="e.g. WIOBAEADXXX"
-                          value={formData.swiftBic}
-                          onChange={(e) => handleInputChange("swiftBic", e.target.value)}
-                        />
-                      </div>
-                    </>
-                  )}
-                  <div className="space-y-2">
-                    <Label htmlFor="bankAddress">Bank Address</Label>
-                    <Input
-                      id="bankAddress"
-                      placeholder="e.g. Level 5, Etihad Airways Centre, Abu Dhabi"
-                      value={formData.bankAddress}
-                      onChange={(e) => handleInputChange("bankAddress", e.target.value)}
-                    />
-                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentAccountDialogOpen(true)}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border p-3 h-full min-h-[92px] transition-colors",
+                      "hover:border-primary/40 hover:bg-muted/40",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    )}
+                  >
+                    <Plus className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">Add New</span>
+                  </button>
                 </div>
+
+                {/*
+                  Invoices issued before this picker existed carry bank details that
+                  match no saved set. There is no form here any more, so without this
+                  they would be invisible while still printing on the PDF.
+                */}
+                {!selectedPaymentAccount && legacyBankSummary && (
+                  <p className="text-xs text-muted-foreground">
+                    This invoice carries details entered earlier: {legacyBankSummary}. Choosing a
+                    saved account above replaces them.
+                  </p>
+                )}
               </div>
 
               {/* Notes */}
@@ -1789,24 +1817,43 @@ const CreateInvoiceDialog = ({
                   <Button variant="outline" onClick={() => setOpen(false)}>
                     Cancel
                   </Button>
-                  <Button variant="secondary" onClick={handleSaveAsDraft} disabled={savingDraft}>
+                  {/* The key restarts the CSS animation on a repeat press; the class
+                      is gated on attemptedAction so only the button just pressed
+                      shakes. */}
+                  <Button
+                    key={`draft-jiggle-${jiggleKey}`}
+                    variant="secondary"
+                    onClick={handleSaveAsDraft}
+                    disabled={savingDraft}
+                    className={attemptedAction === "draft" ? "animate-jiggle" : ""}
+                  >
                     {savingDraft ? "Saving..." : "Save as Draft"}
                   </Button>
-                  <Button key={`jiggle-${jiggleKey}`} onClick={handlePreview} className={jiggleKey > 0 ? "animate-jiggle" : ""}>
+                  <Button
+                    key={`create-jiggle-${jiggleKey}`}
+                    onClick={handlePreview}
+                    className={attemptedAction === "create" ? "animate-jiggle" : ""}
+                  >
                     Create Invoice
                   </Button>
                 </div>
                 {(() => {
-                  if (!attemptedSubmit) return null;
+                  if (!attemptedAction) return null;
                   const flaggedMissingDesc = formData.lineItems.some(
                     (i) => submittedItemIds.includes(i.id) && !i.description.trim()
                   );
                   const showClient = !hasClientSelected;
-                  const showNoItems = !hasAtLeastOneItem;
+                  // A draft may be saved with none, so this is a create-only rule.
+                  const showNoItems = attemptedAction === "create" && !hasAtLeastOneItem;
                   if (!showClient && !showNoItems && !flaggedMissingDesc) return null;
                   return (
                     <div className="text-xs text-destructive text-right space-y-0.5">
-                      {showClient && <p>Please select a client before creating the invoice.</p>}
+                      {showClient && (
+                        <p>
+                          Please select a client before
+                          {attemptedAction === "draft" ? " saving the draft." : " creating the invoice."}
+                        </p>
+                      )}
                       {showNoItems && <p>Add at least one item.</p>}
                       {!showNoItems && flaggedMissingDesc && (
                         <p>Description is required for all items.</p>
@@ -1821,6 +1868,12 @@ const CreateInvoiceDialog = ({
         )}
       </DialogContent>
       <AddClientDialog open={addClientOpen} onOpenChange={setAddClientOpen} onClientCreated={handleClientCreated} />
+
+      <PaymentAccountFormDialog
+        open={paymentAccountDialogOpen}
+        onOpenChange={setPaymentAccountDialogOpen}
+        onSaved={handlePaymentAccountCreated}
+      />
     </Dialog>
   );
 };

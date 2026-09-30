@@ -325,6 +325,24 @@
   background: rgba(100, 100, 100, 0.6);
 }
 
+/*
+  Scroll without a visible scrollbar. For strips that scroll sideways on narrow
+  screens, where the bar itself is noise.
+
+  It hides the vertical bar too, on purpose: setting only overflow-x makes the
+  other axis compute to auto rather than stay visible, so a couple of pixels of
+  decoration is enough to raise a vertical scrollbar in a strip too short to
+  hold one - it renders as a stray pair of arrows.
+*/
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
 /* Lighter placeholders globally */
 input::placeholder,
 textarea::placeholder {

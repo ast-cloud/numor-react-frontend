@@ -91,7 +91,10 @@ const mapApiStatus = (status: string): InvoiceStatus => {
 const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoice => ({
   id: inv.id,
   invoiceNumber: inv.invoiceNumber,
-  clientName: clientsMap.get(inv.clientId) || inv.sellerName,
+  // The snapshot first. clientsMap is keyed on clientId, which is null once the
+  // client is deleted - and the old fallback then printed the SELLER name in the
+  // client column rather than admitting it did not know.
+  clientName: inv.clientName || clientsMap.get(inv.clientId) || "—",
   dueDate: format(parseISO(inv.dueDate), "dd/MM/yyyy"),
   issueDate: inv.issueDate ? format(parseISO(inv.issueDate), "dd/MM/yyyy") : "",
   amount: parseFloat(inv.totalAmount),
@@ -353,14 +356,16 @@ const Income = () => {
           email: detail.sellerEmail || detail.seller?.email || "",
           phone: detail.sellerPhone || detail.seller?.phone || "",
         },
-        clientName: client?.name || detail.client?.name || "",
-        clientEmail: client?.email || detail.client?.email || "",
-        clientPhone: client?.phone || detail.client?.phone || "",
-        clientStreetAddress: client?.streetAddress || detail.client?.streetAddress || "",
-        clientCity: client?.city || detail.client?.city || "",
-        clientState: client?.state || detail.client?.state || "",
-        clientZip: client?.zipCode || detail.client?.zipCode || "",
-        clientCountry: client?.country || detail.client?.country || "",
+        // Snapshot first, then the live client record, then the relation.
+        clientName: detail.clientName || client?.name || detail.client?.name || "",
+        clientEmail: detail.clientEmail || client?.email || detail.client?.email || "",
+        clientPhone: detail.clientPhone || client?.phone || detail.client?.phone || "",
+        clientStreetAddress:
+          detail.clientStreetAddress || client?.streetAddress || detail.client?.streetAddress || "",
+        clientCity: detail.clientCity || client?.city || detail.client?.city || "",
+        clientState: detail.clientState || client?.state || detail.client?.state || "",
+        clientZip: detail.clientZipCode || client?.zipCode || detail.client?.zipCode || "",
+        clientCountry: detail.clientCountry || client?.country || detail.client?.country || "",
         lineItems: (detail.items || []).map((item) => ({
           id: item.id,
           description: item.description || item.itemName || "",
@@ -681,7 +686,7 @@ const Income = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 gap-4 sm:gap-6 md:gap-8 overflow-x-auto flex-nowrap">
+        <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start h-auto p-0 gap-4 sm:gap-6 md:gap-8 overflow-x-auto flex-nowrap no-scrollbar">
           {tabs.map((tab) => (
             <TabsTrigger
               key={tab.value}
