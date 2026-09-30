@@ -104,11 +104,60 @@ export interface InvoiceData {
   customFields?: { definitionId?: string; name: string; value: string }[];
 }
 
-export async function fetchInvoices(): Promise<InvoiceData[]> {
+export type InvoiceTab = 'all' | 'draft' | 'unpaid' | 'paid' | 'overdue';
+
+export interface InvoiceListQuery {
+  /** Matches the invoice number or the client name, case-insensitively. */
+  search?: string;
+  tab?: InvoiceTab;
+  /** Restricts the list to these clients. Empty means no client filter. */
+  clientIds?: string[];
+  sort?: string;
+  limit?: number;
+  offset?: number;
+  startDate?: string;
+  endDate?: string;
+  /** Which date the range applies to. The list screen filters on dueDate. */
+  dateField?: 'issueDate' | 'dueDate';
+}
+
+export interface InvoiceListResult {
+  invoices: InvoiceData[];
+  pagination: { total: number; limit: number; offset: number };
+  /**
+   * A count per tab, and the money totals for the tab being viewed - both over
+   * the whole filtered set, not the page. Deriving these from `invoices` would
+   * silently reduce them to "the rows currently on screen".
+   */
+  counts: Record<InvoiceTab, number>;
+  totals: {
+    invoiceCount: number;
+    byCurrency: { currency: string; total: number; paid: number; unpaid: number }[];
+    topClient: { name: string; amount: number } | null;
+  };
+}
+
+const EMPTY_COUNTS: Record<InvoiceTab, number> = { all: 0, draft: 0, unpaid: 0, paid: 0, overdue: 0 };
+
+export async function fetchInvoices(query: InvoiceListQuery = {}): Promise<InvoiceListResult> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
 
-  const res = await fetch(`${config.backendHost}/api/invoices/`, {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    // A blank search must not be sent, or it reads as a filter on empty string.
+    if (value === undefined || value === null || value === '') return;
+    // An empty selection is no filter, so it is left off entirely rather than
+    // sent as an empty list.
+    if (Array.isArray(value)) {
+      if (value.length > 0) params.set(key, value.join(','));
+      return;
+    }
+    params.set(key, String(value));
+  });
+
+  const qs = params.toString();
+  const res = await fetch(`${config.backendHost}/api/invoices/${qs ? `?${qs}` : ''}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -118,7 +167,14 @@ export async function fetchInvoices(): Promise<InvoiceData[]> {
 
   if (!res.ok) throw new Error('Failed to fetch invoices');
   const json = await res.json();
-  return json.data ?? [];
+  const invoices: InvoiceData[] = json.data ?? [];
+
+  return {
+    invoices,
+    pagination: json.pagination ?? { total: invoices.length, limit: invoices.length, offset: 0 },
+    counts: { ...EMPTY_COUNTS, ...(json.counts ?? {}) },
+    totals: json.totals ?? { invoiceCount: 0, byCurrency: [], topClient: null },
+  };
 }
 
 export async function fetchInvoice(invoiceId: string): Promise<InvoiceData> {

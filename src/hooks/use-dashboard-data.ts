@@ -79,7 +79,10 @@ export const useDashboardData = (): DashboardData => {
 
   const invoicesQuery = useQuery({
     queryKey: ["invoices"],
-    queryFn: fetchInvoices,
+    // The dashboard aggregates across every invoice, so it asks for the largest
+    // page the API allows. It used to call fetchInvoices bare, which took the
+    // server default and quietly gave this whole screen the first 10 rows.
+    queryFn: () => fetchInvoices({ limit: 200 }).then((result) => result.invoices),
     staleTime: 5 * 60 * 1000,
   });
 

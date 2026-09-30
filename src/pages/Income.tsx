@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,7 +21,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2, Trash2, Copy, PenSquare } from "lucide-react";
+import { MoreHorizontal, CalendarIcon, X, ArrowUpDown, Download, FileText, Circle, Users, Loader2, Trash2, Copy, PenSquare, Search, ChevronLeft, ChevronRight , SlidersHorizontal } from "lucide-react";
 import { InvoiceProgressBadge } from "@/components/InvoiceProgressBadge";
 import { InvoiceEmailStatus } from "@/components/InvoiceEmailStatus";
 import {
@@ -44,10 +46,11 @@ import {
   isWithinInterval,
 } from "date-fns";
 import { cn } from "@/lib/utils";
+import { buildPageItems } from "@/lib/pagination";
 import { DateRange } from "react-day-picker";
 import CreateInvoiceDialog from "@/components/CreateInvoiceDialog";
 import { useToast } from "@/hooks/use-toast";
-import { fetchInvoices, fetchInvoice, updateInvoiceStatus, fetchInvoicePdfStatus, deleteInvoice, cloneInvoiceAsDraft, type InvoiceData } from "@/lib/api/invoices";
+import { fetchInvoices, fetchInvoice, updateInvoiceStatus, fetchInvoicePdfStatus, deleteInvoice, cloneInvoiceAsDraft, type InvoiceData, type InvoiceTab, type InvoiceListResult } from "@/lib/api/invoices";
 import InvoicePreviewWrapper from "@/components/InvoicePreview";
 import type { InvoiceFormData } from "@/lib/invoiceTemplateRenderer";
 import { moneyLocale } from "@/lib/amountInWords";
@@ -117,6 +120,10 @@ const statusStyles: Record<
   unpaid: { variant: "outline", label: "Unpaid" },
   overdue: { variant: "destructive", label: "Overdue" },
 };
+
+// Rows per page. The server caps limit at 200; this is what the pager steps by.
+const PAGE_SIZE = 10;
+
 
 const COUNTRY_CURRENCY: Record<string, string> = {
   India: "INR", UAE: "AED", US: "USD", UK: "GBP",
@@ -256,6 +263,10 @@ const Income = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
   const [isCustomDatePopoverOpen, setIsCustomDatePopoverOpen] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  // Client ids, not names: two clients can share a name, and the chips are
+  // built from the saved client list, which is keyed by id.
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>("due_date_desc");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
@@ -282,6 +293,21 @@ const Income = () => {
   // editDraftId because this one must not edit the invoice it was opened from.
   const [reshareSourceId, setReshareSourceId] = useState<string | null>(null);
   const [reshareOpen, setReshareOpen] = useState(false);
+
+  // What the user is typing, and the value actually sent to the server. Kept
+  // apart so every keystroke does not become a request.
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [offset, setOffset] = useState(0);
+  // The full-page spinner is for the first load only. Every later fetch keeps
+  // the screen mounted: swapping it for a spinner tore out the search box
+  // mid-keystroke, and the remounted input came back without focus.
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [pagination, setPagination] = useState({ total: 0, limit: PAGE_SIZE, offset: 0 });
+  // Counts and totals come from the server: they describe the whole filtered
+  // set, which the page of rows no longer does.
+  const [counts, setCounts] = useState<Record<InvoiceTab, number>>({ all: 0, draft: 0, unpaid: 0, paid: 0, overdue: 0 });
+  const [totals, setTotals] = useState<InvoiceListResult["totals"]>({ invoiceCount: 0, byCurrency: [], topClient: null });
   const [editDraftOpen, setEditDraftOpen] = useState(false);
   const [clientsData, setClientsData] = useState<ClientData[]>([]);
   const [orgCountry, setOrgCountry] = useState<string>("US");
@@ -297,14 +323,61 @@ const Income = () => {
 
   const queryClient = useQueryClient();
 
-  const loadInvoices = () => {
+  const getDateRange = (): { start: Date; end: Date } | null => {
+    const today = new Date();
+    switch (timeRangePreset) {
+      case "today":
+        return { start: startOfDay(today), end: endOfDay(today) };
+      case "this_week":
+        return { start: startOfWeek(today, { weekStartsOn: 1 }), end: endOfDay(today) };
+      case "this_month":
+        return { start: startOfMonth(today), end: endOfDay(today) };
+      case "this_quarter":
+        return { start: startOfQuarter(today), end: endOfDay(today) };
+      case "custom":
+        if (customDateRange?.from) {
+          return {
+            start: startOfDay(customDateRange.from),
+            end: endOfDay(customDateRange.to || customDateRange.from),
+          };
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  // Filtering, sorting, searching and paging all happen on the server now, so
+  // this carries the whole query rather than fetching everything and sifting it
+  // here. Held in a ref so loadInvoices() can stay a stable, argument-free
+  // callback for the many places that just want a refresh.
+  const dateRange = getDateRange();
+  const listQuery = {
+    tab: activeTab as InvoiceTab,
+    search: searchTerm,
+    sort: sortOption,
+    clientIds: selectedClientIds,
+    limit: PAGE_SIZE,
+    offset,
+    startDate: dateRange?.start.toISOString(),
+    endDate: dateRange?.end.toISOString(),
+    // The screen shows and filters by due date; the API defaults to issue date.
+    dateField: "dueDate" as const,
+  };
+  const listQueryRef = useRef(listQuery);
+  listQueryRef.current = listQuery;
+
+  const loadInvoices = useCallback(() => {
     setIsLoading(true);
-    Promise.all([fetchInvoices(), fetchClients()])
-      .then(([invoiceData, clientData]) => {
+    Promise.all([fetchInvoices(listQueryRef.current), fetchClients()])
+      .then(([result, clientData]) => {
         const clientsMap = new Map(clientData.map((c) => [c.id, c.name]));
         setClientsData(clientData);
-        setRawInvoices(invoiceData);
-        setInvoices(invoiceData.map((inv) => mapApiInvoice(inv, clientsMap)));
+        setRawInvoices(result.invoices);
+        setInvoices(result.invoices.map((inv) => mapApiInvoice(inv, clientsMap)));
+        setPagination(result.pagination);
+        setCounts(result.counts);
+        setTotals(result.totals);
         // Invalidate React Query cache so dashboard stays in sync
         queryClient.invalidateQueries({ queryKey: ["invoices"] });
         queryClient.invalidateQueries({ queryKey: ["clients"] });
@@ -313,12 +386,27 @@ const Income = () => {
         console.error("Failed to fetch invoices:", err);
         toast({ title: "Error", description: "Failed to load invoices", variant: "destructive" });
       })
-      .finally(() => setIsLoading(false));
-  };
+      .finally(() => {
+        setIsLoading(false);
+        setHasLoaded(true);
+      });
+  }, [queryClient, toast]);
+
+  // Typing pauses before it becomes a request.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchTerm(searchInput.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Any change to what is being asked for starts again at the first page -
+  // otherwise a narrower filter can leave you stranded on a page past its end.
+  useEffect(() => {
+    setOffset(0);
+  }, [activeTab, searchTerm, sortOption, timeRangePreset, customDateRange, selectedClientIds]);
 
   useEffect(() => {
     loadInvoices();
-  }, []);
+  }, [loadInvoices, activeTab, searchTerm, sortOption, timeRangePreset, customDateRange, selectedClientIds, offset]);
 
   const handleInvoiceClick = async (invoice: Invoice) => {
     if (invoice.status === "draft") {
@@ -517,130 +605,68 @@ const Income = () => {
     return parse(dateStr, "dd/MM/yyyy", new Date());
   };
 
-  const getDateRange = (): { start: Date; end: Date } | null => {
-    const today = new Date();
-    switch (timeRangePreset) {
-      case "today":
-        return { start: startOfDay(today), end: endOfDay(today) };
-      case "this_week":
-        return { start: startOfWeek(today, { weekStartsOn: 1 }), end: endOfDay(today) };
-      case "this_month":
-        return { start: startOfMonth(today), end: endOfDay(today) };
-      case "this_quarter":
-        return { start: startOfQuarter(today), end: endOfDay(today) };
-      case "custom":
-        if (customDateRange?.from) {
-          return {
-            start: startOfDay(customDateRange.from),
-            end: endOfDay(customDateRange.to || customDateRange.from),
-          };
-        }
-        return null;
-      default:
-        return null;
-    }
-  };
-
-  const sortInvoices = (invoices: Invoice[]) => {
-    return [...invoices].sort((a, b) => {
-      switch (sortOption) {
-        case "due_date_asc":
-          return parseDate(a.dueDate).getTime() - parseDate(b.dueDate).getTime();
-        case "due_date_desc":
-          return parseDate(b.dueDate).getTime() - parseDate(a.dueDate).getTime();
-        case "issue_date_asc":
-          return parseDate(a.issueDate).getTime() - parseDate(b.issueDate).getTime();
-        case "issue_date_desc":
-          return parseDate(b.issueDate).getTime() - parseDate(a.issueDate).getTime();
-        case "amount_asc":
-          return a.amount - b.amount;
-        case "amount_desc":
-          return b.amount - a.amount;
-        case "client_asc":
-          return a.clientName.localeCompare(b.clientName);
-        case "client_desc":
-          return b.clientName.localeCompare(a.clientName);
-        default:
-          return 0;
-      }
-    });
-  };
-
-  const filterInvoices = (status: string) => {
-    // "all" means all *active* invoices. Untouched drafts live on their own tab,
-    // but a draft that has been issued is still mid-flight - its PDF is
-    // generating or needs a retry - so it belongs here until it becomes UNPAID.
-    // pdfStatus tells them apart: NOT_STARTED means nobody has issued it yet.
-    // Tab counts and the list both read from here, so they stay in step.
-    // The Draft tab is the exact complement: only drafts nobody has issued yet.
-    const isUntouchedDraft = (inv: Invoice) =>
-      inv.status === "draft" && inv.pdfStatus === "NOT_STARTED";
-
-    let filtered =
-      status === "all"
-        ? invoices.filter((inv) => !isUntouchedDraft(inv))
-        : status === "draft"
-          ? invoices.filter(isUntouchedDraft)
-          : invoices.filter((inv) => inv.status === status);
-
-    const dateRange = getDateRange();
-    if (dateRange) {
-      filtered = filtered.filter((inv) => {
-        const invoiceDate = parseDate(inv.dueDate);
-        return isWithinInterval(invoiceDate, { start: dateRange.start, end: dateRange.end });
-      });
-    }
-
-    return sortInvoices(filtered);
-  };
 
   const currency = COUNTRY_CURRENCY[orgCountry] || "USD";
 
+  const pageStart = pagination.total === 0 ? 0 : pagination.offset + 1;
+  const pageEnd = Math.min(pagination.offset + pagination.limit, pagination.total);
+  const hasPrevPage = pagination.offset > 0;
+  const hasNextPage = pageEnd < pagination.total;
+  const totalPages = Math.max(1, Math.ceil(pagination.total / pagination.limit));
+  const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
+  const goToPage = (page: number) => setOffset((page - 1) * pagination.limit);
+
+  // The org has invoices, or the user is searching and found none. Either way
+  // the toolbar has to stay: hiding it on an empty result would take the search
+  // box away with it, leaving no way to clear the term.
+  // invoices.length is the fallback: an older backend returns rows but no
+  // counts, and without this the page would claim there are no invoices while
+  // holding a list of them.
+  const hasInvoicesInScope = counts.all + counts.draft > 0 || invoices.length > 0;
+
+  // Once the org is known to have invoices, the toolbar stays for the rest of
+  // the session. Both of the other conditions are read from the last response,
+  // so clearing a search that matched nothing would see them as "no invoices at
+  // all" for one render and unmount the search box mid-edit.
+  const everHadInvoices = useRef(false);
+  if (counts.all + counts.draft > 0) everHadInvoices.current = true;
+
+  const showList = everHadInvoices.current || hasInvoicesInScope || searchTerm !== "";
+
+  // Straight from the server, which computed these over the whole filtered set.
+  // Deriving them from `invoices` would now describe only the visible page.
   const summaryStats = useMemo(() => {
-    const filtered = filterInvoices(activeTab).filter((inv) => inv.status !== "draft");
-    const totalIncome = filtered.reduce((sum, inv) => sum + inv.amount, 0);
-    const incomeByCurrency = filtered.reduce<Record<string, number>>((acc, inv) => {
-      acc[inv.currency] = (acc[inv.currency] || 0) + inv.amount;
-      return acc;
-    }, {});
-    const incomeByCurrencyEntries = Object.entries(incomeByCurrency).sort((a, b) => b[1] - a[1]);
-    const paidInvoices = filtered.filter((inv) => inv.status === "paid");
-    const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
-    const unpaidInvoices = filtered.filter((inv) => inv.status === "unpaid" || inv.status === "overdue");
-    const totalUnpaid = unpaidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
-    const invoiceCount = filtered.length;
+    const incomeByCurrencyEntries: [string, number][] = totals.byCurrency.map(
+      (c) => [c.currency, c.total],
+    );
 
-    // Top client by revenue
-    const clientRevenue: Record<string, number> = {};
-    filtered.forEach((inv) => {
-      clientRevenue[inv.clientName] = (clientRevenue[inv.clientName] || 0) + inv.amount;
-    });
-    const topClient = Object.entries(clientRevenue).sort((a, b) => b[1] - a[1])[0];
+    return {
+      incomeByCurrencyEntries,
+      totalIncome: totals.byCurrency.reduce((sum, c) => sum + c.total, 0),
+      totalPaid: totals.byCurrency.reduce((sum, c) => sum + c.paid, 0),
+      totalUnpaid: totals.byCurrency.reduce((sum, c) => sum + c.unpaid, 0),
+      invoiceCount: totals.invoiceCount,
+      topClient: totals.topClient,
+    };
+  }, [totals]);
 
-    return { totalIncome, incomeByCurrencyEntries, totalPaid, totalUnpaid, invoiceCount, topClient: topClient ? { name: topClient[0], amount: topClient[1] } : null };
-  }, [invoices, activeTab, timeRangePreset, customDateRange, sortOption]);
-
-  const getTimeRangeLabel = () => {
-    switch (timeRangePreset) {
-      case "today":
-        return "Today";
-      case "this_week":
-        return "This Week";
-      case "this_month":
-        return "This Month";
-      case "this_quarter":
-        return "This Quarter";
-      case "custom":
-        if (customDateRange?.from) {
-          return customDateRange.to
-            ? `${format(customDateRange.from, "MMM d")} - ${format(customDateRange.to, "MMM d")}`
-            : format(customDateRange.from, "MMM d, yyyy");
-        }
-        return "Custom Range";
-      default:
-        return "All Time";
-    }
+  const toggleClientFilter = (clientId: string) => {
+    setSelectedClientIds((prev) =>
+      prev.includes(clientId) ? prev.filter((id) => id !== clientId) : [...prev, clientId],
+    );
   };
+
+  const clearAllFilters = () => {
+    setTimeRangePreset("all");
+    setCustomDateRange(undefined);
+    setTempDateRange(undefined);
+    setSelectedClientIds([]);
+  };
+
+  // Drives the count on the trigger, so the button says whether anything is
+  // filtered without having to open it.
+  const activeFilterCount =
+    (timeRangePreset !== "all" ? 1 : 0) + (selectedClientIds.length > 0 ? 1 : 0);
 
   const handleTimeRangeChange = (value: TimeRangePreset) => {
     setTimeRangePreset(value);
@@ -652,11 +678,6 @@ const Income = () => {
     } else {
       setCustomDateRange(undefined);
     }
-  };
-
-  const clearDateFilter = () => {
-    setTimeRangePreset("all");
-    setCustomDateRange(undefined);
   };
 
   // Draft sits last: it is the only tab that is not real income.
@@ -719,7 +740,7 @@ const Income = () => {
               <span className="inline-flex items-center gap-1.5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-data-[state=active]:translate-y-0">
                 {tab.label}
                 <span className="text-[10px] font-normal text-muted-foreground bg-muted rounded-full px-1 leading-4 min-w-[1rem] text-center">
-                  {filterInvoices(tab.value).length}
+                  {counts[tab.value as InvoiceTab] ?? 0}
                 </span>
               </span>
               <span className="absolute left-0 right-0 -bottom-0.5 h-0.5 bg-primary/60 origin-center scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100 group-data-[state=active]:scale-x-0 pointer-events-none" />
@@ -727,11 +748,11 @@ const Income = () => {
           ))}
         </TabsList>
 
-        {isLoading ? (
+        {isLoading && !hasLoaded ? (
           <div className="flex items-center justify-center h-32">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : invoices.length > 0 ? (
+        ) : showList ? (
           <>
             {/* Summary Card */}
             <div className="rounded-lg border border-border bg-muted/20 p-4 mt-4 mb-4">
@@ -774,7 +795,26 @@ const Income = () => {
               </div>
             </div>
 
-            <div className="flex justify-end mb-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2">
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Search invoice number or client"
+                  className="h-8 pl-8 pr-8 text-sm"
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    aria-label="Clear search"
+                    onClick={() => setSearchInput("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <Select value={sortOption} onValueChange={(value: SortOption) => setSortOption(value)}>
                   <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
@@ -793,69 +833,165 @@ const Income = () => {
                   </SelectContent>
                 </Select>
 
-                <Select value={timeRangePreset} onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}>
-                  <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
-                    <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                    <SelectValue placeholder="All Time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="this_week">This Week</SelectItem>
-                    <SelectItem value="this_month">This Month</SelectItem>
-                    <SelectItem value="this_quarter">This Quarter</SelectItem>
-                    <SelectItem value="custom">Custom Range</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 text-sm">
+                      <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />
+                      Filters
+                      {activeFilterCount > 0 && (
+                        <span className="ml-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/10 px-1 text-[10px] font-medium text-primary">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-80 p-0">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                      <span className="text-sm font-medium">Filters</span>
+                      {activeFilterCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={clearAllFilters}
+                          className="text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
 
-                {timeRangePreset === "custom" && (
-                  <Popover open={isCustomDatePopoverOpen} onOpenChange={handleOpenChange}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-8 text-sm justify-start text-left font-normal">
-                        <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                        {customDateRange?.from ? (
-                          customDateRange.to ? (
-                            <>
-                              {format(customDateRange.from, "dd/MM/yy")} - {format(customDateRange.to, "dd/MM/yy")}
-                            </>
-                          ) : (
-                            format(customDateRange.from, "dd/MM/yy")
-                          )
-                        ) : (
-                          "Pick range"
+                    <div className="px-4 py-3 space-y-2 border-b border-border">
+                      <Label className="text-xs text-muted-foreground">Due date</Label>
+                      <Select
+                        value={timeRangePreset}
+                        onValueChange={(value: TimeRangePreset) => handleTimeRangeChange(value)}
+                      >
+                        {/* The icon and the value are one child, not two. The
+                            trigger is justify-between, so as separate children it
+                            spread them apart and stranded the value in the middle. */}
+                        {/* A div, not a span: the trigger carries
+                            [&>span]:line-clamp-1, which sets display:-webkit-box on
+                            a direct span child and would break this flex row,
+                            stacking the icon above the text. */}
+                        <SelectTrigger className="h-7 px-2.5 text-xs border-border/70 font-normal">
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            <SelectValue placeholder="All Time" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Time</SelectItem>
+                          <SelectItem value="today">Today</SelectItem>
+                          <SelectItem value="this_week">This Week</SelectItem>
+                          <SelectItem value="this_month">This Month</SelectItem>
+                          <SelectItem value="this_quarter">This Quarter</SelectItem>
+                          <SelectItem value="custom">Custom Range</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {timeRangePreset === "custom" && (
+                        <Popover open={isCustomDatePopoverOpen} onOpenChange={handleOpenChange}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 w-full justify-start px-2.5 text-left text-xs font-normal border-border/70"
+                            >
+                              <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
+                              {customDateRange?.from ? (
+                                customDateRange.to ? (
+                                  <>
+                                    {format(customDateRange.from, "dd/MM/yy")} - {format(customDateRange.to, "dd/MM/yy")}
+                                  </>
+                                ) : (
+                                  format(customDateRange.from, "dd/MM/yy")
+                                )
+                              ) : (
+                                "Pick range"
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          {/* One month, not two: the parent popover is 320px wide and a
+                              two-month calendar overflows the viewport on a phone. */}
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="range"
+                              selected={tempDateRange}
+                              onSelect={setTempDateRange}
+                              numberOfMonths={1}
+                              initialFocus
+                              className={cn("p-3 pointer-events-auto")}
+                            />
+                            <div className="flex justify-end p-3 pt-0 border-t border-border">
+                              <Button size="sm" onClick={handleApplyDateRange} disabled={!tempDateRange?.from}>
+                                Apply
+                              </Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
+
+                    <div className="px-4 py-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs text-muted-foreground">Client</Label>
+                        {selectedClientIds.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedClientIds([])}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            Clear
+                          </button>
                         )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        mode="range"
-                        selected={tempDateRange}
-                        onSelect={setTempDateRange}
-                        numberOfMonths={2}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                      <div className="flex justify-end p-3 pt-0 border-t border-border">
-                        <Button size="sm" onClick={handleApplyDateRange} disabled={!tempDateRange?.from}>
-                          Apply
-                        </Button>
                       </div>
-                    </PopoverContent>
-                  </Popover>
-                )}
 
-                {timeRangePreset !== "all" && (
-                  <Button variant="ghost" size="icon" onClick={clearDateFilter} className="h-8 w-8">
-                    <X className="h-3.5 w-3.5" />
-                  </Button>
-                )}
+                      {clientsData.length === 0 ? (
+                        <p className="text-xs text-muted-foreground py-1">No clients yet.</p>
+                      ) : (
+                        // Scrolls rather than growing: an org with fifty clients would
+                        // otherwise push the popover past the bottom of the screen.
+                        <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto">
+                          {clientsData.map((client) => {
+                            const selected = selectedClientIds.includes(client.id);
+                            return (
+                              <button
+                                key={client.id}
+                                type="button"
+                                aria-pressed={selected}
+                                onClick={() => toggleClientFilter(client.id)}
+                                className={cn(
+                                  "flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+                                  selected
+                                    ? "border-primary/20 bg-primary/10 text-primary"
+                                    : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
+                                )}
+                              >
+                                {client.name}
+                                {selected && <X className="h-3 w-3" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             {tabs.map((tab) => {
-              const tabInvoices = filterInvoices(tab.value);
+              // The server already filtered to the active tab, so only that one
+              // has rows to show; the others render empty until selected.
+              const tabInvoices = tab.value === activeTab ? invoices : [];
               return (
                 <TabsContent key={tab.value} value={tab.value} className="mt-6">
-                  <div className="bg-card rounded-lg border border-border overflow-hidden">
+                  <div
+                    className={cn(
+                      "bg-card rounded-lg border border-border overflow-hidden transition-opacity",
+                      // Refetching: the previous rows stay put and fade slightly,
+                      // so the list does not collapse and shift everything below it.
+                      isLoading && "opacity-50",
+                    )}
+                  >
                     {tabInvoices.length > 0 ? (
                       tabInvoices.map((invoice) => (
                         <InvoiceRow
@@ -879,6 +1015,74 @@ const Income = () => {
                       <div className="flex items-center justify-center h-32 text-muted-foreground">No invoices found</div>
                     )}
                   </div>
+
+                  {/* The range always shows, so the size of the list is visible
+                      even on a single page; the controls appear only when there
+                      is somewhere to go. */}
+                  {pagination.total > 0 && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-3">
+                      {totalPages > 1 && (
+                        <nav aria-label="Invoice pages" className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            aria-label="Previous page"
+                            disabled={!hasPrevPage || isLoading}
+                            onClick={() => goToPage(currentPage - 1)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+
+                          {buildPageItems(currentPage, totalPages).map((page, i) =>
+                            page === null ? (
+                              <span
+                                key={`gap-${i}`}
+                                aria-hidden="true"
+                                className="flex h-8 w-8 items-center justify-center text-xs text-muted-foreground"
+                              >
+                                …
+                              </span>
+                            ) : (
+                              <button
+                                key={page}
+                                type="button"
+                                aria-label={`Page ${page}`}
+                                aria-current={page === currentPage ? "page" : undefined}
+                                disabled={isLoading}
+                                onClick={() => goToPage(page)}
+                                className={cn(
+                                  // The border stays in the box for every state and only
+                                  // its colour changes, so becoming the current page
+                                  // cannot nudge the row by a pixel.
+                                  "flex h-8 w-8 items-center justify-center rounded-lg border text-sm font-medium transition-colors",
+                                  page === currentPage
+                                    ? "border-primary/20 bg-primary/10 text-primary"
+                                    : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+                                  isLoading && "pointer-events-none opacity-60",
+                                )}
+                              >
+                                {page}
+                              </button>
+                            ),
+                          )}
+
+                          <button
+                            type="button"
+                            aria-label="Next page"
+                            disabled={!hasNextPage || isLoading}
+                            onClick={() => goToPage(currentPage + 1)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </nav>
+                      )}
+
+                      <span className="text-xs text-muted-foreground">
+                        Showing {pageStart}–{pageEnd} of {pagination.total}
+                      </span>
+                    </div>
+                  )}
                 </TabsContent>
               );
             })}
