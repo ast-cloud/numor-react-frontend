@@ -100,8 +100,11 @@ export interface InvoiceData {
     swift: string;
   };
   bankAddress?: string;
-  // definitionId is not always sent; the dialog resolves it by name when absent.
-  customFields?: { definitionId?: string; name: string; value: string }[];
+  // definitionId is null once the field's definition has been deleted, and may be
+  // absent on older responses. The name and value are stored on the invoice
+  // itself, so the field still renders either way; the dialog resolves the id by
+  // name when it needs one to tick a checkbox.
+  customFields?: { definitionId?: string | null; name: string; value: string }[];
 }
 
 export type InvoiceTab = 'all' | 'draft' | 'unpaid' | 'paid' | 'overdue';

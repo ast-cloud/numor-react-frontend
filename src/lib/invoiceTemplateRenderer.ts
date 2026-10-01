@@ -154,6 +154,10 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
   const totalAmount = subtotal + taxAmount;
   const taxSummary = buildTaxSummary(formData);
 
+  const labelledCustomFields = (formData.customFields || [])
+    .filter((f) => f.name.trim() !== "" && f.value.trim() !== "")
+    .map((f) => ({ name: f.name.trim(), value: f.value.trim() }));
+
   const data = {
     invoiceNumber: formData.invoiceNumber || "Auto-generated",
     issueDate: formData.invoiceDate ? format(formData.invoiceDate, "yyyy-MM-dd") : "-",
@@ -220,9 +224,11 @@ export function renderInvoiceHtml(formData: InvoiceFormData): string {
     bankAddress: formData.bankAddress || "",
     paymentTerms: formData.paymentTerms || "Payment due as per terms.",
     notes: formData.notes || "",
-    customFields: (formData.customFields || [])
-      .filter((f) => f.value.trim() !== "")
-      .map((f) => ({ name: f.name, value: f.value.trim() })),
+    customFields: labelledCustomFields,
+    // Split into the two columns the template lays out, so the second field
+    // sits under Bill To. Row-major: 1st left, 2nd right, 3rd left.
+    customFieldsLeft: labelledCustomFields.filter((_, i) => i % 2 === 0),
+    customFieldsRight: labelledCustomFields.filter((_, i) => i % 2 === 1),
   };
 
   return template(data);

@@ -37,7 +37,14 @@ import { toast } from "@/hooks/use-toast";
 import type { InvoiceCustomField } from "@/lib/api/invoiceCustomFields";
 
 interface InvoiceCustomFieldValue {
-  definitionId: string;
+  /**
+   * Row identity while editing. For a field that comes from settings this is the
+   * definition id; for one defined on the invoice it is generated, because its
+   * name is being typed and so cannot key anything.
+   */
+  uid: string;
+  /** Null for a field defined on this invoice rather than in settings. */
+  definitionId: string | null;
   name: string;
   value: string;
 }
@@ -340,14 +347,22 @@ const mapInvoiceDataToForm = (
     // are keyed by definition id. Fall back to matching on name when the API
     // does not send an id - without a real id the field renders unticked, the
     // user ticks it again, and the invoice ends up holding it twice.
-    customFields: (inv.customFields ?? []).map((f) => ({
-      definitionId:
+    customFields: (inv.customFields ?? []).map((f) => {
+      // No id and no definition of that name means the field was defined on the
+      // invoice itself, or its definition has since been deleted. Either way it
+      // edits as a free-form row from here on.
+      const definitionId =
         f.definitionId != null
           ? String(f.definitionId)
-          : String(customFieldDefs?.find((d) => d.name === f.name)?.id ?? ""),
-      name: f.name,
-      value: f.value ?? "",
-    })),
+          : (customFieldDefs?.find((d) => d.name === f.name)?.id ?? null);
+
+      return {
+        uid: definitionId ?? crypto.randomUUID(),
+        definitionId,
+        name: f.name,
+        value: f.value ?? "",
+      };
+    }),
   };
 };
 
@@ -664,7 +679,10 @@ const CreateInvoiceDialog = ({
         if (prev.customFields.some((f) => f.definitionId === def.id)) return prev;
         return {
           ...prev,
-          customFields: [...prev.customFields, { definitionId: def.id, name: def.name, value: "" }],
+          customFields: [
+            ...prev.customFields,
+            { uid: def.id, definitionId: def.id, name: def.name, value: "" },
+          ],
         };
       }
       return { ...prev, customFields: prev.customFields.filter((f) => f.definitionId !== def.id) };
@@ -675,6 +693,36 @@ const CreateInvoiceDialog = ({
     setFormData((prev) => ({
       ...prev,
       customFields: prev.customFields.map((f) => (f.definitionId === definitionId ? { ...f, value } : f)),
+    }));
+  };
+
+  // Rendered as their own rows, after the ones that come from settings.
+  const adhocCustomFields = formData.customFields.filter((f) => f.definitionId === null);
+
+  /** A field defined on this invoice only. definitionId stays null. */
+  const addAdhocCustomField = () => {
+    setFormData((prev) => ({
+      ...prev,
+      customFields: [
+        ...prev.customFields,
+        { uid: crypto.randomUUID(), definitionId: null, name: "", value: "" },
+      ],
+    }));
+  };
+
+  // Keyed on uid, not name: the name is what the user is editing, so using it as
+  // the key would lose the row on the first keystroke.
+  const updateAdhocCustomField = (uid: string, patch: Partial<InvoiceCustomFieldValue>) => {
+    setFormData((prev) => ({
+      ...prev,
+      customFields: prev.customFields.map((f) => (f.uid === uid ? { ...f, ...patch } : f)),
+    }));
+  };
+
+  const removeAdhocCustomField = (uid: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      customFields: prev.customFields.filter((f) => f.uid !== uid),
     }));
   };
 
@@ -905,9 +953,12 @@ const CreateInvoiceDialog = ({
         taxRate: isCrossBorder ? 0 : item.taxPercent,
         itemTotal: String(calculateLineTotal(item)),
       })),
+      // A row needs both halves to mean anything. An ad-hoc one still being
+      // filled in - a name with no value, or the reverse - is left out rather
+      // than sent as a blank label.
       customFields: formData.customFields
-        .filter((f) => f.value.trim() !== "")
-        .map((f) => ({ name: f.name, value: f.value.trim() })),
+        .filter((f) => f.name.trim() !== "" && f.value.trim() !== "")
+        .map((f) => ({ name: f.name.trim(), value: f.value.trim() })),
     };
   };
 
@@ -1455,9 +1506,58 @@ const CreateInvoiceDialog = ({
                     })}
                   </div>
                 )}
-                {orgCustomFieldDefs.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No custom fields configured.</p>
+                {orgCustomFieldDefs.length === 0 && adhocCustomFields.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No custom fields configured. Add one below for this invoice only.
+                  </p>
                 )}
+
+                {/* Fields defined on this invoice rather than in settings. They
+                    sit after the fixed ones and carry their own key. */}
+                {adhocCustomFields.length > 0 && (
+                  <div className="space-y-2">
+                    {adhocCustomFields.map((field) => (
+                      <div
+                        key={field.uid}
+                        className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_auto] gap-2 items-center"
+                      >
+                        <Input
+                          className="h-8 text-xs"
+                          placeholder="Field name"
+                          value={field.name}
+                          onChange={(e) => updateAdhocCustomField(field.uid, { name: e.target.value })}
+                        />
+                        <Input
+                          className="h-8 text-xs"
+                          placeholder="Enter a value"
+                          value={field.value}
+                          onChange={(e) => updateAdhocCustomField(field.uid, { value: e.target.value })}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          aria-label="Remove custom field"
+                          onClick={() => removeAdhocCustomField(field.uid)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={addAdhocCustomField}
+                >
+                  <Plus className="h-3 w-3 mr-1.5" />
+                  Add custom field
+                </Button>
               </div>
 
               {/* Client Info */}

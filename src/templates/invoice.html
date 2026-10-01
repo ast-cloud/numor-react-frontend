@@ -152,16 +152,13 @@
          page-break-inside: avoid;
          }
          /* Custom fields */
+         /* Sits on .two-col so the columns are the ones above it, whatever they
+            compute to. Recreating them with percentages did not line up: .two-col
+            sets gap:40%, so the boxes shrink below their declared 48%. */
          .custom-fields {
-         margin: 8px 0 20px;
-         }
-         .custom-field-grid {
-         display: flex;
-         flex-wrap: wrap;
-         gap: 6px 16px;
+         margin-top: -12px;
          }
          .custom-field-item {
-         flex: 0 0 48%;
          font-size: 12px;
          line-height: 1.4;
          word-break: break-word;
@@ -216,9 +213,16 @@
             </div>
          </div>
          {{#if customFields}}
-         <div class="custom-fields">
-            <div class="custom-field-grid">
-               {{#each customFields}}
+         <div class="two-col custom-fields">
+            <div class="box">
+               {{#each customFieldsLeft}}
+               <div class="custom-field-item">
+                  <span class="custom-field-label">{{name}}:</span> {{value}}
+               </div>
+               {{/each}}
+            </div>
+            <div class="box">
+               {{#each customFieldsRight}}
                <div class="custom-field-item">
                   <span class="custom-field-label">{{name}}:</span> {{value}}
                </div>
