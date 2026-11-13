@@ -133,12 +133,17 @@ const ChatBot = () => {
         for (const frame of frames) {
           const lines = frame.split("\n");
           let eventType = "";
-          let data = "";
+          const dataLines: string[] = [];
 
           for (const line of lines) {
             if (line.startsWith("event: ")) eventType = line.slice(7).trim();
-            else if (line.startsWith("data: ")) data = line.slice(6);
+            // One frame can carry several "data:" lines: that is how SSE sends
+            // text containing line breaks. Keeping only the last one drops the
+            // rest of the chunk.
+            else if (line.startsWith("data:")) dataLines.push(line.slice(5).replace(/^ /, ""));
           }
+
+          const data = dataLines.join("\n");
 
           if (eventType === "end") {
             shouldStop = true;

@@ -208,6 +208,12 @@ const getTaxOptions = (country: string): number[] => {
   return taxPercentOptions[country] || [];
 };
 
+// Line-item columns: Description, Qty, Unit, Rate, Tax %, Total, delete. Shared
+// by the header and every row so the two stay aligned. Explicit fractions rather
+// than a 12-column grid, which can only move widths a whole column at a time.
+const LINE_ITEM_GRID =
+  "grid grid-cols-[minmax(0,4fr)_minmax(0,1fr)_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)] gap-2 p-3";
+
 // Empty default seller - will be filled from org API
 const emptySellerInfo: SellerInfo = {
   logo: "",
@@ -1669,19 +1675,19 @@ const CreateInvoiceDialog = ({
                 </div>
 
                 <div className="border rounded-lg overflow-hidden">
-                  <div className="grid grid-cols-12 gap-2 p-3 bg-muted text-sm font-medium">
-                    <div className="col-span-4">Description</div>
-                    <div className="col-span-1">Qty</div>
-                    <div className="col-span-2">Unit</div>
-                    <div className="col-span-2">Rate</div>
-                    <div className="col-span-1">Tax %</div>
-                    <div className="col-span-1 text-right">Total</div>
-                    <div className="col-span-1"></div>
+                  <div className={cn(LINE_ITEM_GRID, "bg-muted text-sm font-medium")}>
+                    <div>Description</div>
+                    <div>Qty</div>
+                    <div>Unit</div>
+                    <div>Rate</div>
+                    <div>Tax %</div>
+                    <div className="text-right">Total</div>
+                    <div></div>
                   </div>
 
                   {formData.lineItems.map((item) => (
-                    <div key={item.id} className="grid grid-cols-12 gap-2 p-3 border-t items-center">
-                      <div className="col-span-4">
+                    <div key={item.id} className={cn(LINE_ITEM_GRID, "border-t items-center")}>
+                      <div>
                         <Input
                           placeholder="Description"
                           value={item.description}
@@ -1691,18 +1697,21 @@ const CreateInvoiceDialog = ({
                           <p className="text-xs text-destructive mt-1">Description is required.</p>
                         )}
                       </div>
-                      <div className="col-span-1">
+                      <div>
                         <Input
                           type="number"
                           min="0"
-                          // "any" rather than "1": the spinner arrows step by whole
-                          // units, but a typed fractional quantity stays valid.
+                          // "any" rather than "1": with a whole-unit step the browser
+                          // marks a typed fractional quantity like 0.045 as invalid.
                           step="any"
                           value={item.quantity}
                           onChange={(e) => handleLineItemChange(item.id, "quantity", parseFloat(e.target.value) || 0)}
+                          // Qty is the narrowest column, so the default px-3
+                          // leaves too little room for the number itself.
+                          className="px-1 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
-                      <div className="col-span-2">
+                      <div>
                         <Select
                           value={item.unit}
                           onValueChange={(value) => handleLineItemChange(item.id, "unit", value)}
@@ -1717,7 +1726,7 @@ const CreateInvoiceDialog = ({
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-2">
+                      <div>
                         <Input
                           type="number"
                           min="0"
@@ -1727,7 +1736,7 @@ const CreateInvoiceDialog = ({
                           onChange={(e) => handleLineItemChange(item.id, "rate", parseFloat(e.target.value) || 0)}
                         />
                       </div>
-                      <div className="col-span-1">
+                      <div>
                         {(() => {
                           const isCrossBorder =
                             formData.seller.country &&
@@ -1771,8 +1780,8 @@ const CreateInvoiceDialog = ({
                           );
                         })()}
                       </div>
-                      <div className="col-span-1 text-right font-medium">{formatMoney(calculateLineTotal(item), formData.currency)}</div>
-                      <div className="col-span-1 flex justify-end">
+                      <div className="text-right font-medium">{formatMoney(calculateLineTotal(item), formData.currency)}</div>
+                      <div className="flex justify-end">
                         <Button
                           type="button"
                           variant="ghost"
