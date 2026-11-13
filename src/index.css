@@ -34,7 +34,7 @@
     --input: 220 16% 18%;
     --ring: 160 84% 39%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Custom design tokens */
     --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%), hsl(180 76% 45%));

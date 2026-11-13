@@ -63,6 +63,9 @@ export default {
         },
       },
       borderRadius: {
+        // Tied to --radius like the smaller sizes, so one value sets every corner.
+        "2xl": "calc(var(--radius) + 6px)",
+        xl: "calc(var(--radius) + 2px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",

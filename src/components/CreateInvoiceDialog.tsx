@@ -1708,7 +1708,7 @@ const CreateInvoiceDialog = ({
                           onChange={(e) => handleLineItemChange(item.id, "quantity", parseFloat(e.target.value) || 0)}
                           // Qty is the narrowest column, so the default px-3
                           // leaves too little room for the number itself.
-                          className="px-1 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
                       <div>
@@ -1734,6 +1734,7 @@ const CreateInvoiceDialog = ({
                           placeholder="0.00"
                           value={item.rate || ""}
                           onChange={(e) => handleLineItemChange(item.id, "rate", parseFloat(e.target.value) || 0)}
+                          className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
                       <div>
