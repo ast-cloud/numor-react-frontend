@@ -98,8 +98,8 @@ const mapApiInvoice = (inv: InvoiceData, clientsMap: Map<string, string>): Invoi
   // client is deleted - and the old fallback then printed the SELLER name in the
   // client column rather than admitting it did not know.
   clientName: inv.clientName || clientsMap.get(inv.clientId) || "—",
-  dueDate: format(parseISO(inv.dueDate), "dd/MM/yyyy"),
-  issueDate: inv.issueDate ? format(parseISO(inv.issueDate), "dd/MM/yyyy") : "",
+  dueDate: format(parseISO(inv.dueDate), "d MMM yyyy"),
+  issueDate: inv.issueDate ? format(parseISO(inv.issueDate), "d MMM yyyy") : "",
   amount: parseFloat(inv.totalAmount),
   currency: inv.currency || "USD",
   status: mapApiStatus(inv.status),
@@ -190,7 +190,15 @@ const InvoiceRow = ({
           <span className="text-muted-foreground">, </span>
           <span className="text-foreground">{invoice.clientName}</span>
         </p>
-        <p className="text-sm text-muted-foreground mt-0.5">{invoice.dueDate}</p>
+        <p className="text-xs text-muted-foreground/80 mt-1 truncate">
+          {invoice.issueDate && (
+            <>
+              Issued {invoice.issueDate}
+              <span className="mx-1.5 text-muted-foreground/40" aria-hidden="true">•</span>
+            </>
+          )}
+          Due {invoice.dueDate}
+        </p>
       </div>
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         <InvoiceProgressBadge
